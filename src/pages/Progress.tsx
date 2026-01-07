@@ -277,7 +277,7 @@ export default function Progress() {
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">Прогресс</h1>
-          <p className="text-muted-foreground text-base">Отслеживай свои достижения</p>
+          <p className="text-muted-foreground text-base">Отслеживай достижения</p>
         </div>
       </div>
 
