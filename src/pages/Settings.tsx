@@ -84,45 +84,42 @@ export default function Settings() {
 
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <User className="h-5 w-5 text-primary" />
-            Профиль
+          <CardTitle className="text-lg flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <User className="h-5 w-5 text-primary" />
+              Профиль
+            </div>
+            {/* Avatar Selection - Right Side */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-4xl hover:bg-primary/20 transition-colors cursor-pointer border-2 border-primary/20">
+                  {avatar || "👤"}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72" align="end">
+                <div className="grid grid-cols-5 gap-2">
+                  {AVATARS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setAvatar(emoji)}
+                      className={cn(
+                        "text-2xl p-3 rounded-lg transition-all hover:scale-110",
+                        avatar === emoji
+                          ? "bg-primary text-primary-foreground shadow-md scale-110"
+                          : "bg-muted hover:bg-muted/70"
+                      )}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-6">
-            {/* Avatar Selection - Left Side */}
-            <div className="flex flex-col items-center">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button className="flex items-center justify-center w-24 h-24 rounded-full bg-primary/10 text-5xl hover:bg-primary/20 transition-colors cursor-pointer border-2 border-primary/20">
-                    {avatar || "👤"}
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-72" align="start">
-                  <div className="grid grid-cols-5 gap-2">
-                    {AVATARS.map((emoji) => (
-                      <button
-                        key={emoji}
-                        type="button"
-                        onClick={() => setAvatar(emoji)}
-                        className={cn(
-                          "text-2xl p-3 rounded-lg transition-all hover:scale-110",
-                          avatar === emoji
-                            ? "bg-primary text-primary-foreground shadow-md scale-110"
-                            : "bg-muted hover:bg-muted/70"
-                        )}
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            {/* Profile Fields - Right Side */}
-            <div className="flex-1 space-y-4">
+            <div className="space-y-4">
 
           {/* Display Name and Gender */}
           <div className="grid grid-cols-2 gap-4">
@@ -210,17 +207,16 @@ export default function Settings() {
             </div>
           </div>
 
-              {/* Save Button */}
-              <Button
-                onClick={handleSave}
-                disabled={updateProfile.isPending}
-                className="w-full gap-2"
-              >
-                <Save className="h-4 w-4" />
-                Сохранить
-              </Button>
-            </div>
-          </div>
+          {/* Save Button */}
+          <Button
+            onClick={handleSave}
+            disabled={updateProfile.isPending}
+            className="w-full gap-2"
+          >
+            <Save className="h-4 w-4" />
+            Сохранить
+          </Button>
+        </div>
         </CardContent>
       </Card>
     </div>
