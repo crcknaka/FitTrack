@@ -10,6 +10,7 @@ export interface Profile {
   gender: "male" | "female" | "other" | null;
   date_of_birth: string | null;
   height: number | null;
+  avatar: string | null;
   created_at: string;
 }
 

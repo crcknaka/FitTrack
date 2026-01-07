@@ -1,12 +1,20 @@
 import { useState, useEffect } from "react";
-import { Settings as SettingsIcon, User, Save } from "lucide-react";
+import { Settings as SettingsIcon, User, Save, Smile } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+const AVATARS = [
+  "😎", "💪", "🔥", "🏋️", "🎯", "🚀", "⚡", "🦾",
+  "🏆", "👑", "🌟", "💯", "🎖️", "🥇", "🦁", "🐯",
+  "🦅", "🐺", "🤘", "✨", "💥", "🎪", "🎭", "🎨"
+];
 
 export default function Settings() {
   const { data: profile, isLoading } = useProfile();
@@ -17,6 +25,7 @@ export default function Settings() {
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [height, setHeight] = useState("");
   const [currentWeight, setCurrentWeight] = useState("");
+  const [avatar, setAvatar] = useState("");
 
   // Load profile data when it's available
   useEffect(() => {
@@ -26,6 +35,7 @@ export default function Settings() {
       setDateOfBirth(profile.date_of_birth || "");
       setHeight(profile.height?.toString() || "");
       setCurrentWeight(profile.current_weight?.toString() || "");
+      setAvatar(profile.avatar || "");
     }
   }, [profile]);
 
@@ -37,6 +47,7 @@ export default function Settings() {
         date_of_birth: dateOfBirth || null,
         height: height ? parseFloat(height) : null,
         current_weight: currentWeight ? parseFloat(currentWeight) : null,
+        avatar: avatar || null,
       });
       toast.success("Профиль обновлен");
     } catch (error) {
@@ -75,6 +86,52 @@ export default function Settings() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Avatar Selection */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Smile className="h-4 w-4" />
+              Аватар
+            </Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal"
+                >
+                  <div className="flex items-center gap-2">
+                    {avatar ? (
+                      <>
+                        <span className="text-2xl">{avatar}</span>
+                        <span className="text-sm text-muted-foreground">Выбран аватар</span>
+                      </>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">Выберите аватар</span>
+                    )}
+                  </div>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72" align="start">
+                <div className="grid grid-cols-5 gap-2">
+                  {AVATARS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setAvatar(emoji)}
+                      className={cn(
+                        "text-2xl p-3 rounded-lg transition-all hover:scale-110",
+                        avatar === emoji
+                          ? "bg-primary text-primary-foreground shadow-md scale-110"
+                          : "bg-muted hover:bg-muted/70"
+                      )}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+
           {/* Display Name */}
           <div className="space-y-2">
             <Label htmlFor="displayName">Имя</Label>
