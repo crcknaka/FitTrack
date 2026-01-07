@@ -62,10 +62,10 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md animate-fade-in">
         <div className="flex items-center justify-center mb-8">
-          <img 
-            src="/logo.jpg" 
-            alt="FitTrack Logo" 
-            className="max-h-16 rounded-xl object-contain"
+          <img
+            src="/logo.jpg"
+            alt="FitTrack Logo"
+            className="max-h-20 rounded-xl object-contain"
           />
         </div>
 
