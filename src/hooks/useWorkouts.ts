@@ -42,6 +42,7 @@ export function useWorkouts() {
             exercise:exercises (id, name, type, image_url)
           )
         `)
+        .eq('user_id', user!.id)
         .order("date", { ascending: false });
 
       if (error) throw error;
@@ -68,6 +69,7 @@ export function useWorkoutsByMonth(year: number, month: number) {
             exercise:exercises (id, name, type, image_url)
           )
         `)
+        .eq('user_id', user!.id)
         .gte("date", startDate)
         .lte("date", endDate)
         .order("date", { ascending: false });
