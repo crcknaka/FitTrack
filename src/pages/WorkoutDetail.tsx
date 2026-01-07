@@ -269,7 +269,7 @@ export default function WorkoutDetail() {
                   <Label>Повторения</Label>
                   <Input
                     type="number"
-                    placeholder="12"
+                    placeholder="8"
                     value={reps}
                     onChange={(e) => setReps(e.target.value)}
                     autoFocus
@@ -281,7 +281,7 @@ export default function WorkoutDetail() {
                     <Input
                       type="number"
                       step="0.5"
-                      placeholder="50"
+                      placeholder="18"
                       value={weight}
                       onChange={(e) => setWeight(e.target.value)}
                     />
