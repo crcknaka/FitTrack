@@ -50,7 +50,7 @@ export default function Auth() {
     setLoading(true);
     try {
       await signUp(signupEmail, signupPassword, signupName);
-      toast.success("Аккаунт создан!");
+      toast.success("Аккаунт создан! Проверьте вашу электронную почту для подтверждения.");
     } catch (error: any) {
       toast.error(error.message || "Ошибка регистрации");
     } finally {
