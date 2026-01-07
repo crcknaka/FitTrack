@@ -495,9 +495,12 @@ export default function Progress() {
             Вес Тела
           </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent aria-describedby="weight-dialog-description">
           <DialogHeader>
             <DialogTitle>Записать вес</DialogTitle>
+            <p id="weight-dialog-description" className="sr-only">
+              Форма для записи веса тела на определённую дату
+            </p>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div className="space-y-2">

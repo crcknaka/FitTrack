@@ -269,11 +269,14 @@ export default function WorkoutDetail() {
             Добавить подход
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" aria-describedby="exercise-dialog-description">
           <DialogHeader>
             <DialogTitle>
               {selectedExercise ? selectedExercise.name : "Выбери упражнение"}
             </DialogTitle>
+            <p id="exercise-dialog-description" className="sr-only">
+              {selectedExercise ? "Добавление подходов для упражнения" : "Выбор упражнения для тренировки"}
+            </p>
           </DialogHeader>
           
           {!selectedExercise ? (

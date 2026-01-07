@@ -100,9 +100,12 @@ export default function Exercises() {
               <span className="hidden sm:inline font-semibold">Добавить</span>
             </Button>
           </DialogTrigger>
-          <DialogContent className="border-border/50 shadow-2xl">
+          <DialogContent className="border-border/50 shadow-2xl" aria-describedby="exercise-form-description">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold">Новое упражнение</DialogTitle>
+              <p id="exercise-form-description" className="sr-only">
+                Форма для создания нового упражнения
+              </p>
             </DialogHeader>
             <div className="space-y-5 mt-4">
               <div className="space-y-2">
