@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Dumbbell, Calendar, TrendingUp, ListPlus, LogOut } from "lucide-react";
+import { Calendar, TrendingUp, ListPlus, LogOut, Activity } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
@@ -9,7 +9,7 @@ interface LayoutProps {
 }
 
 const navItems = [
-  { to: "/", icon: Dumbbell, label: "Тренировки" },
+  { to: "/", icon: Activity, label: "Тренировки" },
   { to: "/calendar", icon: Calendar, label: "Календарь" },
   { to: "/progress", icon: TrendingUp, label: "Прогресс" },
   { to: "/exercises", icon: ListPlus, label: "Упражнения" },
@@ -56,9 +56,11 @@ export default function Layout({ children }: LayoutProps) {
       <aside className="fixed left-0 top-0 bottom-0 w-64 bg-card border-r border-border hidden md:flex flex-col">
         <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary rounded-lg">
-              <Dumbbell className="h-6 w-6 text-primary-foreground" />
-            </div>
+            <img 
+              src="/logo.jpg" 
+              alt="FitTrack Logo" 
+              className="h-10 w-10 rounded-lg object-cover"
+            />
             <span className="text-xl font-bold text-foreground">FitTrack</span>
           </div>
         </div>
