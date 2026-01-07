@@ -6,6 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useWorkouts, useCreateWorkout, useDeleteWorkout } from "@/hooks/useWorkouts";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -22,6 +32,7 @@ export default function Workouts() {
   const [open, setOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [workoutToDelete, setWorkoutToDelete] = useState<string | null>(null);
 
   const handleCreateWorkout = async () => {
     if (!date) return;
@@ -38,11 +49,17 @@ export default function Workouts() {
     }
   };
 
-  const handleDeleteWorkout = async (workoutId: string, e: React.MouseEvent) => {
+  const handleDeleteWorkout = (workoutId: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    setWorkoutToDelete(workoutId);
+  };
+
+  const confirmDelete = async () => {
+    if (!workoutToDelete) return;
     try {
-      await deleteWorkout.mutateAsync(workoutId);
+      await deleteWorkout.mutateAsync(workoutToDelete);
       toast.success("Тренировка удалена");
+      setWorkoutToDelete(null);
     } catch (error) {
       toast.error("Ошибка удаления");
     }
@@ -360,6 +377,24 @@ export default function Workouts() {
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!workoutToDelete} onOpenChange={(open) => !open && setWorkoutToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Удалить тренировку?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Вы уверены, что хотите удалить эту тренировку? Это действие нельзя будет отменить.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Удалить
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

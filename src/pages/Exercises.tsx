@@ -6,6 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useExercises, useCreateExercise, useDeleteExercise } from "@/hooks/useExercises";
 import { useWorkouts, useCreateWorkout } from "@/hooks/useWorkouts";
 import { useNavigate } from "react-router-dom";
@@ -26,6 +36,7 @@ export default function Exercises() {
   const [type, setType] = useState<"bodyweight" | "weighted">("weighted");
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "bodyweight" | "weighted">("all");
+  const [exerciseToDelete, setExerciseToDelete] = useState<string | null>(null);
 
   const handleCreate = async () => {
     if (!name.trim()) {
@@ -44,10 +55,16 @@ export default function Exercises() {
     }
   };
 
-  const handleDelete = async (exerciseId: string) => {
+  const handleDelete = (exerciseId: string) => {
+    setExerciseToDelete(exerciseId);
+  };
+
+  const confirmDelete = async () => {
+    if (!exerciseToDelete) return;
     try {
-      await deleteExercise.mutateAsync(exerciseId);
+      await deleteExercise.mutateAsync(exerciseToDelete);
       toast.success("Упражнение удалено");
+      setExerciseToDelete(null);
     } catch (error) {
       toast.error("Ошибка удаления");
     }
@@ -324,6 +341,24 @@ export default function Exercises() {
           )}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!exerciseToDelete} onOpenChange={(open) => !open && setExerciseToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Удалить упражнение?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Вы уверены, что хотите удалить это упражнение? Это действие нельзя будет отменить.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Удалить
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

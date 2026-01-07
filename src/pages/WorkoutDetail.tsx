@@ -8,6 +8,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useWorkouts, useAddSet, useDeleteSet, useUpdateWorkout } from "@/hooks/useWorkouts";
@@ -37,6 +47,7 @@ export default function WorkoutDetail() {
   const [exerciseTypeFilter, setExerciseTypeFilter] = useState<"all" | "bodyweight" | "weighted">("all");
   const [notes, setNotes] = useState("");
   const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [setToDelete, setSetToDelete] = useState<string | null>(null);
 
   const workout = workouts?.find((w) => w.id === id);
 
@@ -148,10 +159,16 @@ export default function WorkoutDetail() {
     }
   };
 
-  const handleDeleteSet = async (setId: string) => {
+  const handleDeleteSet = (setId: string) => {
+    setSetToDelete(setId);
+  };
+
+  const confirmDeleteSet = async () => {
+    if (!setToDelete) return;
     try {
-      await deleteSet.mutateAsync(setId);
+      await deleteSet.mutateAsync(setToDelete);
       toast.success("Подход удален");
+      setSetToDelete(null);
     } catch (error) {
       toast.error("Ошибка удаления");
     }
@@ -203,64 +220,6 @@ export default function WorkoutDetail() {
           </div>
         )}
       </div>
-
-      {/* Notes Card */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-primary" />
-              Комментарий к тренировке
-            </CardTitle>
-            {!isEditingNotes && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsEditingNotes(true)}
-              >
-                {notes ? "Редактировать" : "Добавить"}
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isEditingNotes ? (
-            <div className="space-y-3">
-              <Textarea
-                placeholder="Как прошла тренировка? Какие ощущения?"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={4}
-                className="resize-none"
-              />
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleSaveNotes}
-                  disabled={updateWorkout.isPending}
-                  className="flex-1"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Сохранить
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setNotes(workout?.notes || "");
-                    setIsEditingNotes(false);
-                  }}
-                  disabled={updateWorkout.isPending}
-                >
-                  Отмена
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="text-muted-foreground whitespace-pre-wrap">
-              {notes || "Комментариев пока нет"}
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       <Dialog open={dialogOpen} onOpenChange={handleDialogChange}>
         <DialogTrigger asChild>
@@ -473,11 +432,104 @@ export default function WorkoutDetail() {
                     </Button>
                   </div>
                 ))}
+
+                {/* Add Next Set Button */}
+                <Button
+                  variant="outline"
+                  className="w-full mt-2 gap-2"
+                  onClick={() => {
+                    // Найти полное упражнение из списка exercises
+                    const fullExercise = exercises?.find(e => e.id === exerciseId);
+                    if (fullExercise) {
+                      setSelectedExercise(fullExercise);
+                      setDialogOpen(true);
+                    }
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                  Добавить подход
+                </Button>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Notes Card */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-primary" />
+              Комментарий к тренировке
+            </CardTitle>
+            {!isEditingNotes && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEditingNotes(true)}
+              >
+                {notes ? "Редактировать" : "Добавить"}
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isEditingNotes ? (
+            <div className="space-y-3">
+              <Textarea
+                placeholder="Как прошла тренировка? Какие ощущения?"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={4}
+                className="resize-none"
+              />
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleSaveNotes}
+                  disabled={updateWorkout.isPending}
+                  className="flex-1"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Сохранить
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setNotes(workout?.notes || "");
+                    setIsEditingNotes(false);
+                  }}
+                  disabled={updateWorkout.isPending}
+                >
+                  Отмена
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-muted-foreground whitespace-pre-wrap">
+              {notes || "Комментариев пока нет"}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Delete Set Confirmation Dialog */}
+      <AlertDialog open={!!setToDelete} onOpenChange={(open) => !open && setSetToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Удалить подход?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Вы уверены, что хотите удалить этот подход? Это действие нельзя будет отменить.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteSet} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Удалить
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
