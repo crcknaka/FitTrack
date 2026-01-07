@@ -55,13 +55,12 @@ export default function Layout({ children }: LayoutProps) {
       {/* Desktop Sidebar */}
       <aside className="fixed left-0 top-0 bottom-0 w-64 bg-card border-r border-border hidden md:flex flex-col">
         <div className="p-6 border-b border-border">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center">
             <img 
               src="/logo.jpg" 
               alt="FitTrack Logo" 
-              className="h-15 w-15 rounded-lg object-cover"
+              className="h-16 w-16 rounded-lg object-cover"
             />
-            <span className="text-xl font-bold text-foreground">FitTrack</span>
           </div>
         </div>
 

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Auth() {
@@ -62,9 +62,11 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md animate-fade-in">
         <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="p-3 bg-primary rounded-xl">
-            <User className="h-8 w-8 text-primary-foreground" />
-          </div>
+          <img 
+            src="/logo.jpg" 
+            alt="FitTrack Logo" 
+            className="h-16 w-16 rounded-xl object-cover"
+          />
           <h1 className="text-3xl font-bold text-foreground">FitTrack</h1>
         </div>
 
