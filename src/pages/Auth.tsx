@@ -61,13 +61,12 @@ export default function Auth() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md animate-fade-in">
-        <div className="flex items-center justify-center gap-3 mb-8">
+        <div className="flex items-center justify-center mb-8">
           <img 
             src="/logo.jpg" 
             alt="FitTrack Logo" 
-            className="h-16 w-16 rounded-xl object-cover"
+            className="max-h-16 rounded-xl object-contain"
           />
-          <h1 className="text-3xl font-bold text-foreground">FitTrack</h1>
         </div>
 
         <Card className="border-border/50 shadow-lg">
