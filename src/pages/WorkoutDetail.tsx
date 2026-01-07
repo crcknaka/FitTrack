@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { ArrowLeft, Plus, Trash2, User, Dumbbell, Weight, MessageSquare, Save } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, User, Dumbbell, Weight, MessageSquare, Save, Pencil, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useWorkouts, useAddSet, useDeleteSet, useUpdateWorkout } from "@/hooks/useWorkouts";
+import { useWorkouts, useAddSet, useDeleteSet, useUpdateSet, useUpdateWorkout } from "@/hooks/useWorkouts";
 import { useExercises, Exercise } from "@/hooks/useExercises";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,6 +37,7 @@ export default function WorkoutDetail() {
   const { data: exercises } = useExercises();
   const addSet = useAddSet();
   const deleteSet = useDeleteSet();
+  const updateSet = useUpdateSet();
   const updateWorkout = useUpdateWorkout();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -48,6 +49,9 @@ export default function WorkoutDetail() {
   const [notes, setNotes] = useState("");
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [setToDelete, setSetToDelete] = useState<string | null>(null);
+  const [editingSetId, setEditingSetId] = useState<string | null>(null);
+  const [editReps, setEditReps] = useState("");
+  const [editWeight, setEditWeight] = useState("");
 
   const workout = workouts?.find((w) => w.id === id);
 
@@ -172,6 +176,36 @@ export default function WorkoutDetail() {
     } catch (error) {
       toast.error("Ошибка удаления");
     }
+  };
+
+  const handleEditSet = (set: any) => {
+    setEditingSetId(set.id);
+    setEditReps(set.reps.toString());
+    setEditWeight(set.weight ? set.weight.toString() : "");
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingSetId || !editReps) return;
+
+    try {
+      await updateSet.mutateAsync({
+        setId: editingSetId,
+        reps: parseInt(editReps),
+        weight: editWeight ? parseFloat(editWeight) : null,
+      });
+      toast.success("Подход обновлен");
+      setEditingSetId(null);
+      setEditReps("");
+      setEditWeight("");
+    } catch (error) {
+      toast.error("Ошибка обновления");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingSetId(null);
+    setEditReps("");
+    setEditWeight("");
   };
 
   const handleSaveNotes = async () => {
@@ -400,7 +434,7 @@ export default function WorkoutDetail() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {/* Table Header */}
-                <div className="grid grid-cols-[60px_1fr_1fr_40px] gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground uppercase">
+                <div className="grid grid-cols-[60px_1fr_1fr_80px] gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground uppercase">
                   <div className="text-center">Подход</div>
                   <div className="text-center">Повторений</div>
                   <div className="text-center">Вес</div>
@@ -411,25 +445,76 @@ export default function WorkoutDetail() {
                 {sets.sort((a, b) => a.set_number - b.set_number).map((set) => (
                   <div
                     key={set.id}
-                    className="grid grid-cols-[60px_1fr_1fr_40px] gap-2 items-center p-3 bg-muted/50 rounded-lg"
+                    className="grid grid-cols-[60px_1fr_1fr_80px] gap-2 items-center p-3 bg-muted/50 rounded-lg"
                   >
                     <div className="text-center font-bold text-foreground">
                       {set.set_number}
                     </div>
-                    <div className="text-center font-semibold text-foreground">
-                      {set.reps}
-                    </div>
-                    <div className="text-center font-medium text-primary">
-                      {set.weight ? `${set.weight} кг` : '—'}
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => handleDeleteSet(set.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+
+                    {editingSetId === set.id ? (
+                      <>
+                        <Input
+                          type="number"
+                          value={editReps}
+                          onChange={(e) => setEditReps(e.target.value)}
+                          className="h-8 text-center"
+                          autoFocus
+                        />
+                        <Input
+                          type="number"
+                          step="0.5"
+                          value={editWeight}
+                          onChange={(e) => setEditWeight(e.target.value)}
+                          className="h-8 text-center"
+                          placeholder="—"
+                        />
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-green-600 hover:text-green-700"
+                            onClick={handleSaveEdit}
+                          >
+                            <Save className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                            onClick={handleCancelEdit}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-center font-semibold text-foreground">
+                          {set.reps}
+                        </div>
+                        <div className="text-center font-medium text-primary">
+                          {set.weight ? `${set.weight} кг` : '—'}
+                        </div>
+                        <div className="flex gap-1 justify-end">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary"
+                            onClick={() => handleEditSet(set)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            onClick={() => handleDeleteSet(set.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))}
 

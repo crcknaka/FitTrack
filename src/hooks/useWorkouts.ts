@@ -174,6 +174,38 @@ export function useDeleteSet() {
   });
 }
 
+export function useUpdateSet() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      setId,
+      reps,
+      weight,
+    }: {
+      setId: string;
+      reps: number;
+      weight?: number | null;
+    }) => {
+      const { data, error } = await supabase
+        .from("workout_sets")
+        .update({
+          reps,
+          weight: weight ?? null,
+        })
+        .eq("id", setId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["workouts"] });
+    },
+  });
+}
+
 export function useUpdateWorkout() {
   const queryClient = useQueryClient();
 
