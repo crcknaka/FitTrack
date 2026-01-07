@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { ArrowLeft, Plus, Trash2, User, Dumbbell, Weight } from "lucide-react";
@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 export default function WorkoutDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { data: workouts } = useWorkouts();
   const { data: exercises } = useExercises();
@@ -56,6 +57,20 @@ export default function WorkoutDetail() {
 
     loadCurrentWeight();
   }, [user]);
+
+  // Auto-open dialog with selected exercise if coming from Exercises page
+  useEffect(() => {
+    const state = location.state as { autoAddExerciseId?: string } | null;
+    if (state?.autoAddExerciseId && exercises) {
+      const exercise = exercises.find((e) => e.id === state.autoAddExerciseId);
+      if (exercise) {
+        setSelectedExercise(exercise);
+        setDialogOpen(true);
+        // Clear the state to prevent reopening on re-render
+        navigate(location.pathname, { replace: true, state: {} });
+      }
+    }
+  }, [location.state, exercises, navigate, location.pathname]);
 
   if (!workout) {
     return (

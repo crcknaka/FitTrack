@@ -7,13 +7,19 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useExercises, useCreateExercise, useDeleteExercise } from "@/hooks/useExercises";
+import { useWorkouts, useCreateWorkout } from "@/hooks/useWorkouts";
+import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export default function Exercises() {
+  const navigate = useNavigate();
   const { data: exercises, isLoading } = useExercises();
+  const { data: workouts } = useWorkouts();
   const createExercise = useCreateExercise();
   const deleteExercise = useDeleteExercise();
+  const createWorkout = useCreateWorkout();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [name, setName] = useState("");
@@ -45,6 +51,27 @@ export default function Exercises() {
     } catch (error) {
       toast.error("Ошибка удаления");
     }
+  };
+
+  const handleExerciseClick = async (exerciseId: string) => {
+    const today = format(new Date(), "yyyy-MM-dd");
+
+    // Найти тренировку на сегодня
+    let todayWorkout = workouts?.find((w) => w.date === today);
+
+    // Если тренировки на сегодня нет, создать её
+    if (!todayWorkout) {
+      try {
+        todayWorkout = await createWorkout.mutateAsync(today);
+        toast.success("Тренировка создана!");
+      } catch (error) {
+        toast.error("Ошибка создания тренировки");
+        return;
+      }
+    }
+
+    // Перейти на страницу тренировки с автоматическим открытием диалога для этого упражнения
+    navigate(`/workout/${todayWorkout.id}`, { state: { autoAddExerciseId: exerciseId } });
   };
 
   const filteredExercises = exercises?.filter((e) => {
@@ -190,8 +217,9 @@ export default function Exercises() {
                 {customExercises.map((exercise, index) => (
                   <Card
                     key={exercise.id}
-                    className="animate-fade-in relative group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden elevation-md bg-gradient-card border-border/50"
+                    className="animate-fade-in relative group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden elevation-md bg-gradient-card border-border/50 cursor-pointer"
                     style={{ animationDelay: `${index * 30}ms` }}
+                    onClick={() => handleExerciseClick(exercise.id)}
                   >
                     <CardContent className="p-4 flex flex-col gap-3">
                       {exercise.image_url ? (
@@ -221,7 +249,10 @@ export default function Exercises() {
                         variant="ghost"
                         size="icon"
                         className="absolute top-3 right-3 h-9 w-9 bg-background/90 backdrop-blur-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300"
-                        onClick={() => handleDelete(exercise.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(exercise.id);
+                        }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -243,8 +274,9 @@ export default function Exercises() {
                 {presetExercises.map((exercise, index) => (
                   <Card
                     key={exercise.id}
-                    className="animate-fade-in group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 elevation-md bg-gradient-card border-border/50"
+                    className="animate-fade-in group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 elevation-md bg-gradient-card border-border/50 cursor-pointer"
                     style={{ animationDelay: `${(customExercises?.length || 0) * 30 + index * 30}ms` }}
+                    onClick={() => handleExerciseClick(exercise.id)}
                   >
                     <CardContent className="p-4 flex flex-col gap-3">
                       {exercise.image_url ? (
