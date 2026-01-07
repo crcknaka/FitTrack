@@ -229,7 +229,7 @@ export default function Progress() {
           <DialogTrigger asChild>
             <Button size="sm">
               <Plus className="h-4 w-4 mr-2" />
-              Я вешу
+             Вес Тела
             </Button>
           </DialogTrigger>
           <DialogContent>
