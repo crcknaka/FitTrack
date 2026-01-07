@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Settings as SettingsIcon, User, Save, Smile } from "lucide-react";
+import { Settings as SettingsIcon, User, Save } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ export default function Settings() {
   const [height, setHeight] = useState("");
   const [currentWeight, setCurrentWeight] = useState("");
   const [avatar, setAvatar] = useState("");
+  const [isSkuf, setIsSkuf] = useState(false);
 
   // Load profile data when it's available
   useEffect(() => {
@@ -36,6 +38,7 @@ export default function Settings() {
       setHeight(profile.height?.toString() || "");
       setCurrentWeight(profile.current_weight?.toString() || "");
       setAvatar(profile.avatar || "");
+      setIsSkuf(profile.is_skuf || false);
     }
   }, [profile]);
 
@@ -48,6 +51,7 @@ export default function Settings() {
         height: height ? parseFloat(height) : null,
         current_weight: currentWeight ? parseFloat(currentWeight) : null,
         avatar: avatar || null,
+        is_skuf: isSkuf,
       });
       toast.success("Профиль обновлен");
     } catch (error) {
@@ -85,127 +89,138 @@ export default function Settings() {
             Профиль
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Avatar Selection */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <Smile className="h-4 w-4" />
-              Аватар
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
-                >
-                  <div className="flex items-center gap-2">
-                    {avatar ? (
-                      <>
-                        <span className="text-2xl">{avatar}</span>
-                        <span className="text-sm text-muted-foreground">Выбран аватар</span>
-                      </>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">Выберите аватар</span>
-                    )}
+        <CardContent>
+          <div className="flex gap-6">
+            {/* Avatar Selection - Left Side */}
+            <div className="flex flex-col items-center">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center justify-center w-24 h-24 rounded-full bg-primary/10 text-5xl hover:bg-primary/20 transition-colors cursor-pointer border-2 border-primary/20">
+                    {avatar || "👤"}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72" align="start">
+                  <div className="grid grid-cols-5 gap-2">
+                    {AVATARS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => setAvatar(emoji)}
+                        className={cn(
+                          "text-2xl p-3 rounded-lg transition-all hover:scale-110",
+                          avatar === emoji
+                            ? "bg-primary text-primary-foreground shadow-md scale-110"
+                            : "bg-muted hover:bg-muted/70"
+                        )}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
                   </div>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-72" align="start">
-                <div className="grid grid-cols-5 gap-2">
-                  {AVATARS.map((emoji) => (
-                    <button
-                      key={emoji}
-                      type="button"
-                      onClick={() => setAvatar(emoji)}
-                      className={cn(
-                        "text-2xl p-3 rounded-lg transition-all hover:scale-110",
-                        avatar === emoji
-                          ? "bg-primary text-primary-foreground shadow-md scale-110"
-                          : "bg-muted hover:bg-muted/70"
-                      )}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Profile Fields - Right Side */}
+            <div className="flex-1 space-y-4">
+
+          {/* Display Name and Gender */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="displayName">Имя</Label>
+              <Input
+                id="displayName"
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Введите ваше имя"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="gender">Пол (опционально)</Label>
+              <Select value={gender} onValueChange={(v) => setGender(v as "male" | "female" | "other" | "none")}>
+                <SelectTrigger id="gender">
+                  <SelectValue placeholder="Выберите пол" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Не указано</SelectItem>
+                  <SelectItem value="male">Мужской</SelectItem>
+                  <SelectItem value="female">Женский</SelectItem>
+                  <SelectItem value="other">Другой</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          {/* Display Name */}
-          <div className="space-y-2">
-            <Label htmlFor="displayName">Имя</Label>
-            <Input
-              id="displayName"
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Введите ваше имя"
-            />
+          {/* Date of Birth and Skuf */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="dateOfBirth">Дата рождения</Label>
+              <Input
+                id="dateOfBirth"
+                type="date"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="skuf">Скуф</Label>
+              <div className="flex items-center h-10 px-3">
+                <Checkbox
+                  id="skuf"
+                  checked={isSkuf}
+                  onCheckedChange={(checked) => setIsSkuf(checked as boolean)}
+                />
+                <label
+                  htmlFor="skuf"
+                  className="ml-2 text-sm cursor-pointer select-none"
+                >
+                  {isSkuf ? "Да" : "Нет"}
+                </label>
+              </div>
+            </div>
           </div>
 
-          {/* Gender */}
-          <div className="space-y-2">
-            <Label htmlFor="gender">Пол (опционально)</Label>
-            <Select value={gender} onValueChange={(v) => setGender(v as "male" | "female" | "other" | "none")}>
-              <SelectTrigger id="gender">
-                <SelectValue placeholder="Выберите пол" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Не указано</SelectItem>
-                <SelectItem value="male">Мужской</SelectItem>
-                <SelectItem value="female">Женский</SelectItem>
-                <SelectItem value="other">Другой</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Height and Weight */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="height">Рост (см)</Label>
+              <Input
+                id="height"
+                type="number"
+                step="0.1"
+                value={height}
+                onChange={(e) => setHeight(e.target.value)}
+                placeholder="Введите рост"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="currentWeight">Вес (кг)</Label>
+              <Input
+                id="currentWeight"
+                type="number"
+                step="0.1"
+                value={currentWeight}
+                onChange={(e) => setCurrentWeight(e.target.value)}
+                placeholder="Введите вес"
+              />
+            </div>
           </div>
 
-          {/* Date of Birth */}
-          <div className="space-y-2">
-            <Label htmlFor="dateOfBirth">Дата рождения</Label>
-            <Input
-              id="dateOfBirth"
-              type="date"
-              value={dateOfBirth}
-              onChange={(e) => setDateOfBirth(e.target.value)}
-            />
+              {/* Save Button */}
+              <Button
+                onClick={handleSave}
+                disabled={updateProfile.isPending}
+                className="w-full gap-2"
+              >
+                <Save className="h-4 w-4" />
+                Сохранить
+              </Button>
+            </div>
           </div>
-
-          {/* Height */}
-          <div className="space-y-2">
-            <Label htmlFor="height">Рост (см)</Label>
-            <Input
-              id="height"
-              type="number"
-              step="0.1"
-              value={height}
-              onChange={(e) => setHeight(e.target.value)}
-              placeholder="Введите рост"
-            />
-          </div>
-
-          {/* Current Weight */}
-          <div className="space-y-2">
-            <Label htmlFor="currentWeight">Вес (кг)</Label>
-            <Input
-              id="currentWeight"
-              type="number"
-              step="0.1"
-              value={currentWeight}
-              onChange={(e) => setCurrentWeight(e.target.value)}
-              placeholder="Введите вес"
-            />
-          </div>
-
-          {/* Save Button */}
-          <Button
-            onClick={handleSave}
-            disabled={updateProfile.isPending}
-            className="w-full gap-2"
-          >
-            <Save className="h-4 w-4" />
-            Сохранить
-          </Button>
         </CardContent>
       </Card>
     </div>

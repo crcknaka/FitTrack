@@ -11,6 +11,7 @@ export interface Profile {
   date_of_birth: string | null;
   height: number | null;
   avatar: string | null;
+  is_skuf: boolean | null;
   created_at: string;
 }
 
