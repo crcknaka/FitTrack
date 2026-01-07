@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { ArrowLeft, Plus, Trash2, User, Dumbbell, BarChart3 } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, User, Dumbbell, Weight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -149,11 +149,11 @@ export default function WorkoutDetail() {
         {totalVolume > 0 && (
           <div className="text-right">
             <div className="text-sm text-muted-foreground flex items-center gap-1">
-              <BarChart3 className="h-4 w-4" />
-              <span>Объём</span>
+              <Weight className="h-4 w-4" />
+              <span>Общий вес</span>
             </div>
             <div className="text-lg font-bold text-primary">
-              {formatVolume(totalVolume, false)}
+              {formatVolume(totalVolume, false)} кг
             </div>
           </div>
         )}
