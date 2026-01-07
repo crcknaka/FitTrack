@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Calendar, TrendingUp, ListPlus, LogOut, Activity } from "lucide-react";
+import { Calendar, TrendingUp, ListPlus, LogOut, Activity, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,7 @@ const navItems = [
   { to: "/calendar", icon: Calendar, label: "Календарь" },
   { to: "/progress", icon: TrendingUp, label: "Прогресс" },
   { to: "/exercises", icon: ListPlus, label: "Упражнения" },
+  { to: "/settings", icon: Settings, label: "Настройки" },
 ];
 
 export default function Layout({ children }: LayoutProps) {
@@ -30,7 +31,7 @@ export default function Layout({ children }: LayoutProps) {
 
       {/* Mobile Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border md:hidden z-50">
-        <div className="flex items-center justify-around py-2">
+        <div className="flex items-center justify-around py-3">
           {navItems.map((item) => {
             const isActive = location.pathname === item.to;
             return (
@@ -38,14 +39,13 @@ export default function Layout({ children }: LayoutProps) {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors",
-                  isActive 
-                    ? "text-primary" 
+                  "flex items-center justify-center p-2 rounded-lg transition-colors",
+                  isActive
+                    ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <item.icon className="h-5 w-5" />
-                <span className="text-xs font-medium">{item.label}</span>
+                <item.icon className="h-6 w-6" />
               </NavLink>
             );
           })}

@@ -11,6 +11,7 @@ import WorkoutDetail from "@/pages/WorkoutDetail";
 import CalendarPage from "@/pages/CalendarPage";
 import Progress from "@/pages/Progress";
 import Exercises from "@/pages/Exercises";
+import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -75,6 +76,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Exercises />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <Settings />
           </ProtectedRoute>
         }
       />
