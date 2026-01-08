@@ -344,11 +344,11 @@ export default function Workouts() {
                     <img
                       src={workout.photo_url}
                       alt=""
-                      className="w-14 h-14 rounded-lg object-cover"
+                      className="w-16 h-16 rounded-lg object-cover"
                     />
                   ) : (
-                    <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center">
-                      <Dumbbell className="h-6 w-6 text-muted-foreground" />
+                    <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
+                      <Dumbbell className="h-7 w-7 text-muted-foreground" />
                     </div>
                   )}
                 </div>

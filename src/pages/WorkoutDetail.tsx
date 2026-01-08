@@ -569,18 +569,23 @@ export default function WorkoutDetail() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {/* Table Header */}
-                <div className="grid grid-cols-[60px_1fr_1fr_80px] gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground uppercase">
+                <div className={cn(
+                  "grid gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground uppercase",
+                  exercise?.type === "bodyweight" || exercise?.type === "timed"
+                    ? "grid-cols-[60px_1fr_80px]"
+                    : "grid-cols-[60px_1fr_1fr_80px]"
+                )}>
                   <div className="text-center">Подход</div>
                   <div className="text-center">
                     {exercise?.type === "cardio" ? "Дистанция" :
                      exercise?.type === "timed" ? "Время (сек)" :
                      "Повторений"}
                   </div>
-                  <div className="text-center">
-                    {exercise?.type === "cardio" ? "Время (мин)" :
-                     exercise?.type === "timed" ? "" :
-                     "Вес"}
-                  </div>
+                  {exercise?.type !== "bodyweight" && exercise?.type !== "timed" && (
+                    <div className="text-center">
+                      {exercise?.type === "cardio" ? "Время (мин)" : "Вес"}
+                    </div>
+                  )}
                   <div></div>
                 </div>
 
@@ -594,7 +599,12 @@ export default function WorkoutDetail() {
                   >
                     <TooltipTrigger asChild>
                       <div
-                        className="grid grid-cols-[60px_1fr_1fr_80px] gap-2 items-center p-3 bg-muted/50 rounded-lg cursor-pointer select-none"
+                        className={cn(
+                          "grid gap-2 items-center p-3 bg-muted/50 rounded-lg cursor-pointer select-none",
+                          exercise?.type === "bodyweight" || exercise?.type === "timed"
+                            ? "grid-cols-[60px_1fr_80px]"
+                            : "grid-cols-[60px_1fr_1fr_80px]"
+                        )}
                         onClick={(e) => {
                           // Не открывать тултип если кликнули на кнопки редактирования/удаления
                           if ((e.target as HTMLElement).closest('button')) {
@@ -638,7 +648,16 @@ export default function WorkoutDetail() {
                               placeholder="сек"
                               autoFocus
                             />
-                            <div className="h-8"></div>
+                          </>
+                        ) : exercise?.type === "bodyweight" ? (
+                          <>
+                            <Input
+                              type="number"
+                              value={editReps}
+                              onChange={(e) => setEditReps(e.target.value)}
+                              className="h-8 text-center"
+                              autoFocus
+                            />
                           </>
                         ) : (
                           <>
@@ -694,7 +713,12 @@ export default function WorkoutDetail() {
                             <div className="text-center font-semibold text-primary">
                               {set.plank_seconds ? `${set.plank_seconds} сек` : '—'}
                             </div>
-                            <div className="text-center"></div>
+                          </>
+                        ) : exercise?.type === "bodyweight" ? (
+                          <>
+                            <div className="text-center font-semibold text-foreground">
+                              {set.reps || '—'}
+                            </div>
                           </>
                         ) : (
                           <>
