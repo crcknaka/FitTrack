@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, User, Dumbbell, Trash2, Search, Activity, Timer } from "lucide-react";
+import { Plus, User, Dumbbell, Trash2, Search, Activity, Timer, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -199,7 +199,12 @@ export default function Exercises() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Все типы</SelectItem>
+            <SelectItem value="all">
+              <div className="flex items-center gap-2">
+                <LayoutGrid className="h-4 w-4" />
+                Все типы
+              </div>
+            </SelectItem>
             <SelectItem value="bodyweight">
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4" />

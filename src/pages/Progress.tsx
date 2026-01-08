@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { format, subDays, startOfMonth, startOfDay } from "date-fns";
 import { ru } from "date-fns/locale";
-import { Zap, Repeat, Plus, Trophy, Medal, Activity, Clock, Weight, TrendingUp } from "lucide-react";
+import { Zap, Repeat, Plus, Trophy, Medal, Activity, Clock, Weight, TrendingUp, User, Dumbbell, Timer, LayoutGrid } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ export default function Progress() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedExercise, setSelectedExercise] = useState<string>("all");
+  const [exerciseTypeFilter, setExerciseTypeFilter] = useState<"all" | "weighted" | "bodyweight" | "cardio" | "timed">("all");
   const [metric, setMetric] = useState<"reps" | "weight">("reps");
   const [cardioMetric, setCardioMetric] = useState<"distance" | "duration">("distance");
   const [isWeightDialogOpen, setIsWeightDialogOpen] = useState(false);
@@ -101,8 +102,32 @@ export default function Progress() {
         exerciseIds.add(s.exercise_id);
       });
     });
-    return exercises?.filter((e) => exerciseIds.has(e.id)) || [];
-  }, [workouts, exercises]);
+    let filtered = exercises?.filter((e) => exerciseIds.has(e.id)) || [];
+
+    // Filter by exercise type
+    if (exerciseTypeFilter !== "all") {
+      filtered = filtered.filter((e) => e.type === exerciseTypeFilter);
+    }
+
+    return filtered;
+  }, [workouts, exercises, exerciseTypeFilter]);
+
+  // Auto-select first exercise when type filter changes
+  useEffect(() => {
+    if (exerciseTypeFilter !== "all" && usedExercises.length > 0) {
+      // When specific type selected, auto-select first exercise of that type
+      const exerciseExists = usedExercises.some((e) => e.id === selectedExercise);
+      if (!exerciseExists || selectedExercise === "all") {
+        setSelectedExercise(usedExercises[0].id);
+      }
+    } else if (exerciseTypeFilter === "all" && selectedExercise !== "all") {
+      // When "all types" selected, check if current exercise still exists
+      const exerciseExists = usedExercises.some((e) => e.id === selectedExercise);
+      if (!exerciseExists) {
+        setSelectedExercise("all");
+      }
+    }
+  }, [usedExercises, exerciseTypeFilter]);
 
   // Prepare chart data
   const chartData = useMemo(() => {
@@ -335,13 +360,59 @@ export default function Progress() {
 
       {/* Filters */}
       <div className="space-y-3">
-        <div className="flex gap-3">
-          <Select value={selectedExercise} onValueChange={setSelectedExercise}>
-            <SelectTrigger className="flex-1">
-              <SelectValue placeholder="Все упражнения" />
+        {/* Exercise type and exercise selector */}
+        <div className="grid grid-cols-2 gap-3">
+          <Select
+            value={exerciseTypeFilter}
+            onValueChange={(v) => {
+              setExerciseTypeFilter(v as "all" | "weighted" | "bodyweight" | "cardio" | "timed");
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Все упражнения</SelectItem>
+              <SelectItem value="all">
+                <div className="flex items-center gap-2">
+                  <LayoutGrid className="h-4 w-4" />
+                  Все типы
+                </div>
+              </SelectItem>
+              <SelectItem value="bodyweight">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Собственный вес
+                </div>
+              </SelectItem>
+              <SelectItem value="weighted">
+                <div className="flex items-center gap-2">
+                  <Dumbbell className="h-4 w-4" />
+                  С отягощением
+                </div>
+              </SelectItem>
+              <SelectItem value="cardio">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-4 w-4" />
+                  Кардио
+                </div>
+              </SelectItem>
+              <SelectItem value="timed">
+                <div className="flex items-center gap-2">
+                  <Timer className="h-4 w-4" />
+                  На время
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedExercise} onValueChange={setSelectedExercise}>
+            <SelectTrigger>
+              <SelectValue placeholder="Выбери упражнение" />
+            </SelectTrigger>
+            <SelectContent>
+              {exerciseTypeFilter === "all" && (
+                <SelectItem value="all">Все упражнения</SelectItem>
+              )}
               {usedExercises.map((exercise) => (
                 <SelectItem key={exercise.id} value={exercise.id}>
                   {exercise.name}
