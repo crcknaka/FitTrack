@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { format, subDays, startOfMonth } from "date-fns";
 import { ru } from "date-fns/locale";
-import { Zap, BarChart3, Repeat, Plus, User, Trophy, Medal, Activity, Clock } from "lucide-react";
+import { Zap, Repeat, Plus, Trophy, Medal, Activity, Clock, Weight, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -412,7 +412,7 @@ export default function Progress() {
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <User className="h-4 w-4" />
+                <Weight className="h-4 w-4" />
                 <span className="text-xs">Макс. вес</span>
               </div>
               <p className="text-2xl font-bold text-foreground">
@@ -434,7 +434,7 @@ export default function Progress() {
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <BarChart3 className="h-4 w-4" />
+                <TrendingUp className="h-4 w-4" />
                 <span className="text-xs">Объём</span>
               </div>
               <p className="text-2xl font-bold text-foreground">
