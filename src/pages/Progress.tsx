@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { format, subDays, startOfMonth } from "date-fns";
+import { format, subDays, startOfMonth, startOfDay } from "date-fns";
 import { ru } from "date-fns/locale";
 import { Zap, Repeat, Plus, Trophy, Medal, Activity, Clock, Weight, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,7 +33,7 @@ export default function Progress() {
   const [weightDate, setWeightDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [bodyWeightHistory, setBodyWeightHistory] = useState<Array<{ date: string; weight: number }>>([]);
   const [currentWeight, setCurrentWeight] = useState<number | null>(null);
-  const [timeFilter, setTimeFilter] = useState<"7days" | "30days" | "month" | "all">("30days");
+  const [timeFilter, setTimeFilter] = useState<"today" | "7days" | "30days" | "month" | "all">("30days");
   const [leaderboardExercise, setLeaderboardExercise] = useState<string>("Штанга лёжа");
   const [leaderboardPeriod, setLeaderboardPeriod] = useState<"all" | "month">("all");
 
@@ -112,6 +112,9 @@ export default function Progress() {
     const today = new Date();
 
     switch (timeFilter) {
+      case "today":
+        startDate = startOfDay(today);
+        break;
       case "7days":
         startDate = subDays(today, 7);
         break;
@@ -222,6 +225,8 @@ export default function Progress() {
   // Get filter period text
   const getFilterText = () => {
     switch (timeFilter) {
+      case "today":
+        return "за сегодня";
       case "7days":
         return "за 7 дней";
       case "30days":
@@ -241,6 +246,9 @@ export default function Progress() {
     const today = new Date();
 
     switch (timeFilter) {
+      case "today":
+        startDate = startOfDay(today);
+        break;
       case "7days":
         startDate = subDays(today, 7);
         break;
@@ -359,6 +367,14 @@ export default function Progress() {
 
         {/* Time filter buttons */}
         <div className="flex gap-2 flex-wrap">
+          <Button
+            variant={timeFilter === "today" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setTimeFilter("today")}
+            className="text-xs"
+          >
+            Сегодня
+          </Button>
           <Button
             variant={timeFilter === "7days" ? "default" : "outline"}
             size="sm"
