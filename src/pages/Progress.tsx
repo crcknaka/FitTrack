@@ -577,97 +577,6 @@ export default function Progress() {
         </CardContent>
       </Card>
 
-      {/* Body Weight Button */}
-      <Dialog open={isWeightDialogOpen} onOpenChange={setIsWeightDialogOpen}>
-        <DialogTrigger asChild>
-          <Button className="w-full gap-2">
-            <Plus className="h-4 w-4" />
-            Вес Тела
-          </Button>
-        </DialogTrigger>
-        <DialogContent aria-describedby="weight-dialog-description">
-          <DialogHeader>
-            <DialogTitle>Записать вес</DialogTitle>
-            <p id="weight-dialog-description" className="sr-only">
-              Форма для записи веса тела на определённую дату
-            </p>
-          </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <Label htmlFor="weight">Вес тела (кг)</Label>
-              <Input
-                id="weight"
-                type="number"
-                step="0.1"
-                value={newWeight}
-                onChange={(e) => setNewWeight(e.target.value)}
-                placeholder="Введите вес"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="date">Дата</Label>
-              <Input
-                id="date"
-                type="date"
-                value={weightDate}
-                onChange={(e) => setWeightDate(e.target.value)}
-              />
-            </div>
-            <Button onClick={handleSaveWeight} className="w-full">
-              Сохранить
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Body Weight Chart */}
-      {currentWeight !== null && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center justify-between">
-              <span>Изменение веса тела</span>
-              <span className="text-2xl font-bold">{currentWeight} кг</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {bodyWeightChartData.length > 0 ? (
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={bodyWeightChartData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 12 }}
-                      className="text-muted-foreground"
-                    />
-                    <YAxis tick={{ fontSize: 12 }} className="text-muted-foreground" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="weight"
-                      stroke="hsl(var(--chart-2))"
-                      strokeWidth={2}
-                      dot={{ fill: "hsl(var(--chart-2))", strokeWidth: 0 }}
-                      name="Вес (кг)"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="h-64 flex items-center justify-center text-muted-foreground">
-                Нет данных {getFilterText()}. Добавьте свой первый замер веса!
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
       {/* Leaderboard */}
       <Card>
         <CardHeader>
@@ -769,6 +678,107 @@ export default function Progress() {
           )}
         </CardContent>
       </Card>
+
+      {/* Body Weight Chart */}
+      {currentWeight !== null && (
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Activity className="h-5 w-5 text-primary" />
+                Вес Тела
+              </CardTitle>
+              <span className="text-2xl font-bold text-primary">{currentWeight} кг</span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {bodyWeightChartData.length > 0 ? (
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={bodyWeightChartData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis
+                      dataKey="date"
+                      className="text-xs"
+                      tick={{ fill: "hsl(var(--muted-foreground))" }}
+                    />
+                    <YAxis
+                      className="text-xs"
+                      tick={{ fill: "hsl(var(--muted-foreground))" }}
+                      domain={["dataMin - 2", "dataMax + 2"]}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--background))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "0.5rem",
+                      }}
+                      labelStyle={{ color: "hsl(var(--foreground))" }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="weight"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                      dot={{ fill: "hsl(var(--primary))", r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="p-4 bg-muted rounded-full mb-4">
+                  <Activity className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-1">Нет данных</h3>
+                <p className="text-muted-foreground text-sm">
+                  Добавьте свой вес, чтобы отслеживать прогресс
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Body Weight Button */}
+      <Dialog open={isWeightDialogOpen} onOpenChange={setIsWeightDialogOpen}>
+        <DialogTrigger asChild>
+          <Button className="w-full gap-2">
+            <Plus className="h-4 w-4" />
+            Вес Тела
+          </Button>
+        </DialogTrigger>
+        <DialogContent aria-describedby="weight-dialog-description">
+          <DialogHeader>
+            <DialogTitle>Добавить вес тела</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4" id="weight-dialog-description">
+            <div className="space-y-2">
+              <Label htmlFor="weight">Вес (кг)</Label>
+              <Input
+                id="weight"
+                type="number"
+                step="0.1"
+                value={newWeight}
+                onChange={(e) => setNewWeight(e.target.value)}
+                placeholder="Введите вес"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="date">Дата</Label>
+              <Input
+                id="date"
+                type="date"
+                value={weightDate}
+                onChange={(e) => setWeightDate(e.target.value)}
+              />
+            </div>
+            <Button onClick={handleSaveWeight} className="w-full">
+              Сохранить
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
