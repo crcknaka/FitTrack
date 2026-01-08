@@ -674,7 +674,7 @@ export default function Progress() {
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Trophy className="h-5 w-5 text-primary" />
-            ТОП-10 Пользователей
+            ТОП-10 · {leaderboardExercise}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
