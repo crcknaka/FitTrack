@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { ArrowLeft, Plus, Trash2, User, Dumbbell, Weight, MessageSquare, Save, Pencil, X, Activity } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, User, Dumbbell, MessageSquare, Save, Pencil, X, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,6 @@ import { useWorkouts, useAddSet, useDeleteSet, useUpdateSet, useUpdateWorkout } 
 import { useExercises, Exercise } from "@/hooks/useExercises";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { calculateTotalVolume, formatVolume } from "@/lib/volumeUtils";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -47,7 +46,6 @@ export default function WorkoutDetail() {
   const [weight, setWeight] = useState("");
   const [distance, setDistance] = useState("");
   const [duration, setDuration] = useState("");
-  const [currentWeight, setCurrentWeight] = useState<number | null>(null);
   const [exerciseTypeFilter, setExerciseTypeFilter] = useState<"all" | "bodyweight" | "weighted" | "cardio">("all");
   const [notes, setNotes] = useState("");
   const [isEditingNotes, setIsEditingNotes] = useState(false);
@@ -265,11 +263,6 @@ export default function WorkoutDetail() {
     }
   };
 
-  // Calculate total volume
-  const totalVolume = workout.workout_sets 
-    ? calculateTotalVolume(workout.workout_sets, currentWeight)
-    : 0;
-
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-4">
@@ -284,17 +277,6 @@ export default function WorkoutDetail() {
             {format(new Date(workout.date), "EEEE", { locale: ru })}
           </p>
         </div>
-        {totalVolume > 0 && (
-          <div className="text-right">
-            <div className="text-sm text-muted-foreground flex items-center gap-1">
-              <Weight className="h-4 w-4" />
-              <span>Общий вес</span>
-            </div>
-            <div className="text-lg font-bold text-primary">
-              {formatVolume(totalVolume, false)} кг
-            </div>
-          </div>
-        )}
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={handleDialogChange}>

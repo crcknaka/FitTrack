@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { format, subDays, startOfMonth } from "date-fns";
 import { ru } from "date-fns/locale";
-import { Zap, BarChart3, Repeat, Plus, User, Trophy, Medal, Activity } from "lucide-react";
+import { Zap, BarChart3, Repeat, Plus, User, Trophy, Medal, Activity, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -438,9 +438,8 @@ export default function Progress() {
                 <span className="text-xs">Объём</span>
               </div>
               <p className="text-2xl font-bold text-foreground">
-                {stats.totalVolume.toLocaleString()}
+                {stats.totalVolume.toLocaleString()} кг
               </p>
-              <p className="text-xs text-muted-foreground">кг × повт.</p>
             </CardContent>
           </Card>
 
@@ -462,7 +461,7 @@ export default function Progress() {
             <Card>
               <CardContent className="pt-4">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <Activity className="h-4 w-4" />
+                  <Clock className="h-4 w-4" />
                   <span className="text-xs">Времени бегал</span>
                 </div>
                 <p className="text-2xl font-bold text-foreground">
