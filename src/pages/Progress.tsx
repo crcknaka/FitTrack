@@ -27,6 +27,7 @@ export default function Progress() {
   const { toast } = useToast();
   const [selectedExercise, setSelectedExercise] = useState<string>("all");
   const [metric, setMetric] = useState<"reps" | "weight">("reps");
+  const [cardioMetric, setCardioMetric] = useState<"distance" | "duration">("distance");
   const [isWeightDialogOpen, setIsWeightDialogOpen] = useState(false);
   const [newWeight, setNewWeight] = useState("");
   const [weightDate, setWeightDate] = useState(format(new Date(), "yyyy-MM-dd"));
@@ -130,6 +131,8 @@ export default function Progress() {
       const totalReps = relevantSets.reduce((sum, s) => sum + (s.reps || 0), 0);
       const maxWeight = relevantSets.reduce((max, s) => Math.max(max, s.weight || 0), 0);
       const totalVolume = calculateTotalVolume(relevantSets, currentWeight);
+      const totalDistance = relevantSets.reduce((sum, s) => sum + (s.distance_km || 0), 0);
+      const totalDuration = relevantSets.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
 
       return {
         date: format(new Date(workout.date), "d MMM", { locale: ru }),
@@ -138,6 +141,8 @@ export default function Progress() {
         weight: maxWeight,
         volume: totalVolume,
         sets: relevantSets.length,
+        distance: totalDistance,
+        duration: totalDuration,
       };
     });
   }, [workouts, selectedExercise, currentWeight, timeFilter]);
@@ -326,15 +331,27 @@ export default function Progress() {
             </SelectContent>
           </Select>
 
-          <Select value={metric} onValueChange={(v) => setMetric(v as "reps" | "weight")}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="reps">Повторения</SelectItem>
-              <SelectItem value="weight">Вес</SelectItem>
-            </SelectContent>
-          </Select>
+          {selectedExerciseData?.type === "cardio" ? (
+            <Select value={cardioMetric} onValueChange={(v) => setCardioMetric(v as "distance" | "duration")}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="distance">Дистанция</SelectItem>
+                <SelectItem value="duration">Время</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : selectedExerciseData?.type !== "cardio" && (
+            <Select value={metric} onValueChange={(v) => setMetric(v as "reps" | "weight")}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="reps">Повторения</SelectItem>
+                <SelectItem value="weight">Вес</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
         </div>
 
         {/* Time filter buttons */}
@@ -461,7 +478,13 @@ export default function Progress() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">
-            {metric === "reps" ? "Повторения" : "Максимальный вес"} {getFilterText()}
+            {selectedExerciseData?.type === "cardio"
+              ? cardioMetric === "distance"
+                ? "Дистанция (км)"
+                : "Время (мин)"
+              : metric === "reps"
+                ? "Повторения"
+                : "Максимальный вес"} {getFilterText()}
             {selectedExercise !== "all" && selectedExerciseData && (
               <span className="text-muted-foreground font-normal ml-2">
                 · {selectedExerciseData.name}
@@ -473,7 +496,30 @@ export default function Progress() {
           {chartData.length > 0 ? (
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                {metric === "reps" ? (
+                {selectedExerciseData?.type === "cardio" ? (
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 12 }}
+                      className="text-muted-foreground"
+                    />
+                    <YAxis tick={{ fontSize: 12 }} className="text-muted-foreground" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                      }}
+                    />
+                    <Bar
+                      dataKey={cardioMetric === "distance" ? "distance" : "duration"}
+                      fill="hsl(var(--primary))"
+                      radius={[4, 4, 0, 0]}
+                      name={cardioMetric === "distance" ? "Дистанция (км)" : "Время (мин)"}
+                    />
+                  </BarChart>
+                ) : metric === "reps" ? (
                   <BarChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                     <XAxis
