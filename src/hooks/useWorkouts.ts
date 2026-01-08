@@ -11,6 +11,7 @@ export interface WorkoutSet {
   weight: number | null;
   distance_km: number | null;
   duration_minutes: number | null;
+  plank_seconds: number | null;
   created_at: string;
   exercise?: {
     id: string;
@@ -48,6 +49,7 @@ export function useWorkouts() {
             weight,
             distance_km,
             duration_minutes,
+            plank_seconds,
             created_at,
             exercise:exercises (id, name, type, image_url)
           )
@@ -83,6 +85,7 @@ export function useWorkoutsByMonth(year: number, month: number) {
             weight,
             distance_km,
             duration_minutes,
+            plank_seconds,
             created_at,
             exercise:exercises (id, name, type, image_url)
           )
@@ -150,6 +153,7 @@ export function useAddSet() {
       weight,
       distance_km,
       duration_minutes,
+      plank_seconds,
     }: {
       workoutId: string;
       exerciseId: string;
@@ -158,6 +162,7 @@ export function useAddSet() {
       weight?: number;
       distance_km?: number;
       duration_minutes?: number;
+      plank_seconds?: number;
     }) => {
       const { data, error } = await supabase
         .from("workout_sets")
@@ -169,6 +174,7 @@ export function useAddSet() {
           weight: weight ?? null,
           distance_km: distance_km ?? null,
           duration_minutes: duration_minutes ?? null,
+          plank_seconds: plank_seconds ?? null,
         })
         .select()
         .single();
@@ -210,12 +216,14 @@ export function useUpdateSet() {
       weight,
       distance_km,
       duration_minutes,
+      plank_seconds,
     }: {
       setId: string;
       reps?: number | null;
       weight?: number | null;
       distance_km?: number | null;
       duration_minutes?: number | null;
+      plank_seconds?: number | null;
     }) => {
       const { data, error } = await supabase
         .from("workout_sets")
@@ -224,6 +232,7 @@ export function useUpdateSet() {
           weight: weight ?? null,
           distance_km: distance_km ?? null,
           duration_minutes: duration_minutes ?? null,
+          plank_seconds: plank_seconds ?? null,
         })
         .eq("id", setId)
         .select()

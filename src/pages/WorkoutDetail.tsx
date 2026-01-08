@@ -157,7 +157,8 @@ export default function WorkoutDetail() {
         reps: reps ? parseInt(reps) : undefined,
         weight: weight ? parseFloat(weight) : undefined,
         distance_km: distance ? parseFloat(distance) : undefined,
-        duration_minutes: duration ? parseInt(duration) : undefined,
+        duration_minutes: selectedExercise.type === "cardio" && duration ? parseInt(duration) : undefined,
+        plank_seconds: selectedExercise.type === "timed" && duration ? parseInt(duration) : undefined,
       });
       toast.success("Подход добавлен!");
       setReps("");
@@ -203,11 +204,19 @@ export default function WorkoutDetail() {
     setEditReps(set.reps?.toString() || "");
     setEditWeight(set.weight ? set.weight.toString() : "");
     setEditDistance(set.distance_km ? set.distance_km.toString() : "");
-    setEditDuration(set.duration_minutes ? set.duration_minutes.toString() : "");
+    // Для cardio используем duration_minutes, для timed - plank_seconds
+    const durationValue = set.exercise?.type === "timed"
+      ? set.plank_seconds
+      : set.duration_minutes;
+    setEditDuration(durationValue ? durationValue.toString() : "");
   };
 
   const handleSaveEdit = async () => {
     if (!editingSetId) return;
+
+    // Найти редактируемый set чтобы определить тип упражнения
+    const currentSet = workout?.workout_sets?.find(s => s.id === editingSetId);
+    const exerciseType = currentSet?.exercise?.type;
 
     try {
       await updateSet.mutateAsync({
@@ -215,7 +224,8 @@ export default function WorkoutDetail() {
         reps: editReps ? parseInt(editReps) : null,
         weight: editWeight ? parseFloat(editWeight) : null,
         distance_km: editDistance ? parseFloat(editDistance) : null,
-        duration_minutes: editDuration ? parseInt(editDuration) : null,
+        duration_minutes: exerciseType === "cardio" && editDuration ? parseInt(editDuration) : null,
+        plank_seconds: exerciseType === "timed" && editDuration ? parseInt(editDuration) : null,
       });
       toast.success("Подход обновлен");
       setEditingSetId(null);
@@ -626,7 +636,7 @@ export default function WorkoutDetail() {
                         ) : exercise?.type === "timed" ? (
                           <>
                             <div className="text-center font-semibold text-primary">
-                              {set.duration_minutes ? `${set.duration_minutes} сек` : '—'}
+                              {set.plank_seconds ? `${set.plank_seconds} сек` : '—'}
                             </div>
                             <div className="text-center"></div>
                           </>

@@ -181,6 +181,7 @@ export default function CalendarPage() {
                         maxWeight: 0,
                         totalDistance: 0,
                         totalDuration: 0,
+                        totalPlankSeconds: 0,
                         allSets: [],
                       };
                     }
@@ -191,6 +192,7 @@ export default function CalendarPage() {
                     }
                     acc[exerciseId].totalDistance += set.distance_km || 0;
                     acc[exerciseId].totalDuration += set.duration_minutes || 0;
+                    acc[exerciseId].totalPlankSeconds += set.plank_seconds || 0;
                     acc[exerciseId].allSets.push(set);
                     return acc;
                   }, {} as Record<string, {
@@ -201,6 +203,7 @@ export default function CalendarPage() {
                     maxWeight: number;
                     totalDistance: number;
                     totalDuration: number;
+                    totalPlankSeconds: number;
                     allSets: any[];
                   }>)
                 ).map((exercise, i) => (
@@ -233,7 +236,7 @@ export default function CalendarPage() {
                         </>
                       ) : exercise.type === "timed" ? (
                         <>
-                          {pluralizeWithCount(exercise.sets, "подход", "подхода", "подходов")} · {exercise.totalDuration} сек
+                          {pluralizeWithCount(exercise.sets, "подход", "подхода", "подходов")} · {exercise.totalPlankSeconds} сек
                         </>
                       ) : (
                         <>

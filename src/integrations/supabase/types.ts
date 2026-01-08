@@ -102,6 +102,7 @@ export type Database = {
           weight: number | null
           distance_km: number | null
           duration_minutes: number | null
+          plank_seconds: number | null
           workout_id: string
         }
         Insert: {
@@ -113,6 +114,7 @@ export type Database = {
           weight?: number | null
           distance_km?: number | null
           duration_minutes?: number | null
+          plank_seconds?: number | null
           workout_id: string
         }
         Update: {
@@ -124,6 +126,7 @@ export type Database = {
           weight?: number | null
           distance_km?: number | null
           duration_minutes?: number | null
+          plank_seconds?: number | null
           workout_id?: string
         }
         Relationships: [

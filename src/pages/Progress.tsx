@@ -133,6 +133,7 @@ export default function Progress() {
       const totalVolume = calculateTotalVolume(relevantSets, currentWeight);
       const totalDistance = relevantSets.reduce((sum, s) => sum + (s.distance_km || 0), 0);
       const totalDuration = relevantSets.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
+      const totalPlankTime = relevantSets.reduce((sum, s) => sum + (s.plank_seconds || 0), 0);
 
       return {
         date: format(new Date(workout.date), "d MMM", { locale: ru }),
@@ -143,6 +144,7 @@ export default function Progress() {
         sets: relevantSets.length,
         distance: totalDistance,
         duration: totalDuration,
+        plankTime: totalPlankTime,
       };
     });
   }, [workouts, selectedExercise, currentWeight, timeFilter]);
@@ -183,6 +185,13 @@ export default function Progress() {
 
     const totalDurationHours = totalDurationMinutes / 60;
 
+    // Для timed упражнений (планка) - подсчитать секунды
+    const totalPlankSeconds = workouts
+      ?.flatMap(w => w.workout_sets || [])
+      .filter(s => selectedExercise === "all" || s.exercise_id === selectedExercise)
+      .filter(s => s.plank_seconds !== null)
+      .reduce((sum, s) => sum + (s.plank_seconds || 0), 0) || 0;
+
     return {
       totalReps,
       totalSets,
@@ -193,6 +202,7 @@ export default function Progress() {
       totalDistance,
       totalDurationHours,
       totalDurationMinutes,
+      totalPlankSeconds,
     };
   }, [chartData, workouts, selectedExercise]);
 
@@ -459,7 +469,7 @@ export default function Progress() {
             </Card>
           )}
 
-          {selectedExerciseData?.type === "timed" && stats.totalDurationMinutes > 0 && (
+          {selectedExerciseData?.type === "timed" && stats.totalPlankSeconds > 0 && (
             <Card>
               <CardContent className="pt-4">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -467,7 +477,7 @@ export default function Progress() {
                   <span className="text-xs">Общее время</span>
                 </div>
                 <p className="text-2xl font-bold text-foreground">
-                  {stats.totalDurationMinutes} сек
+                  {stats.totalPlankSeconds} сек
                 </p>
               </CardContent>
             </Card>
@@ -564,7 +574,7 @@ export default function Progress() {
                         }}
                       />
                       <Bar
-                        dataKey="duration"
+                        dataKey="plankTime"
                         fill="hsl(var(--primary))"
                         radius={[4, 4, 0, 0]}
                         name="Время (сек)"
