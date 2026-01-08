@@ -768,9 +768,9 @@ export default function Progress() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">За всё время</SelectItem>
-                <SelectItem value="month">За этот месяц</SelectItem>
-                <SelectItem value="today">За сегодня</SelectItem>
+                <SelectItem value="all">Всё время</SelectItem>
+                <SelectItem value="month">Этот месяц</SelectItem>
+                <SelectItem value="today">Сегодня</SelectItem>
               </SelectContent>
             </Select>
           </div>
