@@ -41,7 +41,18 @@ export default function Progress() {
   const { data: leaderboardData } = useLeaderboard(leaderboardExercise, leaderboardPeriod);
 
   // Base exercises for leaderboard
-  const baseExercises = ["Штанга лёжа", "Приседания", "Подтягивания", "Отжимания", "Бег"];
+  const baseExercises = [
+    "Штанга лёжа",
+    "Приседания",
+    "Подтягивания",
+    "Отжимания",
+    "Бег",
+    "Бицепс",
+    "Тяга горизонтального блока",
+    "Пресс",
+    "Планка",
+    "Тяга верхнего блока"
+  ];
 
   // Load body weight history
   useEffect(() => {
@@ -716,12 +727,14 @@ export default function Progress() {
                   {/* Stats */}
                   <div className="text-right shrink-0 ml-2">
                     <div className="font-bold text-base sm:text-lg text-foreground whitespace-nowrap">
-                      {entry.max_distance > 0 ? `${entry.max_distance} км` :
+                      {entry.max_plank_seconds > 0 ? `${(entry.max_plank_seconds / 60).toFixed(2)} мин` :
+                       entry.max_distance > 0 ? `${entry.max_distance} км` :
                        entry.max_weight > 0 ? `${entry.max_weight} кг` :
                        `${entry.max_reps} раз.`}
                     </div>
                     <div className="text-xs text-muted-foreground whitespace-nowrap">
-                      {entry.max_distance > 0 ? `Всего: ${entry.total_distance.toFixed(1)} км` :
+                      {entry.max_plank_seconds > 0 ? `Всего: ${(entry.total_plank_seconds / 60).toFixed(2)} мин` :
+                       entry.max_distance > 0 ? `Всего: ${entry.total_distance.toFixed(1)} км` :
                        `Всего: ${entry.total_reps} ${pluralize(entry.total_reps, "раз", "раза", "раз")}`}
                     </div>
                   </div>

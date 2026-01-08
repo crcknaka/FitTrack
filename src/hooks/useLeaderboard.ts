@@ -14,6 +14,8 @@ export interface LeaderboardEntry {
   total_reps: number;
   max_distance: number;
   total_distance: number;
+  max_plank_seconds: number;
+  total_plank_seconds: number;
 }
 
 interface WorkoutSet {
@@ -21,6 +23,7 @@ interface WorkoutSet {
   reps: number | null;
   distance_km: number | null;
   duration_minutes: number | null;
+  plank_seconds: number | null;
   workout: {
     user_id: string;
     date: string;
@@ -53,6 +56,7 @@ export function useLeaderboard(
           reps,
           distance_km,
           duration_minutes,
+          plank_seconds,
           workout:workouts!inner(
             user_id,
             date
@@ -76,13 +80,15 @@ export function useLeaderboard(
         });
       }
 
-      // Group by user and calculate max weight, total reps, max distance, total distance
+      // Group by user and calculate max weight, total reps, max distance, total distance, plank seconds
       const userStats = new Map<string, {
         maxWeight: number;
         totalReps: number;
         maxReps: number;
         maxDistance: number;
         totalDistance: number;
+        maxPlankSeconds: number;
+        totalPlankSeconds: number;
       }>();
 
       filteredSets.forEach((set) => {
@@ -90,6 +96,7 @@ export function useLeaderboard(
         const weight = set.weight || 0;
         const reps = set.reps || 0;
         const distance = set.distance_km || 0;
+        const plankSeconds = set.plank_seconds || 0;
 
         if (!userStats.has(userId)) {
           userStats.set(userId, {
@@ -97,7 +104,9 @@ export function useLeaderboard(
             totalReps: reps,
             maxReps: reps,
             maxDistance: distance,
-            totalDistance: distance
+            totalDistance: distance,
+            maxPlankSeconds: plankSeconds,
+            totalPlankSeconds: plankSeconds
           });
         } else {
           const stats = userStats.get(userId)!;
@@ -106,6 +115,8 @@ export function useLeaderboard(
           stats.totalReps += reps;
           stats.maxDistance = Math.max(stats.maxDistance, distance);
           stats.totalDistance += distance;
+          stats.maxPlankSeconds = Math.max(stats.maxPlankSeconds, plankSeconds);
+          stats.totalPlankSeconds += plankSeconds;
           userStats.set(userId, stats);
         }
       });
@@ -141,10 +152,16 @@ export function useLeaderboard(
             total_reps: stats?.totalReps || 0,
             max_distance: stats?.maxDistance || 0,
             total_distance: stats?.totalDistance || 0,
+            max_plank_seconds: stats?.maxPlankSeconds || 0,
+            total_plank_seconds: stats?.totalPlankSeconds || 0,
           };
         })
-        // Sort by max distance (for cardio), max weight (for weighted), or max reps (for bodyweight)
+        // Sort by max distance (for cardio), max plank seconds (for timed), max weight (for weighted), or max reps (for bodyweight)
         .sort((a, b) => {
+          // If there's plank data, prioritize and sort by plank seconds
+          if (a.max_plank_seconds > 0 || b.max_plank_seconds > 0) {
+            return b.max_plank_seconds - a.max_plank_seconds;
+          }
           // If there's distance data, prioritize and sort by distance
           if (a.max_distance > 0 || b.max_distance > 0) {
             return b.max_distance - a.max_distance;
