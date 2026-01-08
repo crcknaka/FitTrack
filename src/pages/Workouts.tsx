@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { format, isWithinInterval, startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { ru } from "date-fns/locale";
-import { Plus, Calendar as CalendarIcon, Trash2, ChevronRight, MessageSquare, Filter, X, Clock } from "lucide-react";
+import { Plus, Calendar as CalendarIcon, Trash2, Filter, X, Dumbbell, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
@@ -337,41 +337,50 @@ export default function Workouts() {
               style={{ animationDelay: `${index * 50}ms` }}
               onClick={() => navigate(`/workout/${workout.id}`)}
             >
-              <CardContent className="p-4 flex items-center justify-between">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-1">
-                    <span className="font-semibold text-foreground">
-                      {format(new Date(workout.date), "d MMMM yyyy", { locale: ru })}
-                    </span>
-                    <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full font-medium">
-                      {format(new Date(workout.date), "EEEE", { locale: ru })}
-                    </span>
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5" />
-                      {format(new Date(workout.updated_at), "HH:mm")}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {pluralizeWithCount(getUniqueExercises(workout), "упражнение", "упражнения", "упражнений")} · {pluralizeWithCount(getTotalSets(workout), "подход", "подхода", "подходов")}
-                  </p>
-                  {workout.notes && (
-                    <div className="flex items-start gap-2 mt-2 text-sm text-muted-foreground">
-                      <MessageSquare className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                      <p className="line-clamp-2">{workout.notes}</p>
+              <CardContent className="p-3 flex items-center gap-3">
+                {/* Photo thumbnail or placeholder */}
+                <div className="flex-shrink-0">
+                  {workout.photo_url ? (
+                    <img
+                      src={workout.photo_url}
+                      alt=""
+                      className="w-14 h-14 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center">
+                      <Dumbbell className="h-6 w-6 text-muted-foreground" />
                     </div>
                   )}
                 </div>
-                <div className="flex items-center gap-2 ml-4">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-700 dark:hover:text-red-300"
-                    onClick={(e) => handleDeleteWorkout(workout.id, e)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-foreground">
+                      {format(new Date(workout.date), "d MMMM", { locale: ru })}
+                    </span>
+                    <span className="text-xs px-1.5 py-0.5 bg-primary/10 text-primary rounded font-medium">
+                      {format(new Date(workout.date), "EEEE", { locale: ru })}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {getUniqueExercises(workout)} упр · {getTotalSets(workout)} подх
+                  </p>
+                  {workout.notes && (
+                    <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                      <MessageSquare className="h-3 w-3 flex-shrink-0" />
+                      <p className="line-clamp-1">{workout.notes}</p>
+                    </div>
+                  )}
                 </div>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-red-500 flex-shrink-0"
+                  onClick={(e) => handleDeleteWorkout(workout.id, e)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </CardContent>
             </Card>
           ))}
