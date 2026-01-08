@@ -1,0 +1,32 @@
+-- Add photo_url field to workouts table
+ALTER TABLE public.workouts ADD COLUMN IF NOT EXISTS photo_url TEXT;
+
+-- Create storage bucket for workout photos (run this in Supabase Dashboard > Storage)
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('workout-photos', 'workout-photos', true);
+
+-- RLS policies for storage (run in SQL Editor or Dashboard)
+-- These need to be applied via Supabase Dashboard:
+--
+-- Policy: Users can upload their own photos
+-- CREATE POLICY "Users can upload workout photos" ON storage.objects
+-- FOR INSERT WITH CHECK (
+--   bucket_id = 'workout-photos' AND
+--   auth.uid()::text = (storage.foldername(name))[1]
+-- );
+--
+-- Policy: Users can view their own photos
+-- CREATE POLICY "Users can view workout photos" ON storage.objects
+-- FOR SELECT USING (
+--   bucket_id = 'workout-photos' AND
+--   auth.uid()::text = (storage.foldername(name))[1]
+-- );
+--
+-- Policy: Users can delete their own photos
+-- CREATE POLICY "Users can delete workout photos" ON storage.objects
+-- FOR DELETE USING (
+--   bucket_id = 'workout-photos' AND
+--   auth.uid()::text = (storage.foldername(name))[1]
+-- );
+--
+-- Or make bucket public for simpler setup:
+-- UPDATE storage.buckets SET public = true WHERE id = 'workout-photos';

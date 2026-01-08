@@ -25,6 +25,7 @@ export interface Workout {
   id: string;
   date: string;
   notes: string | null;
+  photo_url: string | null;
   created_at: string;
   updated_at: string;
   workout_sets?: WorkoutSet[];
@@ -251,10 +252,14 @@ export function useUpdateWorkout() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ workoutId, notes }: { workoutId: string; notes: string }) => {
+    mutationFn: async ({ workoutId, notes, photo_url }: { workoutId: string; notes?: string; photo_url?: string | null }) => {
+      const updateData: { notes?: string; photo_url?: string | null } = {};
+      if (notes !== undefined) updateData.notes = notes;
+      if (photo_url !== undefined) updateData.photo_url = photo_url;
+
       const { data, error } = await supabase
         .from("workouts")
-        .update({ notes })
+        .update(updateData)
         .eq("id", workoutId)
         .select()
         .single();

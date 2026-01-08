@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { ArrowLeft, Plus, Trash2, User, Dumbbell, MessageSquare, Save, Pencil, X, Activity, Timer } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, User, Dumbbell, MessageSquare, Save, Pencil, X, Activity, Timer, Camera, Loader2, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -25,11 +25,14 @@ import { useWorkouts, useAddSet, useDeleteSet, useUpdateSet, useUpdateWorkout } 
 import { useExercises, Exercise } from "@/hooks/useExercises";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { uploadWorkoutPhoto, deleteWorkoutPhoto, validateImageFile } from "@/lib/photoUpload";
 
 export default function WorkoutDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const { data: workouts } = useWorkouts();
   const { data: exercises } = useExercises();
   const addSet = useAddSet();
@@ -53,6 +56,9 @@ export default function WorkoutDetail() {
   const [editDistance, setEditDistance] = useState("");
   const [editDuration, setEditDuration] = useState("");
   const [openTooltipId, setOpenTooltipId] = useState<string | null>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [photoToDelete, setPhotoToDelete] = useState(false);
+  const [isPhotoFullscreen, setIsPhotoFullscreen] = useState(false);
 
   const workout = workouts?.find((w) => w.id === id);
 
@@ -256,6 +262,52 @@ export default function WorkoutDetail() {
       toast.success("Комментарий сохранен");
     } catch (error) {
       toast.error("Ошибка сохранения комментария");
+    }
+  };
+
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !workout || !user) return;
+
+    // Validate file
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      toast.error(validation.error);
+      return;
+    }
+
+    setIsUploadingPhoto(true);
+    try {
+      const photoUrl = await uploadWorkoutPhoto(file, user.id, workout.id);
+      await updateWorkout.mutateAsync({
+        workoutId: workout.id,
+        photo_url: photoUrl,
+      });
+      toast.success("Фото добавлено");
+    } catch (error) {
+      console.error("Photo upload error:", error);
+      toast.error("Ошибка загрузки фото");
+    } finally {
+      setIsUploadingPhoto(false);
+      // Reset input
+      event.target.value = "";
+    }
+  };
+
+  const handleDeletePhoto = async () => {
+    if (!workout?.photo_url) return;
+
+    try {
+      await deleteWorkoutPhoto(workout.photo_url);
+      await updateWorkout.mutateAsync({
+        workoutId: workout.id,
+        photo_url: null,
+      });
+      setPhotoToDelete(false);
+      toast.success("Фото удалено");
+    } catch (error) {
+      console.error("Photo delete error:", error);
+      toast.error("Ошибка удаления фото");
     }
   };
 
@@ -762,6 +814,101 @@ export default function WorkoutDetail() {
           )}
         </CardContent>
       </Card>
+
+      {/* Photo Card */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <ImageIcon className="h-5 w-5 text-primary" />
+              Фото
+            </CardTitle>
+            {workout?.photo_url && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setPhotoToDelete(true)}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {workout?.photo_url ? (
+            <div className="relative">
+              <img
+                src={workout.photo_url}
+                alt="Фото тренировки"
+                className="w-full rounded-lg object-cover max-h-96 cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => setIsPhotoFullscreen(true)}
+              />
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
+              {isUploadingPhoto ? (
+                <>
+                  <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                  <span className="text-sm text-muted-foreground">Загрузка...</span>
+                </>
+              ) : (
+                <>
+                  <Camera className="h-10 w-10 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Нажмите чтобы добавить фото</span>
+                  <span className="text-xs text-muted-foreground/70">JPG, PNG или WebP до 20 MB</span>
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                onChange={handlePhotoUpload}
+                disabled={isUploadingPhoto}
+                className="hidden"
+              />
+            </label>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Delete Photo Confirmation Dialog */}
+      <AlertDialog open={photoToDelete} onOpenChange={setPhotoToDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Удалить фото?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Вы уверены, что хотите удалить это фото? Это действие нельзя будет отменить.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeletePhoto} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Удалить
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Fullscreen Photo Viewer */}
+      {isPhotoFullscreen && workout?.photo_url && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setIsPhotoFullscreen(false)}
+        >
+          <button
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+            onClick={() => setIsPhotoFullscreen(false)}
+          >
+            <X className="h-6 w-6 text-white" />
+          </button>
+          <img
+            src={workout.photo_url}
+            alt="Фото тренировки"
+            className="max-w-full max-h-full object-contain rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
 
       {/* Delete Set Confirmation Dialog */}
       <AlertDialog open={!!setToDelete} onOpenChange={(open) => !open && setSetToDelete(null)}>
