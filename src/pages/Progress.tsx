@@ -749,9 +749,9 @@ export default function Progress() {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Exercise selector */}
-          <div className="flex gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <Select value={leaderboardExercise} onValueChange={setLeaderboardExercise}>
-              <SelectTrigger className="flex-1">
+              <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -764,7 +764,7 @@ export default function Progress() {
             </Select>
 
             <Select value={leaderboardPeriod} onValueChange={(v) => setLeaderboardPeriod(v as "all" | "month" | "today")}>
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
