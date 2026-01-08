@@ -397,22 +397,24 @@ export default function Progress() {
       {/* Stats cards */}
       {stats && (
         <div className="grid grid-cols-2 gap-3">
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <Repeat className="h-4 w-4" />
-                <span className="text-xs">Всего {pluralize(stats.totalReps, "повторение", "повторения", "повторений")}</span>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{stats.totalReps}</p>
-              {stats.repsTrend !== 0 && (
-                <p className={`text-xs ${stats.repsTrend > 0 ? "text-success" : "text-destructive"}`}>
-                  {stats.repsTrend > 0 ? "+" : ""}{stats.repsTrend.toFixed(0)}% за неделю
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          {selectedExerciseData?.type !== "cardio" && (
+            <Card>
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Repeat className="h-4 w-4" />
+                  <span className="text-xs">Всего {pluralize(stats.totalReps, "повторение", "повторения", "повторений")}</span>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{stats.totalReps}</p>
+                {stats.repsTrend !== 0 && (
+                  <p className={`text-xs ${stats.repsTrend > 0 ? "text-success" : "text-destructive"}`}>
+                    {stats.repsTrend > 0 ? "+" : ""}{stats.repsTrend.toFixed(0)}% за неделю
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
-          {selectedExerciseData?.type !== "bodyweight" && (
+          {selectedExerciseData?.type !== "bodyweight" && selectedExerciseData?.type !== "cardio" && (
             <Card>
               <CardContent className="pt-4">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -436,7 +438,7 @@ export default function Progress() {
             </CardContent>
           </Card>
 
-          {selectedExerciseData?.type !== "bodyweight" && (
+          {selectedExerciseData?.type !== "bodyweight" && selectedExerciseData?.type !== "cardio" && (
             <Card>
               <CardContent className="pt-4">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
