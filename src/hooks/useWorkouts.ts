@@ -15,7 +15,7 @@ export interface WorkoutSet {
   exercise?: {
     id: string;
     name: string;
-    type: "bodyweight" | "weighted" | "cardio";
+    type: "bodyweight" | "weighted" | "cardio" | "timed";
     image_url?: string | null;
   };
 }

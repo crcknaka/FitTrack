@@ -33,9 +33,9 @@ export default function Exercises() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [name, setName] = useState("");
-  const [type, setType] = useState<"bodyweight" | "weighted" | "cardio">("weighted");
+  const [type, setType] = useState<"bodyweight" | "weighted" | "cardio" | "timed">("weighted");
   const [searchQuery, setSearchQuery] = useState("");
-  const [typeFilter, setTypeFilter] = useState<"all" | "bodyweight" | "weighted" | "cardio">("all");
+  const [typeFilter, setTypeFilter] = useState<"all" | "bodyweight" | "weighted" | "cardio" | "timed">("all");
   const [exerciseToDelete, setExerciseToDelete] = useState<string | null>(null);
 
   const handleCreate = async () => {
@@ -162,6 +162,12 @@ export default function Exercises() {
                         Кардио (дистанция + время)
                       </div>
                     </SelectItem>
+                    <SelectItem value="timed">
+                      <div className="flex items-center gap-2">
+                        <Activity className="h-4 w-4" />
+                        На время (секунды)
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -212,6 +218,12 @@ export default function Exercises() {
                 Кардио
               </div>
             </SelectItem>
+            <SelectItem value="timed">
+              <div className="flex items-center gap-2">
+                <Activity className="h-4 w-4" />
+                На время
+              </div>
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -259,6 +271,8 @@ export default function Exercises() {
                             <Dumbbell className="h-14 w-14 text-primary" />
                           ) : exercise.type === "cardio" ? (
                             <Activity className="h-14 w-14 text-primary" />
+                          ) : exercise.type === "timed" ? (
+                            <Activity className="h-14 w-14 text-primary" />
                           ) : (
                             <User className="h-14 w-14 text-primary" />
                           )}
@@ -267,7 +281,7 @@ export default function Exercises() {
                       <div className="text-center">
                         <p className="font-bold text-foreground mb-1">{exercise.name}</p>
                         <p className="text-xs text-muted-foreground font-semibold">
-                          {exercise.type === "weighted" ? "С отягощением" : exercise.type === "cardio" ? "Кардио" : "Собственный вес"}
+                          {exercise.type === "weighted" ? "С отягощением" : exercise.type === "cardio" ? "Кардио" : exercise.type === "timed" ? "На время" : "Собственный вес"}
                         </p>
                       </div>
                       <Button
@@ -322,6 +336,8 @@ export default function Exercises() {
                             <Dumbbell className="h-14 w-14 text-muted-foreground" />
                           ) : exercise.type === "cardio" ? (
                             <Activity className="h-14 w-14 text-muted-foreground" />
+                          ) : exercise.type === "timed" ? (
+                            <Activity className="h-14 w-14 text-muted-foreground" />
                           ) : (
                             <User className="h-14 w-14 text-muted-foreground" />
                           )}
@@ -330,7 +346,7 @@ export default function Exercises() {
                       <div className="text-center">
                         <p className="font-bold text-foreground mb-1">{exercise.name}</p>
                         <p className="text-xs text-muted-foreground font-semibold">
-                          {exercise.type === "weighted" ? "С отягощением" : exercise.type === "cardio" ? "Кардио" : "Собственный вес"}
+                          {exercise.type === "weighted" ? "С отягощением" : exercise.type === "cardio" ? "Кардио" : exercise.type === "timed" ? "На время" : "Собственный вес"}
                         </p>
                       </div>
                     </CardContent>

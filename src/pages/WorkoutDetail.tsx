@@ -23,8 +23,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useWorkouts, useAddSet, useDeleteSet, useUpdateSet, useUpdateWorkout } from "@/hooks/useWorkouts";
 import { useExercises, Exercise } from "@/hooks/useExercises";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +30,6 @@ export default function WorkoutDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
   const { data: workouts } = useWorkouts();
   const { data: exercises } = useExercises();
   const addSet = useAddSet();
@@ -46,7 +43,7 @@ export default function WorkoutDetail() {
   const [weight, setWeight] = useState("");
   const [distance, setDistance] = useState("");
   const [duration, setDuration] = useState("");
-  const [exerciseTypeFilter, setExerciseTypeFilter] = useState<"all" | "bodyweight" | "weighted" | "cardio">("all");
+  const [exerciseTypeFilter, setExerciseTypeFilter] = useState<"all" | "bodyweight" | "weighted" | "cardio" | "timed">("all");
   const [notes, setNotes] = useState("");
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [setToDelete, setSetToDelete] = useState<string | null>(null);
@@ -67,28 +64,6 @@ export default function WorkoutDetail() {
       setNotes("");
     }
   }, [workout]);
-
-  // Load user's current body weight
-  useEffect(() => {
-    if (!user) return;
-
-    const loadCurrentWeight = async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("current_weight")
-        .eq("user_id", user.id)
-        .single();
-
-      if (error) {
-        console.error("Error loading current weight:", error);
-        return;
-      }
-
-      setCurrentWeight(data?.current_weight || null);
-    };
-
-    loadCurrentWeight();
-  }, [user]);
 
   // Auto-open dialog with selected exercise if coming from Exercises page
   useEffect(() => {
@@ -145,6 +120,17 @@ export default function WorkoutDetail() {
       }
       if (isNaN(durationNum) || durationNum <= 0 || durationNum > 1440) {
         toast.error("Время должно быть от 0 до 1440 минут");
+        return;
+      }
+    } else if (selectedExercise.type === "timed") {
+      // Валидация для временных упражнений (например, планка)
+      if (!duration) {
+        toast.error("Введи время в секундах");
+        return;
+      }
+      const durationNum = parseInt(duration);
+      if (isNaN(durationNum) || durationNum <= 0 || durationNum > 3600) {
+        toast.error("Время должно быть от 1 до 3600 секунд");
         return;
       }
     } else if (selectedExercise.type === "weighted") {
@@ -300,7 +286,7 @@ export default function WorkoutDetail() {
             <>
               {/* Filter */}
               <div className="mt-4">
-                <Select value={exerciseTypeFilter} onValueChange={(v) => setExerciseTypeFilter(v as "all" | "bodyweight" | "weighted" | "cardio")}>
+                <Select value={exerciseTypeFilter} onValueChange={(v) => setExerciseTypeFilter(v as "all" | "bodyweight" | "weighted" | "cardio" | "timed")}>
                   <SelectTrigger className="w-full h-12">
                     <SelectValue />
                   </SelectTrigger>
@@ -322,6 +308,12 @@ export default function WorkoutDetail() {
                       <div className="flex items-center gap-2">
                         <Activity className="h-4 w-4" />
                         Кардио
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="timed">
+                      <div className="flex items-center gap-2">
+                        <Activity className="h-4 w-4" />
+                        На время
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -350,6 +342,8 @@ export default function WorkoutDetail() {
                           <Dumbbell className="h-12 w-12 text-muted-foreground" />
                         ) : exercise.type === "cardio" ? (
                           <Activity className="h-12 w-12 text-muted-foreground" />
+                        ) : exercise.type === "timed" ? (
+                          <Activity className="h-12 w-12 text-muted-foreground" />
                         ) : (
                           <User className="h-12 w-12 text-muted-foreground" />
                         )}
@@ -360,6 +354,7 @@ export default function WorkoutDetail() {
                       <p className="text-xs text-muted-foreground text-center">
                         {exercise.type === "weighted" ? "С отягощением" :
                          exercise.type === "cardio" ? "Кардио" :
+                         exercise.type === "timed" ? "На время" :
                          "Собственный вес"}
                       </p>
                     </div>
@@ -402,6 +397,17 @@ export default function WorkoutDetail() {
                       onChange={(e) => setDuration(e.target.value)}
                     />
                   </div>
+                </div>
+              ) : selectedExercise.type === "timed" ? (
+                <div className="space-y-2">
+                  <Label>Время (сек)</Label>
+                  <Input
+                    type="number"
+                    placeholder="60"
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                    autoFocus
+                  />
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-4">
@@ -500,10 +506,14 @@ export default function WorkoutDetail() {
                 <div className="grid grid-cols-[60px_1fr_1fr_80px] gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground uppercase">
                   <div className="text-center">Подход</div>
                   <div className="text-center">
-                    {exercise?.type === "cardio" ? "Дистанция" : "Повторений"}
+                    {exercise?.type === "cardio" ? "Дистанция" :
+                     exercise?.type === "timed" ? "Время (сек)" :
+                     "Повторений"}
                   </div>
                   <div className="text-center">
-                    {exercise?.type === "cardio" ? "Время" : "Вес"}
+                    {exercise?.type === "cardio" ? "Время (мин)" :
+                     exercise?.type === "timed" ? "" :
+                     "Вес"}
                   </div>
                   <div></div>
                 </div>
@@ -551,6 +561,18 @@ export default function WorkoutDetail() {
                               className="h-8 text-center"
                               placeholder="мин"
                             />
+                          </>
+                        ) : exercise?.type === "timed" ? (
+                          <>
+                            <Input
+                              type="number"
+                              value={editDuration}
+                              onChange={(e) => setEditDuration(e.target.value)}
+                              className="h-8 text-center"
+                              placeholder="сек"
+                              autoFocus
+                            />
+                            <div className="h-8"></div>
                           </>
                         ) : (
                           <>
@@ -600,6 +622,13 @@ export default function WorkoutDetail() {
                             <div className="text-center font-medium text-primary">
                               {set.duration_minutes ? `${set.duration_minutes} мин` : '—'}
                             </div>
+                          </>
+                        ) : exercise?.type === "timed" ? (
+                          <>
+                            <div className="text-center font-semibold text-primary">
+                              {set.duration_minutes ? `${set.duration_minutes} сек` : '—'}
+                            </div>
+                            <div className="text-center"></div>
                           </>
                         ) : (
                           <>

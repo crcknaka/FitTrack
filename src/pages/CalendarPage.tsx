@@ -219,6 +219,8 @@ export default function CalendarPage() {
                         <Activity className="h-4 w-4 text-primary" />
                       ) : exercise.type === "weighted" ? (
                         <Dumbbell className="h-4 w-4 text-primary" />
+                      ) : exercise.type === "timed" ? (
+                        <Activity className="h-4 w-4 text-primary" />
                       ) : (
                         <User className="h-4 w-4 text-primary" />
                       )}
@@ -228,6 +230,10 @@ export default function CalendarPage() {
                       {exercise.type === "cardio" ? (
                         <>
                           {pluralizeWithCount(exercise.sets, "подход", "подхода", "подходов")} · {exercise.totalDistance.toFixed(1)} км · {exercise.totalDuration} мин
+                        </>
+                      ) : exercise.type === "timed" ? (
+                        <>
+                          {pluralizeWithCount(exercise.sets, "подход", "подхода", "подходов")} · {exercise.totalDuration} сек
                         </>
                       ) : (
                         <>

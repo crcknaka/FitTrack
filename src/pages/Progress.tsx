@@ -192,6 +192,7 @@ export default function Progress() {
       repsTrend,
       totalDistance,
       totalDurationHours,
+      totalDurationMinutes,
     };
   }, [chartData, workouts, selectedExercise]);
 
@@ -375,7 +376,7 @@ export default function Progress() {
       {/* Stats cards */}
       {stats && (
         <div className="grid grid-cols-2 gap-3">
-          {selectedExerciseData?.type !== "cardio" && (
+          {selectedExerciseData?.type !== "cardio" && selectedExerciseData?.type !== "timed" && (
             <Card>
               <CardContent className="pt-4">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -444,7 +445,7 @@ export default function Progress() {
             </Card>
           )}
 
-          {stats.totalDurationHours > 0 && (
+          {stats.totalDurationHours > 0 && selectedExerciseData?.type === "cardio" && (
             <Card>
               <CardContent className="pt-4">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -453,6 +454,20 @@ export default function Progress() {
                 </div>
                 <p className="text-2xl font-bold text-foreground">
                   {stats.totalDurationHours.toFixed(2)} ч
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {selectedExerciseData?.type === "timed" && stats.totalDurationMinutes > 0 && (
+            <Card>
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Clock className="h-4 w-4" />
+                  <span className="text-xs">Общее время</span>
+                </div>
+                <p className="text-2xl font-bold text-foreground">
+                  {stats.totalDurationMinutes} сек
                 </p>
               </CardContent>
             </Card>
@@ -470,9 +485,11 @@ export default function Progress() {
                   ? cardioMetric === "distance"
                     ? "Дистанция (км)"
                     : "Время (мин)"
-                  : metric === "reps"
-                    ? "Повторения"
-                    : "Максимальный вес"} {getFilterText()}
+                  : selectedExerciseData?.type === "timed"
+                    ? "Время (сек)"
+                    : metric === "reps"
+                      ? "Повторения"
+                      : "Максимальный вес"} {getFilterText()}
                 {selectedExercise !== "all" && selectedExerciseData && (
                   <span className="text-muted-foreground font-normal ml-2">
                     · {selectedExerciseData.name}
@@ -528,6 +545,29 @@ export default function Progress() {
                         fill="hsl(var(--primary))"
                         radius={[4, 4, 0, 0]}
                         name={cardioMetric === "distance" ? "Дистанция (км)" : "Время (мин)"}
+                      />
+                    </BarChart>
+                  ) : selectedExerciseData?.type === "timed" ? (
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fontSize: 12 }}
+                        className="text-muted-foreground"
+                      />
+                      <YAxis tick={{ fontSize: 12 }} className="text-muted-foreground" />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--card))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "8px",
+                        }}
+                      />
+                      <Bar
+                        dataKey="duration"
+                        fill="hsl(var(--primary))"
+                        radius={[4, 4, 0, 0]}
+                        name="Время (сек)"
                       />
                     </BarChart>
                   ) : metric === "reps" ? (

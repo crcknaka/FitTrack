@@ -97,27 +97,33 @@ export type Database = {
           created_at: string
           exercise_id: string
           id: string
-          reps: number
+          reps: number | null
           set_number: number
           weight: number | null
+          distance_km: number | null
+          duration_minutes: number | null
           workout_id: string
         }
         Insert: {
           created_at?: string
           exercise_id: string
           id?: string
-          reps: number
+          reps?: number | null
           set_number?: number
           weight?: number | null
+          distance_km?: number | null
+          duration_minutes?: number | null
           workout_id: string
         }
         Update: {
           created_at?: string
           exercise_id?: string
           id?: string
-          reps?: number
+          reps?: number | null
           set_number?: number
           weight?: number | null
+          distance_km?: number | null
+          duration_minutes?: number | null
           workout_id?: string
         }
         Relationships: [
@@ -172,7 +178,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      exercise_type: "bodyweight" | "weighted"
+      exercise_type: "bodyweight" | "weighted" | "cardio" | "timed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -300,7 +306,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      exercise_type: ["bodyweight", "weighted"],
+      exercise_type: ["bodyweight", "weighted", "cardio", "timed"],
     },
   },
 } as const
