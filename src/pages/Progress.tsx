@@ -477,7 +477,7 @@ export default function Progress() {
             <h3 className="font-semibold text-foreground mb-1">Нет данных {getFilterText()}</h3>
             <p className="text-muted-foreground text-sm">
               {selectedExercise === "all"
-                ? "Выполни тренировку, чтобы увидеть статистику"
+                ? "Не будь ленивым скуфом, давай заниматься!"
                 : "Выполни это упражнение, чтобы увидеть статистику"}
             </p>
           </CardContent>
@@ -492,7 +492,7 @@ export default function Progress() {
               <CardContent className="pt-4">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <Repeat className="h-4 w-4" />
-                  <span className="text-xs">Всего {pluralize(stats.totalReps, "повторение", "повторения", "повторений")}</span>
+                  <span className="text-xs"> {pluralize(stats.totalReps, "Повторение", "Повторения", "Повторений")}</span>
                 </div>
                 <p className="text-2xl font-bold text-foreground">{stats.totalReps}</p>
                 {stats.repsTrend !== 0 && (
@@ -547,7 +547,7 @@ export default function Progress() {
               <CardContent className="pt-4">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <Activity className="h-4 w-4" />
-                  <span className="text-xs">Всего пробежал</span>
+                  <span className="text-xs">Пробежал</span>
                 </div>
                 <p className="text-2xl font-bold text-foreground">
                   {stats.totalDistance.toFixed(1)} км
@@ -561,7 +561,7 @@ export default function Progress() {
               <CardContent className="pt-4">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <Clock className="h-4 w-4" />
-                  <span className="text-xs">Времени бегал</span>
+                  <span className="text-xs">Бегал</span>
                 </div>
                 <p className="text-2xl font-bold text-foreground">
                   {stats.totalDurationMinutes >= 60
@@ -577,7 +577,7 @@ export default function Progress() {
               <CardContent className="pt-4">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <Clock className="h-4 w-4" />
-                  <span className="text-xs">Стоял в планке</span>
+                  <span className="text-xs">В планке</span>
                 </div>
                 <p className="text-2xl font-bold text-foreground">
                   {stats.totalPlankSeconds >= 3600
