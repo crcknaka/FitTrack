@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, User, Dumbbell, Trash2, Search, Activity } from "lucide-react";
+import { Plus, User, Dumbbell, Trash2, Search, Activity, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -164,7 +164,7 @@ export default function Exercises() {
                     </SelectItem>
                     <SelectItem value="timed">
                       <div className="flex items-center gap-2">
-                        <Activity className="h-4 w-4" />
+                        <Timer className="h-4 w-4" />
                         На время (секунды)
                       </div>
                     </SelectItem>
@@ -220,7 +220,7 @@ export default function Exercises() {
             </SelectItem>
             <SelectItem value="timed">
               <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4" />
+                <Timer className="h-4 w-4" />
                 На время
               </div>
             </SelectItem>
@@ -272,7 +272,7 @@ export default function Exercises() {
                           ) : exercise.type === "cardio" ? (
                             <Activity className="h-14 w-14 text-primary" />
                           ) : exercise.type === "timed" ? (
-                            <Activity className="h-14 w-14 text-primary" />
+                            <Timer className="h-14 w-14 text-primary" />
                           ) : (
                             <User className="h-14 w-14 text-primary" />
                           )}
@@ -337,7 +337,7 @@ export default function Exercises() {
                           ) : exercise.type === "cardio" ? (
                             <Activity className="h-14 w-14 text-muted-foreground" />
                           ) : exercise.type === "timed" ? (
-                            <Activity className="h-14 w-14 text-muted-foreground" />
+                            <Timer className="h-14 w-14 text-muted-foreground" />
                           ) : (
                             <User className="h-14 w-14 text-muted-foreground" />
                           )}

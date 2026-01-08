@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths } from "date-fns";
 import { ru } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, User, MessageSquare, Activity, Dumbbell } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, MessageSquare, Activity, Dumbbell, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -223,7 +223,7 @@ export default function CalendarPage() {
                       ) : exercise.type === "weighted" ? (
                         <Dumbbell className="h-4 w-4 text-primary" />
                       ) : exercise.type === "timed" ? (
-                        <Activity className="h-4 w-4 text-primary" />
+                        <Timer className="h-4 w-4 text-primary" />
                       ) : (
                         <User className="h-4 w-4 text-primary" />
                       )}

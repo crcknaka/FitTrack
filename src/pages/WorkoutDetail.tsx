@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { ArrowLeft, Plus, Trash2, User, Dumbbell, MessageSquare, Save, Pencil, X, Activity } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, User, Dumbbell, MessageSquare, Save, Pencil, X, Activity, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -353,7 +353,7 @@ export default function WorkoutDetail() {
                         ) : exercise.type === "cardio" ? (
                           <Activity className="h-12 w-12 text-muted-foreground" />
                         ) : exercise.type === "timed" ? (
-                          <Activity className="h-12 w-12 text-muted-foreground" />
+                          <Timer className="h-12 w-12 text-muted-foreground" />
                         ) : (
                           <User className="h-12 w-12 text-muted-foreground" />
                         )}
@@ -485,6 +485,8 @@ export default function WorkoutDetail() {
                       <Dumbbell className="h-5 w-5 text-primary" />
                     ) : exercise?.type === "cardio" ? (
                       <Activity className="h-5 w-5 text-primary" />
+                    ) : exercise?.type === "timed" ? (
+                      <Timer className="h-5 w-5 text-primary" />
                     ) : (
                       <User className="h-5 w-5 text-primary" />
                     )}
@@ -504,6 +506,8 @@ export default function WorkoutDetail() {
                         <Dumbbell className="h-12 w-12 text-muted-foreground" />
                       ) : exercise?.type === "cardio" ? (
                         <Activity className="h-12 w-12 text-muted-foreground" />
+                      ) : exercise?.type === "timed" ? (
+                        <Timer className="h-12 w-12 text-muted-foreground" />
                       ) : (
                         <User className="h-12 w-12 text-muted-foreground" />
                       )}
