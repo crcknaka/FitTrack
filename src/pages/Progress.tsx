@@ -711,7 +711,7 @@ export default function Progress() {
                 <div
                   key={entry.user_id}
                   className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg",
+                    "flex items-center gap-2 p-2.5 rounded-lg",
                     index === 0 && "bg-yellow-500/10 border border-yellow-500/20",
                     index === 1 && "bg-gray-400/10 border border-gray-400/20",
                     index === 2 && "bg-orange-600/10 border border-orange-600/20",
@@ -719,15 +719,15 @@ export default function Progress() {
                   )}
                 >
                   {/* Rank */}
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted font-bold text-sm">
-                    {index === 0 && <Medal className="h-5 w-5 text-yellow-500" />}
-                    {index === 1 && <Medal className="h-5 w-5 text-gray-400" />}
-                    {index === 2 && <Medal className="h-5 w-5 text-orange-600" />}
+                  <div className="flex items-center justify-center w-6 h-6 rounded-full bg-muted font-bold text-xs shrink-0">
+                    {index === 0 && <Medal className="h-4 w-4 text-yellow-500" />}
+                    {index === 1 && <Medal className="h-4 w-4 text-gray-400" />}
+                    {index === 2 && <Medal className="h-4 w-4 text-orange-600" />}
                     {index > 2 && <span>{index + 1}</span>}
                   </div>
 
                   {/* Avatar */}
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-2xl">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-xl shrink-0">
                     {entry.avatar || "👤"}
                   </div>
 
