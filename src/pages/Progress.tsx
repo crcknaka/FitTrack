@@ -409,17 +409,19 @@ export default function Progress() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <Weight className="h-4 w-4" />
-                <span className="text-xs">Макс. вес</span>
-              </div>
-              <p className="text-2xl font-bold text-foreground">
-                {stats.maxWeight > 0 ? `${stats.maxWeight} кг` : "—"}
-              </p>
-            </CardContent>
-          </Card>
+          {selectedExerciseData?.type !== "bodyweight" && (
+            <Card>
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Weight className="h-4 w-4" />
+                  <span className="text-xs">Макс. вес</span>
+                </div>
+                <p className="text-2xl font-bold text-foreground">
+                  {stats.maxWeight > 0 ? `${stats.maxWeight} кг` : "—"}
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardContent className="pt-4">
@@ -431,17 +433,19 @@ export default function Progress() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <TrendingUp className="h-4 w-4" />
-                <span className="text-xs">Объём</span>
-              </div>
-              <p className="text-2xl font-bold text-foreground">
-                {stats.totalVolume.toLocaleString()} кг
-              </p>
-            </CardContent>
-          </Card>
+          {selectedExerciseData?.type !== "bodyweight" && (
+            <Card>
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <TrendingUp className="h-4 w-4" />
+                  <span className="text-xs">Объём</span>
+                </div>
+                <p className="text-2xl font-bold text-foreground">
+                  {stats.totalVolume.toLocaleString()} кг
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {stats.totalDistance > 0 && (
             <Card>
