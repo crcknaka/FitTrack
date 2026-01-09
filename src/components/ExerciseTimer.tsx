@@ -217,6 +217,7 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
       {/* Mode Toggle */}
       <div className="flex gap-2 p-1 bg-muted rounded-lg w-full">
         <button
+          type="button"
           onClick={() => handleModeChange("stopwatch")}
           className={cn(
             "flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md text-sm font-medium transition-all",
@@ -230,6 +231,7 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
           Секундомер
         </button>
         <button
+          type="button"
           onClick={() => handleModeChange("countdown")}
           className={cn(
             "flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md text-sm font-medium transition-all",
@@ -270,6 +272,7 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
             {[30, 60, 90, 120].map((preset) => (
               <Button
                 key={preset}
+                type="button"
                 variant="outline"
                 size="sm"
                 className="h-9 text-sm"
