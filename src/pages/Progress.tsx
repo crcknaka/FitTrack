@@ -782,40 +782,44 @@ export default function Progress() {
       {/* Exercise history collapsible */}
       {selectedExercise !== "all" && exerciseHistory.length > 0 && (
         <Collapsible open={historyOpen} onOpenChange={setHistoryOpen}>
-          <Card>
+          <div className="border border-border/50 rounded-lg overflow-hidden">
             <CollapsibleTrigger asChild>
-              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Repeat className="h-5 w-5 text-primary" />
-                    История подходов
-                    <span className="text-sm font-normal text-muted-foreground">
-                      ({exerciseHistory.length})
-                    </span>
-                  </CardTitle>
-                  <ChevronDown className={cn(
-                    "h-5 w-5 text-muted-foreground transition-transform duration-200",
-                    historyOpen && "rotate-180"
-                  )} />
+              <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Repeat className="h-4 w-4" />
+                  <span>История подходов</span>
+                  <span className="text-xs opacity-60">
+                    ({exerciseHistory.length})
+                  </span>
                 </div>
-              </CardHeader>
+                <ChevronDown className={cn(
+                  "h-4 w-4 text-muted-foreground/60 transition-transform duration-200",
+                  historyOpen && "rotate-180"
+                )} />
+              </div>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <CardContent className="pt-0">
-                <div className="space-y-1 max-h-[300px] overflow-y-auto">
+              <div className="border-t border-border/30">
+                <div className="max-h-[280px] overflow-y-auto">
                   {exerciseHistory.map((set, index) => (
                     <div
                       key={index}
-                      className="py-2 px-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors text-sm text-muted-foreground"
+                      className={cn(
+                        "px-4 py-2.5 cursor-pointer transition-colors text-sm",
+                        "hover:bg-muted/30",
+                        index !== exerciseHistory.length - 1 && "border-b border-border/20"
+                      )}
                       onClick={() => navigate(`/workout/${set.workoutId}`)}
                     >
-                      {formatSetLine(set, selectedExerciseData?.type)}
+                      <span className="text-muted-foreground/80">
+                        {formatSetLine(set, selectedExerciseData?.type)}
+                      </span>
                     </div>
                   ))}
                 </div>
-              </CardContent>
+              </div>
             </CollapsibleContent>
-          </Card>
+          </div>
         </Collapsible>
       )}
 
