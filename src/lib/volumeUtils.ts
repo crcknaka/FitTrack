@@ -1,7 +1,10 @@
-import { Tables } from "@/integrations/supabase/types";
-
-type WorkoutSet = Tables<"workout_sets"> & {
-  exercise?: Tables<"exercises"> | null;
+// Simplified WorkoutSet type that works with both full Supabase types and useWorkouts types
+type WorkoutSet = {
+  reps: number | null;
+  weight: number | null;
+  exercise?: {
+    type: "bodyweight" | "weighted" | "cardio" | "timed";
+  } | null;
 };
 
 /**
