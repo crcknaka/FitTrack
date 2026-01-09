@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
@@ -81,7 +80,7 @@ export default function Settings() {
   const [height, setHeight] = useState("");
   const [currentWeight, setCurrentWeight] = useState("");
   const [avatar, setAvatar] = useState("");
-  const [isSkuf, setIsSkuf] = useState(false);
+  const [skufLevel, setSkufLevel] = useState(0); // 0-4: Нормис -> Альфа-Скуф
 
   // Password change state
   const [newPassword, setNewPassword] = useState("");
@@ -104,7 +103,7 @@ export default function Settings() {
       setHeight(profile.height?.toString() || "");
       setCurrentWeight(profile.current_weight?.toString() || "");
       setAvatar(profile.avatar || "");
-      setIsSkuf(profile.is_skuf || false);
+      setSkufLevel(profile.is_skuf ? 4 : 0); // Конвертируем boolean в уровень
     }
   }, [profile]);
 
@@ -117,7 +116,7 @@ export default function Settings() {
         height: height ? parseFloat(height) : null,
         current_weight: currentWeight ? parseFloat(currentWeight) : null,
         avatar: avatar || null,
-        is_skuf: isSkuf,
+        is_skuf: skufLevel > 0, // Конвертируем уровень в boolean для БД
       });
       toast.success("Профиль обновлен");
     } catch (error) {
@@ -460,34 +459,44 @@ export default function Settings() {
                   </div>
                 </div>
 
-                {/* Date of Birth and Skuf */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
+                {/* Date of Birth */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
                     <Label htmlFor="dateOfBirth">Дата рождения</Label>
-                    <Input
-                      id="dateOfBirth"
-                      type="date"
-                      value={dateOfBirth}
-                      onChange={(e) => setDateOfBirth(e.target.value)}
-                    />
+                    {dateOfBirth && (() => {
+                      const birthDate = new Date(dateOfBirth);
+                      const today = new Date();
+                      let age = today.getFullYear() - birthDate.getFullYear();
+                      const monthDiff = today.getMonth() - birthDate.getMonth();
+                      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                        age--;
+                      }
+                      if (age >= 0 && age < 150) {
+                        const lastDigit = age % 10;
+                        const lastTwoDigits = age % 100;
+                        let suffix = "лет";
+                        if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+                          suffix = "лет";
+                        } else if (lastDigit === 1) {
+                          suffix = "год";
+                        } else if (lastDigit >= 2 && lastDigit <= 4) {
+                          suffix = "года";
+                        }
+                        return (
+                          <span className="text-sm text-muted-foreground">
+                            ({age} {suffix})
+                          </span>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="skuf">Скуф</Label>
-                    <div className="flex items-center h-10 px-3">
-                      <Checkbox
-                        id="skuf"
-                        checked={isSkuf}
-                        onCheckedChange={(checked) => setIsSkuf(checked as boolean)}
-                      />
-                      <label
-                        htmlFor="skuf"
-                        className="ml-2 text-sm cursor-pointer select-none"
-                      >
-                        {isSkuf ? "Да" : "Нет"}
-                      </label>
-                    </div>
-                  </div>
+                  <Input
+                    id="dateOfBirth"
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                  />
                 </div>
 
                 {/* Height and Weight */}
@@ -514,6 +523,55 @@ export default function Settings() {
                       onChange={(e) => setCurrentWeight(e.target.value)}
                       placeholder="Введите вес"
                     />
+                  </div>
+                </div>
+
+                {/* Skuf Level Slider - Easter Egg */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Нормис</span>
+                    <span>Альфа-Скуф</span>
+                  </div>
+
+                  {/* Level buttons */}
+                  <div className="grid grid-cols-5 gap-1">
+                    {[
+                      { level: 0, emoji: "😊", label: "Нормис", color: "from-blue-400 to-cyan-500" },
+                      { level: 1, emoji: "😏", label: "Дерзкий", color: "from-green-400 to-emerald-500" },
+                      { level: 2, emoji: "😤", label: "Качок", color: "from-yellow-400 to-orange-500" },
+                      { level: 3, emoji: "🔥", label: "Скуф", color: "from-orange-400 to-red-500" },
+                      { level: 4, emoji: "🗿", label: "Альфа", color: "from-red-500 to-rose-600" },
+                    ].map((item) => (
+                      <button
+                        key={item.level}
+                        onClick={() => setSkufLevel(item.level)}
+                        className={cn(
+                          "flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200",
+                          skufLevel === item.level
+                            ? `bg-gradient-to-br ${item.color} text-white shadow-lg scale-105`
+                            : "bg-muted hover:bg-muted/70 hover:scale-102"
+                        )}
+                      >
+                        <span className="text-xl">{item.emoji}</span>
+                        <span className="text-[10px] font-medium leading-tight">{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Status message */}
+                  <div className={cn(
+                    "text-center text-xs py-1.5 rounded-full transition-all duration-300",
+                    skufLevel === 0 && "bg-blue-500/10 text-blue-500",
+                    skufLevel === 1 && "bg-green-500/10 text-green-500",
+                    skufLevel === 2 && "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+                    skufLevel === 3 && "bg-orange-500/10 text-orange-500",
+                    skufLevel === 4 && "bg-red-500/10 text-red-500"
+                  )}>
+                    {skufLevel === 0 && "Обычный пользователь"}
+                    {skufLevel === 1 && "Начинающий качок"}
+                    {skufLevel === 2 && "Опытный качок"}
+                    {skufLevel === 3 && "Режим скуфа активен!"}
+                    {skufLevel === 4 && "АЛЬФА-СКУФ ДЕТЕКТЕД 🗿🗿🗿"}
                   </div>
                 </div>
 
