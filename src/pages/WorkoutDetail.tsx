@@ -646,6 +646,7 @@ export default function WorkoutDetail() {
                               step="0.1"
                               value={editDistance}
                               onChange={(e) => setEditDistance(e.target.value)}
+                              onKeyDown={(e) => e.key === "Enter" && handleSaveEdit()}
                               className="h-8 text-center"
                               placeholder="км"
                               autoFocus
@@ -654,6 +655,7 @@ export default function WorkoutDetail() {
                               type="number"
                               value={editDuration}
                               onChange={(e) => setEditDuration(e.target.value)}
+                              onKeyDown={(e) => e.key === "Enter" && handleSaveEdit()}
                               className="h-8 text-center"
                               placeholder="мин"
                             />
@@ -664,6 +666,7 @@ export default function WorkoutDetail() {
                               type="number"
                               value={editDuration}
                               onChange={(e) => setEditDuration(e.target.value)}
+                              onKeyDown={(e) => e.key === "Enter" && handleSaveEdit()}
                               className="h-8 text-center"
                               placeholder="сек"
                               autoFocus
@@ -675,6 +678,7 @@ export default function WorkoutDetail() {
                               type="number"
                               value={editReps}
                               onChange={(e) => setEditReps(e.target.value)}
+                              onKeyDown={(e) => e.key === "Enter" && handleSaveEdit()}
                               className="h-8 text-center"
                               autoFocus
                             />
@@ -685,6 +689,7 @@ export default function WorkoutDetail() {
                               type="number"
                               value={editReps}
                               onChange={(e) => setEditReps(e.target.value)}
+                              onKeyDown={(e) => e.key === "Enter" && handleSaveEdit()}
                               className="h-8 text-center"
                               autoFocus
                             />
@@ -693,6 +698,7 @@ export default function WorkoutDetail() {
                               step="0.5"
                               value={editWeight}
                               onChange={(e) => setEditWeight(e.target.value)}
+                              onKeyDown={(e) => e.key === "Enter" && handleSaveEdit()}
                               className="h-8 text-center"
                               placeholder="—"
                             />
