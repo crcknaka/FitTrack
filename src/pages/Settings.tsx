@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { useAccentColor, ACCENT_COLORS } from "@/hooks/useAccentColor";
 import { toast } from "sonner";
@@ -459,44 +460,93 @@ export default function Settings() {
                   </div>
                 </div>
 
-                {/* Date of Birth */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="dateOfBirth">Дата рождения</Label>
-                    {dateOfBirth && (() => {
-                      const birthDate = new Date(dateOfBirth);
-                      const today = new Date();
-                      let age = today.getFullYear() - birthDate.getFullYear();
-                      const monthDiff = today.getMonth() - birthDate.getMonth();
-                      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                        age--;
-                      }
-                      if (age >= 0 && age < 150) {
-                        const lastDigit = age % 10;
-                        const lastTwoDigits = age % 100;
-                        let suffix = "лет";
-                        if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
-                          suffix = "лет";
-                        } else if (lastDigit === 1) {
-                          suffix = "год";
-                        } else if (lastDigit >= 2 && lastDigit <= 4) {
-                          suffix = "года";
+                {/* Date of Birth and Zodiac */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="dateOfBirth">
+                      Дата рождения
+                      {dateOfBirth && (() => {
+                        const birthDate = new Date(dateOfBirth);
+                        const today = new Date();
+                        let age = today.getFullYear() - birthDate.getFullYear();
+                        const monthDiff = today.getMonth() - birthDate.getMonth();
+                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                          age--;
                         }
-                        return (
-                          <span className="text-sm text-muted-foreground">
-                            ({age} {suffix})
-                          </span>
-                        );
-                      }
-                      return null;
-                    })()}
+                        if (age >= 0 && age < 150) {
+                          const lastDigit = age % 10;
+                          const lastTwoDigits = age % 100;
+                          let suffix = "лет";
+                          if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+                            suffix = "лет";
+                          } else if (lastDigit === 1) {
+                            suffix = "год";
+                          } else if (lastDigit >= 2 && lastDigit <= 4) {
+                            suffix = "года";
+                          }
+                          return (
+                            <span className="text-muted-foreground font-normal ml-1">
+                              ({age} {suffix})
+                            </span>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </Label>
+                    <Input
+                      id="dateOfBirth"
+                      type="date"
+                      value={dateOfBirth}
+                      onChange={(e) => setDateOfBirth(e.target.value)}
+                    />
                   </div>
-                  <Input
-                    id="dateOfBirth"
-                    type="date"
-                    value={dateOfBirth}
-                    onChange={(e) => setDateOfBirth(e.target.value)}
-                  />
+
+                  {/* Zodiac Sign */}
+                  <div className="space-y-2">
+                    <Label>Знак зодиака</Label>
+                    {dateOfBirth ? (() => {
+                      const birthDate = new Date(dateOfBirth);
+                      const month = birthDate.getMonth() + 1;
+                      const day = birthDate.getDate();
+                      const zodiacSigns = [
+                        { sign: "♑", name: "Козерог", end: [1, 19], desc: "Работает даже в зале. Цель — стать CEO фитнеса" },
+                        { sign: "♒", name: "Водолей", end: [2, 18], desc: "Изобретает новые упражнения. Никто не понимает технику" },
+                        { sign: "♓", name: "Рыбы", end: [3, 20], desc: "Мечтает о кубиках, лёжа на диване" },
+                        { sign: "♈", name: "Овен", end: [4, 19], desc: "Первый у штанги, первый в травмпункте" },
+                        { sign: "♉", name: "Телец", end: [5, 20], desc: "Тренируется ради еды после тренировки" },
+                        { sign: "♊", name: "Близнецы", end: [6, 20], desc: "Полтренировки — селфи, полтренировки — сплетни" },
+                        { sign: "♋", name: "Рак", end: [7, 22], desc: "Тренируется дома. Люди — это слишком" },
+                        { sign: "♌", name: "Лев", end: [8, 22], desc: "Зеркало в зале — главный тренажёр" },
+                        { sign: "♍", name: "Дева", end: [9, 22], desc: "Идеальная техника. Поправляет всех вокруг" },
+                        { sign: "♎", name: "Весы", end: [10, 22], desc: "40 минут выбирает программу тренировок" },
+                        { sign: "♏", name: "Скорпион", end: [11, 21], desc: "Тренируется в чёрном. Смотрит исподлобья" },
+                        { sign: "♐", name: "Стрелец", end: [12, 21], desc: "Сегодня йога, завтра кроссфит, послезавтра бокс" },
+                        { sign: "♑", name: "Козерог", end: [12, 31], desc: "Работает даже в зале. Цель — стать CEO фитнеса" },
+                      ];
+                      const zodiac = zodiacSigns.find(z =>
+                        month < z.end[0] || (month === z.end[0] && day <= z.end[1])
+                      ) || zodiacSigns[0];
+                      return (
+                        <TooltipProvider>
+                          <Tooltip delayDuration={0}>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center gap-2 h-10 px-3 rounded-md border border-input bg-background cursor-pointer hover:bg-muted/50 transition-colors">
+                                <span className="text-xl">{zodiac.sign}</span>
+                                <span className="text-sm">{zodiac.name}</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" className="max-w-[200px] text-center">
+                              <p>{zodiac.desc}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      );
+                    })() : (
+                      <div className="flex items-center h-10 px-3 rounded-md border border-input bg-background text-muted-foreground text-sm">
+                        —
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Height and Weight */}
