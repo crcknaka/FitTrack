@@ -321,9 +321,14 @@ export default function WorkoutDetail() {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
             {format(new Date(workout.date), "d MMMM yyyy", { locale: ru })}
           </h1>
-          <p className="text-muted-foreground text-base">
+          <span className={cn(
+            "text-xs px-1.5 py-0.5 rounded font-medium inline-block",
+            [0, 6].includes(new Date(workout.date).getDay())
+              ? "bg-primary/10 text-primary"
+              : "bg-sky-500/10 text-sky-600 dark:text-sky-400"
+          )}>
             {format(new Date(workout.date), "EEEE", { locale: ru })}
-          </p>
+          </span>
         </div>
       </div>
 
