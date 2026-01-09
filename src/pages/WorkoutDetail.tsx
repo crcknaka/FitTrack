@@ -783,7 +783,7 @@ export default function WorkoutDetail() {
                   }}
                 >
                   <Plus className="h-4 w-4" />
-                  Добавить подход
+                  Ешё подход
                 </Button>
               </CardContent>
             </Card>
@@ -802,10 +802,11 @@ export default function WorkoutDetail() {
             {!isEditingNotes && (
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
                 onClick={() => setIsEditingNotes(true)}
               >
-                {notes ? "Редактировать" : "Добавить"}
+                {notes ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
               </Button>
             )}
           </div>
