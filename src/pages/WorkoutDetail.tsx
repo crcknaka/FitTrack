@@ -457,6 +457,7 @@ export default function WorkoutDetail() {
                       placeholder="5.5"
                       value={distance}
                       onChange={(e) => setDistance(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleAddSet()}
                       autoFocus
                     />
                   </div>
@@ -467,6 +468,7 @@ export default function WorkoutDetail() {
                       placeholder="30"
                       value={duration}
                       onChange={(e) => setDuration(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleAddSet()}
                     />
                   </div>
                 </div>
@@ -478,6 +480,7 @@ export default function WorkoutDetail() {
                     placeholder="60"
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleAddSet()}
                     autoFocus
                   />
                 </div>
@@ -490,6 +493,7 @@ export default function WorkoutDetail() {
                       placeholder="8"
                       value={reps}
                       onChange={(e) => setReps(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleAddSet()}
                       autoFocus
                     />
                   </div>
@@ -502,6 +506,7 @@ export default function WorkoutDetail() {
                         placeholder="18"
                         value={weight}
                         onChange={(e) => setWeight(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleAddSet()}
                       />
                       {selectedExercise.name.toLowerCase().includes("гантел") && (
                         <p className="text-xs text-muted-foreground">
