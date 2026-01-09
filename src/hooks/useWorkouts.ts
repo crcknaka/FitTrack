@@ -186,6 +186,7 @@ export function useAddSet() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workouts"] });
+      queryClient.invalidateQueries({ queryKey: ["workout"] });
     },
   });
 }
@@ -204,6 +205,7 @@ export function useDeleteSet() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workouts"] });
+      queryClient.invalidateQueries({ queryKey: ["workout"] });
     },
   });
 }
@@ -245,6 +247,7 @@ export function useUpdateSet() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workouts"] });
+      queryClient.invalidateQueries({ queryKey: ["workout"] });
     },
   });
 }
@@ -270,6 +273,7 @@ export function useUpdateWorkout() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workouts"] });
+      queryClient.invalidateQueries({ queryKey: ["workout"] });
     },
   });
 }
