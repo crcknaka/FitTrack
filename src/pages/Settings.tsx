@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -14,10 +14,51 @@ import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-const AVATARS = [
-  "😎", "💪", "🔥", "🏋️", "🎯", "🚀", "⚡", "🦾",
-  "🏆", "👑", "🌟", "💯", "🎖️", "🥇", "🦁", "🐯",
-  "🦅", "🐺", "🤘", "✨", "💥", "🎪", "🎭", "🎨"
+const AVATAR_CATEGORIES = [
+  {
+    name: "Спорт",
+    emojis: ["💪", "🏋️", "🏃", "🚴", "🏊", "🧘", "🤸", "🏆", "🥇", "🎯", "⚽", "🏀", "🎾", "🥊", "🏈"]
+  },
+  {
+    name: "Крутые",
+    emojis: ["😎", "🔥", "⚡", "🚀", "💥", "✨", "👑", "🌟", "💯", "🦾", "🎖️", "💎", "🏅", "⭐", "🔱"]
+  },
+  {
+    name: "Животные",
+    emojis: ["🦁", "🐯", "🐺", "🦅", "🦊", "🐻", "🦍", "🐉", "🦈", "🐸", "🦖", "🦏", "🐘", "🦬", "🐗"]
+  },
+  {
+    name: "Смешные",
+    emojis: ["🤪", "😜", "🤓", "🥸", "🤡", "👻", "💀", "🎃", "👽", "🤖", "🥴", "😵‍💫", "🫠", "🤯", "🫡"]
+  },
+  {
+    name: "Мемы",
+    emojis: ["🗿", "💅", "🤌", "😤", "🙃", "😏", "🫣", "🤭", "😈", "👀", "🤷", "🙈", "🤦", "😬", "🥶"]
+  },
+  {
+    name: "Еда",
+    emojis: ["🍕", "🍔", "🌮", "🍣", "🍩", "🍪", "🥑", "🍗", "🥩", "🍺", "🍟", "🌭", "🍦", "🧁", "🍿"]
+  },
+  {
+    name: "Природа",
+    emojis: ["🌴", "🌵", "🍀", "🌸", "🌺", "🌻", "🍁", "🌊", "⛰️", "🌙", "☀️", "🌈", "❄️", "🔥", "💧"]
+  },
+  {
+    name: "Техника",
+    emojis: ["🎮", "🕹️", "💻", "📱", "🎧", "🎬", "📸", "🔧", "⚙️", "🔌", "💡", "🔋", "📡", "🛸", "🚗"]
+  },
+  {
+    name: "Музыка",
+    emojis: ["🎸", "🎹", "🥁", "🎺", "🎻", "🎤", "🎵", "🎶", "🎼", "🪗", "🎷", "📯", "🪕", "🪘", "🎚️"]
+  },
+  {
+    name: "Магия",
+    emojis: ["🧙", "🧚", "🧛", "🧜", "🧝", "🦸", "🦹", "🥷", "🧞", "🧟", "🪄", "🔮", "⚗️", "🪬", "🧿"]
+  },
+  {
+    name: "Разное",
+    emojis: ["🎭", "🎪", "🎨", "🤘", "🖖", "🦄", "☯️", "♾️", "🎲", "🃏", "🀄", "🧩", "🪅", "🎁", "🧸"]
+  }
 ];
 
 export default function Settings() {
@@ -140,32 +181,42 @@ export default function Settings() {
               Профиль
             </div>
             {/* Avatar Selection - Right Side */}
-            <Popover>
-              <PopoverTrigger asChild>
+            <Dialog>
+              <DialogTrigger asChild>
                 <button className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-4xl hover:bg-primary/20 transition-colors cursor-pointer border-2 border-primary/20">
                   {avatar || "👤"}
                 </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-72" align="end">
-                <div className="grid grid-cols-5 gap-2">
-                  {AVATARS.map((emoji) => (
-                    <button
-                      key={emoji}
-                      type="button"
-                      onClick={() => setAvatar(emoji)}
-                      className={cn(
-                        "text-2xl p-3 rounded-lg transition-all hover:scale-110",
-                        avatar === emoji
-                          ? "bg-primary text-primary-foreground shadow-md scale-110"
-                          : "bg-muted hover:bg-muted/70"
-                      )}
-                    >
-                      {emoji}
-                    </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-sm max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Выбери аватар</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-2">
+                  {AVATAR_CATEGORIES.map((category) => (
+                    <div key={category.name}>
+                      <p className="text-xs font-medium text-muted-foreground mb-2">{category.name}</p>
+                      <div className="grid grid-cols-5 gap-2">
+                        {category.emojis.map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => setAvatar(emoji)}
+                            className={cn(
+                              "text-2xl p-2.5 rounded-lg transition-all active:scale-95",
+                              avatar === emoji
+                                ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary ring-offset-2"
+                                : "bg-muted hover:bg-muted/70"
+                            )}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
-              </PopoverContent>
-            </Popover>
+              </DialogContent>
+            </Dialog>
           </CardTitle>
         </CardHeader>
         <CardContent>
