@@ -282,34 +282,91 @@ export default function Progress() {
     return sets;
   }, [workouts, selectedExercise, dateRange]);
 
-  // Format set line based on exercise type
-  const formatSetLine = (set: typeof exerciseHistory[0], exerciseType: string | undefined) => {
-    const parsedDate = parseISO(set.date);
-    const dayOfWeek = format(parsedDate, "EEEEEE", { locale: ru }); // Пн, Вт, etc.
-    const capitalizedDay = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1);
-    const date = format(parsedDate, "d MMM", { locale: ru });
-    const datePrefix = `${capitalizedDay}, ${date}`;
-
+  // Format set data based on exercise type (without date - date shown in group header)
+  const formatSetData = (set: typeof exerciseHistory[0], exerciseType: string | undefined) => {
     switch (exerciseType) {
       case "weighted":
-        return `${datePrefix} · ${set.reps} × ${set.weight} кг`;
+        return `${set.reps} ${pluralize(set.reps || 0, "раз", "раза", "раз")} по ${set.weight} кг`;
       case "bodyweight":
-        return `${datePrefix} · ${set.reps} повт`;
+        return `${set.reps} ${pluralize(set.reps || 0, "раз", "раза", "раз")}`;
       case "cardio": {
-        const parts = [];
-        if (set.distance_km) parts.push(`${set.distance_km} км`);
-        if (set.duration_minutes) parts.push(`${set.duration_minutes} мин`);
-        return `${datePrefix} · ${parts.join(", ")}`;
+        if (set.distance_km && set.duration_minutes) {
+          return `${set.distance_km} км за ${set.duration_minutes} мин`;
+        } else if (set.distance_km) {
+          return `${set.distance_km} км`;
+        } else if (set.duration_minutes) {
+          return `${set.duration_minutes} мин`;
+        }
+        return "";
       }
       case "timed": {
         const seconds = set.plank_seconds || 0;
         const minutes = (seconds / 60).toFixed(2);
-        return `${datePrefix} · ${seconds} сек (${minutes} мин)`;
+        return `${seconds} сек (${minutes} мин)`;
       }
       default:
-        return datePrefix;
+        return "";
     }
   };
+
+  // Calculate max values for history records
+  const historyMaxValues = useMemo(() => {
+    if (!exerciseHistory.length) return { maxReps: 0, maxWeight: 0, maxDistance: 0, maxPlankSeconds: 0 };
+
+    return {
+      maxReps: Math.max(...exerciseHistory.map(s => s.reps || 0)),
+      maxWeight: Math.max(...exerciseHistory.map(s => s.weight || 0)),
+      maxDistance: Math.max(...exerciseHistory.map(s => s.distance_km || 0)),
+      maxPlankSeconds: Math.max(...exerciseHistory.map(s => s.plank_seconds || 0)),
+    };
+  }, [exerciseHistory]);
+
+  // Check if a set is a record
+  const isRecordSet = (set: typeof exerciseHistory[0], exerciseType: string | undefined) => {
+    switch (exerciseType) {
+      case "weighted":
+        return set.weight === historyMaxValues.maxWeight && historyMaxValues.maxWeight > 0;
+      case "bodyweight":
+        return set.reps === historyMaxValues.maxReps && historyMaxValues.maxReps > 0;
+      case "cardio":
+        return set.distance_km === historyMaxValues.maxDistance && historyMaxValues.maxDistance > 0;
+      case "timed":
+        return set.plank_seconds === historyMaxValues.maxPlankSeconds && historyMaxValues.maxPlankSeconds > 0;
+      default:
+        return false;
+    }
+  };
+
+  // Group exercise history by date
+  const groupedHistory = useMemo(() => {
+    const groups: Map<string, typeof exerciseHistory> = new Map();
+
+    exerciseHistory.forEach(set => {
+      const dateKey = set.date;
+      if (!groups.has(dateKey)) {
+        groups.set(dateKey, []);
+      }
+      groups.get(dateKey)!.push(set);
+    });
+
+    // Convert to array and format headers
+    return Array.from(groups.entries()).map(([dateKey, sets]) => {
+      const parsedDate = parseISO(dateKey);
+      // Full day name with capital letter
+      const dayOfWeek = format(parsedDate, "EEEE", { locale: ru });
+      const capitalizedDay = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1);
+      // Full month name with capital letter
+      const day = format(parsedDate, "d", { locale: ru });
+      const month = format(parsedDate, "MMMM", { locale: ru });
+      const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
+
+      return {
+        dateKey,
+        header: `${capitalizedDay}, ${day} ${capitalizedMonth}`,
+        sets,
+      };
+    });
+  }, [exerciseHistory]);
 
   // Check if single day is selected (from === to)
   const isSingleDaySelected = dateRange?.from && dateRange?.to &&
@@ -782,44 +839,68 @@ export default function Progress() {
       {/* Exercise history collapsible */}
       {selectedExercise !== "all" && exerciseHistory.length > 0 && (
         <Collapsible open={historyOpen} onOpenChange={setHistoryOpen}>
-          <div className="border border-border/50 rounded-lg overflow-hidden">
+          <Card className="overflow-hidden">
             <CollapsibleTrigger asChild>
-              <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Repeat className="h-4 w-4" />
-                  <span>История подходов</span>
-                  <span className="text-xs opacity-60">
-                    ({exerciseHistory.length})
+              <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-md bg-primary/10">
+                    <Repeat className="h-4 w-4 text-primary" />
+                  </div>
+                  <span className="font-medium text-foreground">История подходов</span>
+                  <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                    {exerciseHistory.length}
                   </span>
                 </div>
                 <ChevronDown className={cn(
-                  "h-4 w-4 text-muted-foreground/60 transition-transform duration-200",
+                  "h-5 w-5 text-muted-foreground transition-transform duration-200",
                   historyOpen && "rotate-180"
                 )} />
               </div>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="border-t border-border/30">
-                <div className="max-h-[280px] overflow-y-auto">
-                  {exerciseHistory.map((set, index) => (
-                    <div
-                      key={index}
-                      className={cn(
-                        "px-4 py-2.5 cursor-pointer transition-colors text-sm",
-                        "hover:bg-muted/30",
-                        index !== exerciseHistory.length - 1 && "border-b border-border/20"
-                      )}
-                      onClick={() => navigate(`/workout/${set.workoutId}`)}
-                    >
-                      <span className="text-muted-foreground/80">
-                        {formatSetLine(set, selectedExerciseData?.type)}
-                      </span>
+              <div className="border-t border-border">
+                <div className="max-h-[320px] overflow-y-auto">
+                  {groupedHistory.map((group, groupIndex) => (
+                    <div key={group.dateKey}>
+                      {/* Date header */}
+                      <div className={cn(
+                        "px-4 py-2.5 text-sm font-semibold text-foreground bg-muted/50 flex items-center gap-2",
+                        groupIndex !== 0 && "border-t border-border"
+                      )}>
+                        <CalendarIcon className="h-3.5 w-3.5 text-primary" />
+                        {group.header}
+                      </div>
+                      {/* Sets for this date */}
+                      {group.sets.map((set, setIndex) => {
+                        const isRecord = isRecordSet(set, selectedExerciseData?.type);
+                        return (
+                          <div
+                            key={setIndex}
+                            className={cn(
+                              "px-4 py-2.5 pl-10 cursor-pointer transition-colors text-sm flex items-center justify-between",
+                              "hover:bg-primary/5",
+                              setIndex !== group.sets.length - 1 && "border-b border-border/30",
+                              isRecord && "bg-yellow-500/5"
+                            )}
+                            onClick={() => navigate(`/workout/${set.workoutId}`)}
+                          >
+                            <span className={cn(
+                              isRecord ? "text-yellow-600 dark:text-yellow-400 font-semibold" : "text-foreground/80"
+                            )}>
+                              {formatSetData(set, selectedExerciseData?.type)}
+                            </span>
+                            {isRecord && (
+                              <Trophy className="h-4 w-4 text-yellow-500 shrink-0" />
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   ))}
                 </div>
               </div>
             </CollapsibleContent>
-          </div>
+          </Card>
         </Collapsible>
       )}
 
