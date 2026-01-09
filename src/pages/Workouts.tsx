@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { format, isWithinInterval, startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, subMonths, parseISO } from "date-fns";
+import { format, isWithinInterval, startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, subMonths, parseISO, isToday } from "date-fns";
 import { ru } from "date-fns/locale";
 import { Plus, Calendar as CalendarIcon, Trash2, Filter, X, Dumbbell, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -407,7 +407,8 @@ export default function Workouts() {
               key={workout.id}
               className={cn(
                 "cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary/30",
-                "animate-fade-in"
+                "animate-fade-in",
+                isToday(parseISO(workout.date)) && "border-green-500/50 dark:border-green-400/50"
               )}
               style={{ animationDelay: `${index * 50}ms` }}
               onClick={() => navigate(`/workout/${workout.id}`)}
@@ -433,6 +434,11 @@ export default function Workouts() {
                     <span className="font-medium text-foreground">
                       {format(new Date(workout.date), "d MMMM", { locale: ru })}
                     </span>
+                    {isToday(parseISO(workout.date)) && (
+                      <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-green-500/15 text-green-600 dark:text-green-400">
+                        сегодня
+                      </span>
+                    )}
                     <span className={cn(
                       "text-xs px-1.5 py-0.5 rounded font-medium",
                       isWeekend(workout.date)

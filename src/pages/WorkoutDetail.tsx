@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { format } from "date-fns";
+import { format, isToday, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import { ArrowLeft, Plus, Trash2, User, Dumbbell, MessageSquare, Save, Pencil, X, Activity, Timer, Camera, Loader2, ImageIcon, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -335,14 +335,21 @@ export default function WorkoutDetail() {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
             {format(new Date(workout.date), "d MMMM yyyy", { locale: ru })}
           </h1>
-          <span className={cn(
-            "text-xs px-1.5 py-0.5 rounded font-medium inline-block",
-            [0, 6].includes(new Date(workout.date).getDay())
-              ? "bg-primary/10 text-primary"
-              : "bg-sky-500/10 text-sky-600 dark:text-sky-400"
-          )}>
-            {format(new Date(workout.date), "EEEE", { locale: ru })}
-          </span>
+          <div className="flex items-center gap-2">
+            {isToday(parseISO(workout.date)) && (
+              <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-green-500/15 text-green-600 dark:text-green-400">
+                сегодня
+              </span>
+            )}
+            <span className={cn(
+              "text-xs px-1.5 py-0.5 rounded font-medium",
+              [0, 6].includes(new Date(workout.date).getDay())
+                ? "bg-primary/10 text-primary"
+                : "bg-sky-500/10 text-sky-600 dark:text-sky-400"
+            )}>
+              {format(new Date(workout.date), "EEEE", { locale: ru })}
+            </span>
+          </div>
         </div>
       </div>
 
