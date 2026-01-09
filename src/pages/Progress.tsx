@@ -776,6 +776,23 @@ export default function Progress() {
             </Select>
           </div>
 
+          {/* Exercise image */}
+          {(() => {
+            const selectedEx = exercises?.find(e => e.name === leaderboardExercise);
+            if (selectedEx?.image_url) {
+              return (
+                <div className="w-full aspect-[4/3] rounded-lg overflow-hidden bg-muted">
+                  <img
+                    src={selectedEx.image_url}
+                    alt={leaderboardExercise}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              );
+            }
+            return null;
+          })()}
+
           {/* Leaderboard table */}
           {leaderboardData && leaderboardData.length > 0 ? (
             <div className="space-y-2">
