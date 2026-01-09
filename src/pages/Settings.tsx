@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { User, Save, LogOut, Lock, Eye, EyeOff, ChevronDown, Sun, Moon, Monitor } from "lucide-react";
+import { User, Save, LogOut, Lock, Eye, EyeOff, ChevronDown, Sun, Moon, Monitor, Download, FileJson, FileSpreadsheet } from "lucide-react";
+import { useWorkouts } from "@/hooks/useWorkouts";
+import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -64,9 +66,11 @@ const AVATAR_CATEGORIES = [
 
 export default function Settings() {
   const { data: profile, isLoading } = useProfile();
+  const { data: workouts } = useWorkouts();
   const updateProfile = useUpdateProfile();
   const { signOut, updatePassword } = useAuth();
   const { theme, setTheme } = useTheme();
+  const [exportLoading, setExportLoading] = useState(false);
 
   const [displayName, setDisplayName] = useState("");
   const [gender, setGender] = useState<"male" | "female" | "other" | "none">("none");
@@ -140,6 +144,102 @@ export default function Settings() {
     }
   };
 
+  const exportToJSON = () => {
+    if (!workouts || workouts.length === 0) {
+      toast.error("Нет данных для экспорта");
+      return;
+    }
+    setExportLoading(true);
+    try {
+      const exportData = {
+        exportDate: new Date().toISOString(),
+        profile: profile ? {
+          displayName: profile.display_name,
+          gender: profile.gender,
+          dateOfBirth: profile.date_of_birth,
+          height: profile.height,
+          weight: profile.current_weight,
+        } : null,
+        workouts: workouts.map(w => ({
+          date: w.date,
+          notes: w.notes,
+          sets: w.workout_sets?.map(s => ({
+            exercise: s.exercise?.name,
+            exerciseType: s.exercise?.type,
+            setNumber: s.set_number,
+            reps: s.reps,
+            weight: s.weight,
+            distanceKm: s.distance_km,
+            durationMinutes: s.duration_minutes,
+            plankSeconds: s.plank_seconds,
+          })) || []
+        }))
+      };
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `fittrack-export-${format(new Date(), "yyyy-MM-dd")}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Данные экспортированы в JSON");
+    } catch {
+      toast.error("Ошибка экспорта");
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  const exportToCSV = () => {
+    if (!workouts || workouts.length === 0) {
+      toast.error("Нет данных для экспорта");
+      return;
+    }
+    setExportLoading(true);
+    try {
+      const rows: string[] = [];
+      rows.push("Дата,Упражнение,Тип,Подход,Повторения,Вес (кг),Дистанция (км),Время (мин),Планка (сек),Заметки");
+
+      workouts.forEach(w => {
+        const notes = w.notes?.replace(/"/g, '""') || "";
+        if (w.workout_sets && w.workout_sets.length > 0) {
+          w.workout_sets.forEach(s => {
+            const exerciseName = s.exercise?.name?.replace(/"/g, '""') || "";
+            rows.push([
+              w.date,
+              `"${exerciseName}"`,
+              s.exercise?.type || "",
+              s.set_number,
+              s.reps ?? "",
+              s.weight ?? "",
+              s.distance_km ?? "",
+              s.duration_minutes ?? "",
+              s.plank_seconds ?? "",
+              `"${notes}"`
+            ].join(","));
+          });
+        } else {
+          rows.push([w.date, "", "", "", "", "", "", "", "", `"${notes}"`].join(","));
+        }
+      });
+
+      const csvContent = "\uFEFF" + rows.join("\n"); // BOM for Excel
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `fittrack-export-${format(new Date(), "yyyy-MM-dd")}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Данные экспортированы в CSV");
+    } catch {
+      toast.error("Ошибка экспорта");
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6 animate-fade-in">
@@ -161,7 +261,7 @@ export default function Settings() {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
             Настройки
           </h1>
-          <p className="text-muted-foreground text-base">Управление профилем</p>
+          <p className="text-muted-foreground text-base">Настройки</p>
         </div>
 
         {/* Logo - Mobile only */}
@@ -372,6 +472,46 @@ export default function Settings() {
               <span className="text-sm font-medium">Авто</span>
             </button>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Export Data */}
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Download className="h-5 w-5 text-primary" />
+            Экспорт данных
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            Скачайте все ваши тренировки для резервного копирования или анализа
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              variant="outline"
+              onClick={exportToCSV}
+              disabled={exportLoading || !workouts?.length}
+              className="gap-2"
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              CSV (Excel)
+            </Button>
+            <Button
+              variant="outline"
+              onClick={exportToJSON}
+              disabled={exportLoading || !workouts?.length}
+              className="gap-2"
+            >
+              <FileJson className="h-4 w-4" />
+              JSON
+            </Button>
+          </div>
+          {workouts && workouts.length > 0 && (
+            <p className="text-xs text-muted-foreground mt-3">
+              {workouts.length} тренировок будет экспортировано
+            </p>
+          )}
         </CardContent>
       </Card>
 
