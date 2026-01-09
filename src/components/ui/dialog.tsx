@@ -30,11 +30,16 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+>(({ className, children, onCloseAutoFocus, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
+      onCloseAutoFocus={(e) => {
+        // Prevent auto-focus on close which causes scroll jump
+        e.preventDefault();
+        onCloseAutoFocus?.(e);
+      }}
       className={cn(
         "fixed z-50 grid w-full gap-4 border bg-background p-6 shadow-lg duration-200",
         // Mobile: top-aligned, full width, scrollable
