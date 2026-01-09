@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { User, Save, LogOut, Lock, Eye, EyeOff, ChevronDown } from "lucide-react";
+import { useTheme } from "next-themes";
+import { User, Save, LogOut, Lock, Eye, EyeOff, ChevronDown, Sun, Moon, Monitor } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -65,6 +66,7 @@ export default function Settings() {
   const { data: profile, isLoading } = useProfile();
   const updateProfile = useUpdateProfile();
   const { signOut, updatePassword } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   const [displayName, setDisplayName] = useState("");
   const [gender, setGender] = useState<"male" | "female" | "other" | "none">("none");
@@ -318,6 +320,58 @@ export default function Settings() {
             Сохранить
           </Button>
         </div>
+        </CardContent>
+      </Card>
+
+      {/* Theme Selection */}
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg flex items-center gap-2">
+            {theme === "dark" ? <Moon className="h-5 w-5 text-primary" /> :
+             theme === "light" ? <Sun className="h-5 w-5 text-primary" /> :
+             <Monitor className="h-5 w-5 text-primary" />}
+            Тема оформления
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              onClick={() => setTheme("light")}
+              className={cn(
+                "flex flex-col items-center gap-2 p-3 rounded-lg transition-all",
+                theme === "light"
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "bg-muted hover:bg-muted/70"
+              )}
+            >
+              <Sun className="h-5 w-5" />
+              <span className="text-sm font-medium">Светлая</span>
+            </button>
+            <button
+              onClick={() => setTheme("dark")}
+              className={cn(
+                "flex flex-col items-center gap-2 p-3 rounded-lg transition-all",
+                theme === "dark"
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "bg-muted hover:bg-muted/70"
+              )}
+            >
+              <Moon className="h-5 w-5" />
+              <span className="text-sm font-medium">Тёмная</span>
+            </button>
+            <button
+              onClick={() => setTheme("system")}
+              className={cn(
+                "flex flex-col items-center gap-2 p-3 rounded-lg transition-all",
+                theme === "system"
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "bg-muted hover:bg-muted/70"
+              )}
+            >
+              <Monitor className="h-5 w-5" />
+              <span className="text-sm font-medium">Авто</span>
+            </button>
+          </div>
         </CardContent>
       </Card>
 
