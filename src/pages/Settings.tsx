@@ -346,7 +346,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 animate-fade-in">
       <div className="flex items-center gap-4">
         {/* Title and subtitle */}
         <div className="flex-1 space-y-1">
@@ -389,7 +389,7 @@ export default function Settings() {
             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent>
+            <CardContent className="pt-4 pb-6">
               <div className="space-y-4">
                 {/* Avatar Selection */}
                 <div className="flex justify-center">
@@ -559,7 +559,7 @@ export default function Settings() {
             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="space-y-6">
+            <CardContent className="pt-4 pb-6 space-y-6">
               {/* Тема */}
               <div className="space-y-2">
                 <p className="text-sm font-medium text-muted-foreground">Тема</p>
@@ -653,7 +653,7 @@ export default function Settings() {
             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent>
+            <CardContent className="pt-4 pb-6">
               <p className="text-sm text-muted-foreground mb-4">
                 Скачайте все ваши тренировки для резервного копирования или анализа
               </p>
@@ -711,7 +711,7 @@ export default function Settings() {
             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent>
+            <CardContent className="pt-4 pb-6">
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="newPassword">Новый пароль</Label>
