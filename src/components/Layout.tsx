@@ -25,7 +25,7 @@ export default function Layout({ children }: LayoutProps) {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Main Content */}
       <main className="flex-1 pb-20 md:pb-6 md:ml-64">
-        <div className="container max-w-3xl py-6">
+        <div className="container max-w-3xl py-6 overflow-x-hidden">
           {children}
         </div>
       </main>
