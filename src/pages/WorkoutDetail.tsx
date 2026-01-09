@@ -498,6 +498,11 @@ export default function WorkoutDetail() {
                         value={weight}
                         onChange={(e) => setWeight(e.target.value)}
                       />
+                      {selectedExercise.name.toLowerCase().includes("гантел") && (
+                        <p className="text-xs text-muted-foreground">
+                          Укажи вес одной гантели
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
