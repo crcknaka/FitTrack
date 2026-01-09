@@ -435,7 +435,7 @@ export default function Workouts() {
                       {format(new Date(workout.date), "d MMMM", { locale: ru })}
                     </span>
                     {isToday(parseISO(workout.date)) && (
-                      <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-green-500/15 text-green-600 dark:text-green-400">
+                      <span className="hidden md:inline text-xs px-1.5 py-0.5 rounded font-medium bg-green-500/15 text-green-600 dark:text-green-400">
                         сегодня
                       </span>
                     )}
