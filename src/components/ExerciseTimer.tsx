@@ -18,11 +18,18 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
   const [countdownTarget, setCountdownTarget] = useState(60); // Default 60 seconds
   const [showResult, setShowResult] = useState(false);
   const [finalSeconds, setFinalSeconds] = useState(0);
+  const [wasPaused, setWasPaused] = useState(false);
 
   const intervalRef = useRef<number | null>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const startTimeRef = useRef<number | null>(null);
   const pausedTimeRef = useRef<number>(0);
+  const secondsRef = useRef<number>(0);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    secondsRef.current = seconds;
+  }, [seconds]);
 
   // Format seconds to MM:SS
   const formatTime = (totalSeconds: number) => {
@@ -76,6 +83,22 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
     };
   }, [releaseWakeLock]);
 
+  const handleStop = useCallback(() => {
+    setIsRunning(false);
+
+    // Calculate final time using ref to get current value
+    let result: number;
+    if (mode === "stopwatch") {
+      result = secondsRef.current;
+    } else {
+      // For countdown, calculate how much time actually passed
+      result = countdownTarget - secondsRef.current;
+    }
+
+    setFinalSeconds(result);
+    setShowResult(true);
+  }, [mode, countdownTarget]);
+
   // Timer logic
   useEffect(() => {
     if (isRunning) {
@@ -113,7 +136,7 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning, mode, countdownTarget, requestWakeLock, releaseWakeLock]);
+  }, [isRunning, mode, countdownTarget, requestWakeLock, releaseWakeLock, handleStop]);
 
   const handleStart = () => {
     if (mode === "countdown" && countdownTarget <= 0) return;
@@ -129,23 +152,8 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
 
   const handlePause = () => {
     setIsRunning(false);
+    setWasPaused(true);
     pausedTimeRef.current = mode === "stopwatch" ? seconds : countdownTarget - seconds;
-  };
-
-  const handleStop = () => {
-    setIsRunning(false);
-
-    // Calculate final time
-    let result: number;
-    if (mode === "stopwatch") {
-      result = seconds;
-    } else {
-      // For countdown, calculate how much time actually passed
-      result = countdownTarget - seconds;
-    }
-
-    setFinalSeconds(result);
-    setShowResult(true);
   };
 
   const handleReset = () => {
@@ -154,6 +162,7 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
     startTimeRef.current = null;
     pausedTimeRef.current = 0;
     setShowResult(false);
+    setWasPaused(false);
   };
 
   const handleSaveResult = () => {
@@ -171,18 +180,18 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
   // Result screen
   if (showResult) {
     return (
-      <div className="flex flex-col items-center gap-6 py-6">
+      <div className="flex flex-col items-center gap-5 py-4">
         <div className="text-center">
           <p className="text-sm text-muted-foreground mb-2">Результат</p>
-          <div className="text-6xl font-bold text-primary tabular-nums">
+          <div className="text-5xl font-bold text-primary tabular-nums">
             {formatTime(finalSeconds)}
           </div>
-          <p className="text-lg text-muted-foreground mt-2">
+          <p className="text-base text-muted-foreground mt-2">
             {finalSeconds} сек
           </p>
         </div>
 
-        <div className="flex gap-3 w-full">
+        <div className="flex gap-2 w-full">
           <Button
             variant="outline"
             className="flex-1"
@@ -237,31 +246,33 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
 
       {/* Countdown Target Input */}
       {mode === "countdown" && !isRunning && seconds === countdownTarget && (
-        <div className="flex items-center gap-2 w-full">
-          <span className="text-sm text-muted-foreground">Цель:</span>
-          <Input
-            type="number"
-            inputMode="numeric"
-            value={countdownTarget}
-            onChange={(e) => {
-              const val = parseInt(e.target.value) || 0;
-              setCountdownTarget(Math.min(3600, Math.max(1, val)));
-              setSeconds(Math.min(3600, Math.max(1, val)));
-            }}
-            className="w-24 text-center"
-            min={1}
-            max={3600}
-          />
-          <span className="text-sm text-muted-foreground">сек</span>
+        <div className="w-full space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground shrink-0">Цель:</span>
+            <Input
+              type="number"
+              inputMode="numeric"
+              value={countdownTarget}
+              onChange={(e) => {
+                const val = parseInt(e.target.value) || 0;
+                setCountdownTarget(Math.min(3600, Math.max(1, val)));
+                setSeconds(Math.min(3600, Math.max(1, val)));
+              }}
+              className="w-20 text-center"
+              min={1}
+              max={3600}
+            />
+            <span className="text-sm text-muted-foreground">сек</span>
+          </div>
 
           {/* Quick presets */}
-          <div className="flex gap-1 ml-auto">
+          <div className="grid grid-cols-4 gap-2">
             {[30, 60, 90, 120].map((preset) => (
               <Button
                 key={preset}
                 variant="outline"
                 size="sm"
-                className="px-2 h-8 text-xs"
+                className="h-9 text-sm"
                 onClick={() => {
                   setCountdownTarget(preset);
                   setSeconds(preset);
@@ -275,9 +286,9 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
       )}
 
       {/* Timer Display */}
-      <div className="relative">
+      <div className="flex flex-col items-center gap-2">
         <div className={cn(
-          "text-7xl font-bold tabular-nums transition-colors",
+          "text-6xl font-bold tabular-nums transition-colors",
           isRunning ? "text-primary" : "text-foreground"
         )}>
           {formatTime(seconds)}
@@ -285,9 +296,7 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
 
         {/* Animated indicator when running */}
         {isRunning && (
-          <div className="absolute -right-8 top-1/2 -translate-y-1/2">
-            <Timer className="h-6 w-6 text-primary animate-pulse" />
-          </div>
+          <Timer className="h-5 w-5 text-primary animate-pulse" />
         )}
       </div>
 
@@ -333,7 +342,7 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
       </div>
 
       {/* Reset button when paused */}
-      {!isRunning && seconds > 0 && (
+      {!isRunning && wasPaused && (
         <Button
           variant="ghost"
           size="sm"
