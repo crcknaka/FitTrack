@@ -8,12 +8,15 @@ import { useSharedWorkout } from "@/hooks/useWorkoutShare";
 import { useUserProfile } from "@/hooks/useProfile";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
+import { useTheme } from "next-themes";
 
 export default function SharedWorkout() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { data: workout, isLoading } = useSharedWorkout(token);
   const { data: ownerProfile } = useUserProfile(workout?.user_id);
+  const { resolvedTheme } = useTheme();
+  const logoSrc = resolvedTheme === "dark" ? "/logo-white.png" : "/logo-black.png";
 
   // Check if avatar is an emoji (not a URL)
   const isAvatarEmoji = useMemo(() => {
@@ -119,7 +122,8 @@ export default function SharedWorkout() {
       {/* Header Banner */}
       <div className="bg-primary/10 border-b border-primary/20 p-4">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 flex-1">
             {ownerProfile?.avatar ? (
               isAvatarEmoji ? (
                 // Display emoji avatar
@@ -173,6 +177,15 @@ export default function SharedWorkout() {
                 )}
               </div>
             </div>
+            </div>
+
+            {/* Logo */}
+            <img
+              src={logoSrc}
+              alt="FitTrack"
+              className="h-14 w-auto cursor-pointer"
+              onClick={() => navigate("/auth")}
+            />
           </div>
         </div>
       </div>
