@@ -6,17 +6,19 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Layout from "@/components/Layout";
-import Auth from "@/pages/Auth";
-import Workouts from "@/pages/Workouts";
-import WorkoutDetail from "@/pages/WorkoutDetail";
-import CalendarPage from "@/pages/CalendarPage";
-import Progress from "@/pages/Progress";
-import Exercises from "@/pages/Exercises";
-import Settings from "@/pages/Settings";
-import ResetPassword from "@/pages/ResetPassword";
-import NotFound from "@/pages/NotFound";
 import { Loader2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
+
+// Lazy load pages for better code splitting
+const Auth = lazy(() => import("@/pages/Auth"));
+const Workouts = lazy(() => import("@/pages/Workouts"));
+const WorkoutDetail = lazy(() => import("@/pages/WorkoutDetail"));
+const CalendarPage = lazy(() => import("@/pages/CalendarPage"));
+const Progress = lazy(() => import("@/pages/Progress"));
+const Exercises = lazy(() => import("@/pages/Exercises"));
+const Settings = lazy(() => import("@/pages/Settings"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
 
 // Schema version - increment this when you make breaking database changes
 const SCHEMA_VERSION = "2"; // Updated for cardio exercise type
@@ -35,15 +37,20 @@ function useSchemaVersionCheck() {
   }, []);
 }
 
+// Loading fallback component
+function PageLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (!user) {
@@ -58,59 +65,61 @@ function AppRoutes() {
   useSchemaVersionCheck();
 
   return (
-    <Routes>
-      <Route path="/auth" element={<Auth />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Workouts />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/workout/:id"
-        element={
-          <ProtectedRoute>
-            <WorkoutDetail />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/calendar"
-        element={
-          <ProtectedRoute>
-            <CalendarPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/progress"
-        element={
-          <ProtectedRoute>
-            <Progress />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/exercises"
-        element={
-          <ProtectedRoute>
-            <Exercises />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute>
-            <Settings />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Workouts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/workout/:id"
+          element={
+            <ProtectedRoute>
+              <WorkoutDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/calendar"
+          element={
+            <ProtectedRoute>
+              <CalendarPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/progress"
+          element={
+            <ProtectedRoute>
+              <Progress />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/exercises"
+          element={
+            <ProtectedRoute>
+              <Exercises />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   );
 }
 

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { format, isToday, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
-import { ArrowLeft, Plus, Trash2, User, Dumbbell, MessageSquare, Save, Pencil, X, Activity, Timer, Camera, Loader2, ImageIcon, LayoutGrid, Trophy } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, User, Dumbbell, MessageSquare, Save, Pencil, X, Activity, Timer, Camera, Loader2, ImageIcon, LayoutGrid, Trophy, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -56,6 +56,7 @@ export default function WorkoutDetail() {
   const [distance, setDistance] = useState("");
   const [duration, setDuration] = useState("");
   const [exerciseTypeFilter, setExerciseTypeFilter] = useState<"all" | "bodyweight" | "weighted" | "cardio" | "timed">("all");
+  const [exerciseSearchQuery, setExerciseSearchQuery] = useState("");
   const [notes, setNotes] = useState("");
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [setToDelete, setSetToDelete] = useState<string | null>(null);
@@ -256,6 +257,7 @@ export default function WorkoutDetail() {
       setDistance("");
       setDuration("");
       setShowTimer(false);
+      setExerciseSearchQuery("");
     }
   };
 
@@ -436,8 +438,8 @@ export default function WorkoutDetail() {
           
           {!selectedExercise ? (
             <>
-              {/* Filter */}
-              <div className="mt-4">
+              {/* Filter and Search */}
+              <div className="mt-4 space-y-3">
                 <Select value={exerciseTypeFilter} onValueChange={(v) => setExerciseTypeFilter(v as "all" | "bodyweight" | "weighted" | "cardio" | "timed")}>
                   <SelectTrigger className="w-full h-12">
                     <SelectValue />
@@ -475,10 +477,23 @@ export default function WorkoutDetail() {
                     </SelectItem>
                   </SelectContent>
                 </Select>
+
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Поиск упражнения..."
+                    value={exerciseSearchQuery}
+                    onChange={(e) => setExerciseSearchQuery(e.target.value)}
+                    className="pl-9 h-12"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 mt-4">
-              {exercises?.filter((e) => exerciseTypeFilter === "all" || e.type === exerciseTypeFilter).map((exercise) => (
+              {exercises
+                ?.filter((e) => exerciseTypeFilter === "all" || e.type === exerciseTypeFilter)
+                .filter((e) => e.name.toLowerCase().includes(exerciseSearchQuery.toLowerCase()))
+                .map((exercise) => (
                 <button
                   key={exercise.id}
                   onClick={() => setSelectedExercise(exercise)}
