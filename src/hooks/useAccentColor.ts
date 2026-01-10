@@ -5,29 +5,19 @@ export type AccentColor = "coral" | "blue" | "green" | "purple" | "pink" | "teal
 const ACCENT_STORAGE_KEY = "fittrack-accent-color";
 
 export function useAccentColor() {
+  // Read initial value from DOM attribute (already set in main.tsx)
   const [accentColor, setAccentColorState] = useState<AccentColor>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(ACCENT_STORAGE_KEY);
-      if (stored && isValidAccent(stored)) {
-        return stored as AccentColor;
-      }
+    const currentAccent = document.documentElement.getAttribute("data-accent");
+    if (currentAccent && isValidAccent(currentAccent)) {
+      return currentAccent as AccentColor;
     }
     return "coral";
   });
 
   useEffect(() => {
-    const root = document.documentElement;
-    root.setAttribute("data-accent", accentColor);
+    document.documentElement.setAttribute("data-accent", accentColor);
     localStorage.setItem(ACCENT_STORAGE_KEY, accentColor);
   }, [accentColor]);
-
-  // Initialize on mount
-  useEffect(() => {
-    const stored = localStorage.getItem(ACCENT_STORAGE_KEY);
-    if (stored && isValidAccent(stored)) {
-      document.documentElement.setAttribute("data-accent", stored);
-    }
-  }, []);
 
   const setAccentColor = (color: AccentColor) => {
     setAccentColorState(color);
