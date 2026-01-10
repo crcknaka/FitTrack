@@ -15,6 +15,13 @@ export default function SharedWorkout() {
   const { data: workout, isLoading } = useSharedWorkout(token);
   const { data: ownerProfile } = useUserProfile(workout?.user_id);
 
+  // Check if avatar is an emoji (not a URL)
+  const isAvatarEmoji = useMemo(() => {
+    if (!ownerProfile?.avatar) return false;
+    // Check if it's a URL (starts with http/https) or emoji
+    return !ownerProfile.avatar.startsWith('http');
+  }, [ownerProfile?.avatar]);
+
   // Calculate age from date of birth
   const ownerAge = useMemo(() => {
     if (!ownerProfile?.date_of_birth) return null;
@@ -114,26 +121,40 @@ export default function SharedWorkout() {
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4">
             {ownerProfile?.avatar ? (
-              <img
-                src={ownerProfile.avatar}
-                alt={ownerProfile.display_name || "Пользователь"}
-                className="w-16 h-16 rounded-full object-cover border-2 border-primary/30"
-                onError={(e) => {
-                  // Fallback to default icon if image fails to load
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  if (target.nextElementSibling) {
-                    (target.nextElementSibling as HTMLElement).style.display = 'flex';
-                  }
-                }}
-              />
-            ) : null}
-            <div className={cn(
-              "w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/30",
-              ownerProfile?.avatar && "hidden"
-            )}>
-              <User className="h-8 w-8 text-primary" />
-            </div>
+              isAvatarEmoji ? (
+                // Display emoji avatar
+                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/30">
+                  <span className="text-3xl">{ownerProfile.avatar}</span>
+                </div>
+              ) : (
+                // Display image avatar
+                <div className="relative w-16 h-16">
+                  <img
+                    src={ownerProfile.avatar}
+                    alt={ownerProfile.display_name || "Пользователь"}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-primary/30"
+                    onError={(e) => {
+                      // Fallback to default icon if image fails to load
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const fallback = target.nextElementSibling as HTMLElement;
+                      if (fallback) {
+                        fallback.style.display = 'flex';
+                      }
+                    }}
+                  />
+                  <div
+                    className="hidden absolute inset-0 w-16 h-16 rounded-full bg-primary/20 items-center justify-center border-2 border-primary/30"
+                  >
+                    <User className="h-8 w-8 text-primary" />
+                  </div>
+                </div>
+              )
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/30">
+                <User className="h-8 w-8 text-primary" />
+              </div>
+            )}
             <div className="flex-1">
               <p className="text-sm text-muted-foreground">Тренировка пользователя</p>
               <p className="font-bold text-lg text-foreground">{ownerProfile?.display_name || "Пользователь"}</p>
