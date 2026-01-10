@@ -341,3 +341,73 @@ export function useSingleWorkout(workoutId: string | undefined) {
     enabled: !!workoutId,
   });
 }
+
+export function useUserAllTimeBests(userId: string | null | undefined) {
+  return useQuery({
+    queryKey: ["user-all-time-bests", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("workout_sets")
+        .select(`
+          id,
+          exercise_id,
+          reps,
+          weight,
+          distance_km,
+          duration_minutes,
+          plank_seconds,
+          workout:workouts!inner(user_id),
+          exercise:exercises(id, name, type)
+        `)
+        .eq('workout.user_id', userId!);
+
+      if (error) throw error;
+
+      // Group by exercise and find max values
+      const bestsByExercise: Record<string, {
+        exerciseType: string;
+        maxWeight?: number;
+        maxReps?: number;
+        maxDistance?: number;
+        maxSeconds?: number;
+      }> = {};
+
+      data?.forEach((set: any) => {
+        const exerciseId = set.exercise_id;
+        const exerciseType = set.exercise?.type;
+
+        if (!bestsByExercise[exerciseId]) {
+          bestsByExercise[exerciseId] = { exerciseType };
+        }
+
+        const current = bestsByExercise[exerciseId];
+
+        switch (exerciseType) {
+          case "weighted":
+            if (set.weight && (!current.maxWeight || set.weight > current.maxWeight)) {
+              current.maxWeight = set.weight;
+            }
+            break;
+          case "bodyweight":
+            if (set.reps && (!current.maxReps || set.reps > current.maxReps)) {
+              current.maxReps = set.reps;
+            }
+            break;
+          case "cardio":
+            if (set.distance_km && (!current.maxDistance || set.distance_km > current.maxDistance)) {
+              current.maxDistance = set.distance_km;
+            }
+            break;
+          case "timed":
+            if (set.plank_seconds && (!current.maxSeconds || set.plank_seconds > current.maxSeconds)) {
+              current.maxSeconds = set.plank_seconds;
+            }
+            break;
+        }
+      });
+
+      return bestsByExercise;
+    },
+    enabled: !!userId,
+  });
+}
