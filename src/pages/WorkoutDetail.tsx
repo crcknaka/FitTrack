@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { format, isToday, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
-import { ArrowLeft, Plus, Trash2, User, Dumbbell, MessageSquare, Save, Pencil, X, Activity, Timer, Camera, Loader2, ImageIcon, LayoutGrid, Trophy, Search, Share2, Copy, Check, Ban, Lock, Unlock } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, User, Dumbbell, MessageSquare, Save, Pencil, X, Activity, Timer, Camera, Loader2, ImageIcon, LayoutGrid, Trophy, Search, Share2, Copy, Check, Ban, Lock, Unlock, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useSingleWorkout, useAddSet, useDeleteSet, useUpdateSet, useUpdateWorkout, useUserAllTimeBests, useLockWorkout, useUnlockWorkout } from "@/hooks/useWorkouts";
 import { useExercises, Exercise } from "@/hooks/useExercises";
 import { useWorkoutShare, useCreateWorkoutShare, useDeactivateWorkoutShare } from "@/hooks/useWorkoutShare";
+import { useFavoriteExercises, useToggleFavoriteExercise } from "@/hooks/useFavoriteExercises";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,6 +40,8 @@ export default function WorkoutDetail() {
   const { user } = useAuth();
   const { data: workout, isLoading: isWorkoutLoading } = useSingleWorkout(id);
   const { data: exercises } = useExercises();
+  const { data: favoriteExercises } = useFavoriteExercises();
+  const toggleFavorite = useToggleFavoriteExercise();
   const addSet = useAddSet();
   const deleteSet = useDeleteSet();
   const updateSet = useUpdateSet();
@@ -59,6 +62,7 @@ export default function WorkoutDetail() {
   const [duration, setDuration] = useState("");
   const [exerciseTypeFilter, setExerciseTypeFilter] = useState<"all" | "bodyweight" | "weighted" | "cardio" | "timed">("all");
   const [exerciseSearchQuery, setExerciseSearchQuery] = useState("");
+  const [exerciseTab, setExerciseTab] = useState<"all" | "favorites">("all");
   const [notes, setNotes] = useState("");
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [setToDelete, setSetToDelete] = useState<string | null>(null);
@@ -179,6 +183,32 @@ export default function WorkoutDetail() {
     return result;
   }, [setsByExercise, allTimeBests]);
 
+  // Filter exercises based on tab, type filter, and search query
+  const filteredExercises = useMemo(() => {
+    if (!exercises) return [];
+
+    let filtered = exercises;
+
+    // Filter by favorites tab
+    if (exerciseTab === "favorites" && favoriteExercises) {
+      filtered = filtered.filter(e => favoriteExercises.has(e.id));
+    }
+
+    // Filter by exercise type
+    if (exerciseTypeFilter !== "all") {
+      filtered = filtered.filter(e => e.type === exerciseTypeFilter);
+    }
+
+    // Filter by search query
+    if (exerciseSearchQuery) {
+      filtered = filtered.filter(e =>
+        e.name.toLowerCase().includes(exerciseSearchQuery.toLowerCase())
+      );
+    }
+
+    return filtered;
+  }, [exercises, exerciseTab, favoriteExercises, exerciseTypeFilter, exerciseSearchQuery]);
+
   if (isWorkoutLoading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
@@ -194,6 +224,18 @@ export default function WorkoutDetail() {
       </div>
     );
   }
+
+  const handleToggleFavorite = async (exerciseId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent exercise selection when clicking star
+    const isFavorite = favoriteExercises?.has(exerciseId) || false;
+
+    try {
+      await toggleFavorite.mutateAsync({ exerciseId, isFavorite });
+      toast.success(isFavorite ? "Убрано из избранного" : "Добавлено в избранное");
+    } catch (error) {
+      toast.error("Ошибка при обновлении избранного");
+    }
+  };
 
   const handleAddSet = async () => {
     if (!selectedExercise) {
@@ -634,6 +676,25 @@ export default function WorkoutDetail() {
           
           {!selectedExercise ? (
             <>
+              {/* Tabs: All / Favorites */}
+              <div className="flex gap-2 mt-4">
+                <Button
+                  variant={exerciseTab === "all" ? "default" : "outline"}
+                  className="flex-1"
+                  onClick={() => setExerciseTab("all")}
+                >
+                  Все
+                </Button>
+                <Button
+                  variant={exerciseTab === "favorites" ? "default" : "outline"}
+                  className="flex-1 gap-2"
+                  onClick={() => setExerciseTab("favorites")}
+                >
+                  <Star className="h-4 w-4" />
+                  Избранные
+                </Button>
+              </div>
+
               {/* Filter and Search */}
               <div className="mt-4 space-y-3">
                 <Select value={exerciseTypeFilter} onValueChange={(v) => setExerciseTypeFilter(v as "all" | "bodyweight" | "weighted" | "cardio" | "timed")}>
@@ -686,49 +747,70 @@ export default function WorkoutDetail() {
               </div>
 
               <div className="grid grid-cols-2 gap-3 mt-4">
-              {exercises
-                ?.filter((e) => exerciseTypeFilter === "all" || e.type === exerciseTypeFilter)
-                .filter((e) => e.name.toLowerCase().includes(exerciseSearchQuery.toLowerCase()))
-                .map((exercise) => (
-                <button
-                  key={exercise.id}
-                  onClick={() => setSelectedExercise(exercise)}
-                  className="text-left group hover:scale-[1.02] transition-transform"
-                >
-                  <div className="border rounded-lg overflow-hidden hover:border-primary transition-colors">
-                    {exercise.image_url ? (
-                      <div className="w-full aspect-[4/3] overflow-hidden bg-muted">
-                        <img 
-                          src={exercise.image_url} 
-                          alt={exercise.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-full aspect-[4/3] bg-muted flex items-center justify-center">
-                        {exercise.type === "weighted" ? (
-                          <Dumbbell className="h-12 w-12 text-muted-foreground" />
-                        ) : exercise.type === "cardio" ? (
-                          <Activity className="h-12 w-12 text-muted-foreground" />
-                        ) : exercise.type === "timed" ? (
-                          <Timer className="h-12 w-12 text-muted-foreground" />
+              {filteredExercises.length === 0 ? (
+                <div className="col-span-2 text-center py-12 text-muted-foreground">
+                  {exerciseTab === "favorites" ? "Нет избранных упражнений" : "Упражнения не найдены"}
+                </div>
+              ) : (
+                filteredExercises.map((exercise) => {
+                  const isFavorite = favoriteExercises?.has(exercise.id) || false;
+                  return (
+                    <button
+                      key={exercise.id}
+                      onClick={() => setSelectedExercise(exercise)}
+                      className="text-left group hover:scale-[1.02] transition-transform"
+                    >
+                      <div className="border rounded-lg overflow-hidden hover:border-primary transition-colors relative">
+                        {/* Favorite Star Button */}
+                        <button
+                          onClick={(e) => handleToggleFavorite(exercise.id, e)}
+                          className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors"
+                        >
+                          <Star
+                            className={cn(
+                              "h-4 w-4 transition-colors",
+                              isFavorite
+                                ? "fill-yellow-500 text-yellow-500"
+                                : "text-muted-foreground hover:text-yellow-500"
+                            )}
+                          />
+                        </button>
+
+                        {exercise.image_url ? (
+                          <div className="w-full aspect-[4/3] overflow-hidden bg-muted">
+                            <img
+                              src={exercise.image_url}
+                              alt={exercise.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            />
+                          </div>
                         ) : (
-                          <User className="h-12 w-12 text-muted-foreground" />
+                          <div className="w-full aspect-[4/3] bg-muted flex items-center justify-center">
+                            {exercise.type === "weighted" ? (
+                              <Dumbbell className="h-12 w-12 text-muted-foreground" />
+                            ) : exercise.type === "cardio" ? (
+                              <Activity className="h-12 w-12 text-muted-foreground" />
+                            ) : exercise.type === "timed" ? (
+                              <Timer className="h-12 w-12 text-muted-foreground" />
+                            ) : (
+                              <User className="h-12 w-12 text-muted-foreground" />
+                            )}
+                          </div>
                         )}
+                        <div className="p-3 bg-card">
+                          <p className="font-medium text-foreground text-center">{exercise.name}</p>
+                          <p className="text-xs text-muted-foreground text-center">
+                            {exercise.type === "weighted" ? "С отягощением" :
+                             exercise.type === "cardio" ? "Кардио" :
+                             exercise.type === "timed" ? "На время" :
+                             "Собственный вес"}
+                          </p>
+                        </div>
                       </div>
-                    )}
-                    <div className="p-3 bg-card">
-                      <p className="font-medium text-foreground text-center">{exercise.name}</p>
-                      <p className="text-xs text-muted-foreground text-center">
-                        {exercise.type === "weighted" ? "С отягощением" :
-                         exercise.type === "cardio" ? "Кардио" :
-                         exercise.type === "timed" ? "На время" :
-                         "Собственный вес"}
-                      </p>
-                    </div>
-                  </div>
-                </button>
-              ))}
+                    </button>
+                  );
+                })
+              )}
             </div>
             </>
           ) : (
