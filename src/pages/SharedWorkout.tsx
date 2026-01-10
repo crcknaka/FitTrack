@@ -183,7 +183,7 @@ export default function SharedWorkout() {
             <img
               src={logoSrc}
               alt="FitTrack"
-              className="h-14 w-auto cursor-pointer"
+              className="h-8 sm:h-10 w-auto cursor-pointer flex-shrink-0"
               onClick={() => navigate("/auth")}
             />
           </div>
