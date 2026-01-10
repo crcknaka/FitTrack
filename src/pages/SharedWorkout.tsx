@@ -1,0 +1,365 @@
+import { useParams, useNavigate } from "react-router-dom";
+import { format, isToday, parseISO, differenceInYears } from "date-fns";
+import { ru } from "date-fns/locale";
+import { Loader2, Dumbbell, User, Activity, Timer, MessageSquare, ImageIcon, Trophy, LogIn, UserPlus, Calendar, Weight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSharedWorkout } from "@/hooks/useWorkoutShare";
+import { useUserProfile } from "@/hooks/useProfile";
+import { cn } from "@/lib/utils";
+import { useMemo } from "react";
+
+export default function SharedWorkout() {
+  const { token } = useParams<{ token: string }>();
+  const navigate = useNavigate();
+  const { data: workout, isLoading } = useSharedWorkout(token);
+  const { data: ownerProfile } = useUserProfile(workout?.user_id);
+
+  // Calculate age from date of birth
+  const ownerAge = useMemo(() => {
+    if (!ownerProfile?.date_of_birth) return null;
+    return differenceInYears(new Date(), new Date(ownerProfile.date_of_birth));
+  }, [ownerProfile?.date_of_birth]);
+
+  // Group sets by exercise
+  const setsByExercise = useMemo(() => {
+    if (!workout?.workout_sets) return {};
+    return workout.workout_sets.reduce((acc, set) => {
+      const exerciseId = set.exercise_id;
+      if (!acc[exerciseId]) {
+        acc[exerciseId] = {
+          exercise: set.exercise,
+          sets: [],
+        };
+      }
+      acc[exerciseId].sets.push(set);
+      return acc;
+    }, {} as Record<string, { exercise: typeof workout.workout_sets[0]["exercise"]; sets: typeof workout.workout_sets }>);
+  }, [workout?.workout_sets]);
+
+  // Calculate max values per exercise for trophy icons
+  const recordSetIds = useMemo(() => {
+    const result: Set<string> = new Set();
+
+    Object.entries(setsByExercise).forEach(([, { exercise, sets }]) => {
+      if (!sets || sets.length === 0) return;
+
+      const sortedSets = [...sets].sort((a, b) => a.set_number - b.set_number);
+
+      switch (exercise?.type) {
+        case "weighted": {
+          const maxWeight = Math.max(...sortedSets.map(s => s.weight || 0));
+          if (maxWeight > 0) {
+            const firstMaxSet = sortedSets.find(s => s.weight === maxWeight);
+            if (firstMaxSet) result.add(firstMaxSet.id);
+          }
+          break;
+        }
+        case "bodyweight": {
+          const maxReps = Math.max(...sortedSets.map(s => s.reps || 0));
+          if (maxReps > 0) {
+            const firstMaxSet = sortedSets.find(s => s.reps === maxReps);
+            if (firstMaxSet) result.add(firstMaxSet.id);
+          }
+          break;
+        }
+        case "cardio": {
+          const maxDistance = Math.max(...sortedSets.map(s => s.distance_km || 0));
+          if (maxDistance > 0) {
+            const firstMaxSet = sortedSets.find(s => s.distance_km === maxDistance);
+            if (firstMaxSet) result.add(firstMaxSet.id);
+          }
+          break;
+        }
+        case "timed": {
+          const maxSeconds = Math.max(...sortedSets.map(s => s.plank_seconds || 0));
+          if (maxSeconds > 0) {
+            const firstMaxSet = sortedSets.find(s => s.plank_seconds === maxSeconds);
+            if (firstMaxSet) result.add(firstMaxSet.id);
+          }
+          break;
+        }
+      }
+    });
+
+    return result;
+  }, [setsByExercise]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!workout) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4">
+        <div className="text-center space-y-4">
+          <h1 className="text-2xl font-bold text-foreground">Тренировка не найдена</h1>
+          <p className="text-muted-foreground">Эта ссылка недействительна или была деактивирована</p>
+          <Button onClick={() => navigate("/auth")}>
+            Перейти к приложению
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header Banner */}
+      <div className="bg-primary/10 border-b border-primary/20 p-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-4">
+            {ownerProfile?.avatar ? (
+              <img
+                src={ownerProfile.avatar}
+                alt={ownerProfile.display_name || "Пользователь"}
+                className="w-16 h-16 rounded-full object-cover border-2 border-primary/30"
+                onError={(e) => {
+                  // Fallback to default icon if image fails to load
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  if (target.nextElementSibling) {
+                    (target.nextElementSibling as HTMLElement).style.display = 'flex';
+                  }
+                }}
+              />
+            ) : null}
+            <div className={cn(
+              "w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/30",
+              ownerProfile?.avatar && "hidden"
+            )}>
+              <User className="h-8 w-8 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-muted-foreground">Тренировка пользователя</p>
+              <p className="font-bold text-lg text-foreground">{ownerProfile?.display_name || "Пользователь"}</p>
+              <div className="flex items-center gap-3 mt-1 flex-wrap">
+                {ownerAge && (
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Calendar className="h-3.5 w-3.5" />
+                    <span>{ownerAge} {ownerAge === 1 ? 'год' : ownerAge < 5 ? 'года' : 'лет'}</span>
+                  </div>
+                )}
+                {ownerProfile?.current_weight && (
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Weight className="h-3.5 w-3.5" />
+                    <span>{ownerProfile.current_weight} кг</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto p-4 space-y-6 pb-32">
+        {/* Date Header */}
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+            {format(new Date(workout.date), "d MMMM yyyy", { locale: ru })}
+          </h1>
+          <div className="flex items-center gap-2">
+            {isToday(parseISO(workout.date)) && (
+              <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-green-500/15 text-green-600 dark:text-green-400">
+                сегодня
+              </span>
+            )}
+            <span className={cn(
+              "text-xs px-1.5 py-0.5 rounded font-medium",
+              [0, 6].includes(new Date(workout.date).getDay())
+                ? "bg-primary/10 text-primary"
+                : "bg-sky-500/10 text-sky-600 dark:text-sky-400"
+            )}>
+              {format(new Date(workout.date), "EEEE", { locale: ru })}
+            </span>
+          </div>
+        </div>
+
+        {/* Exercises */}
+        {Object.keys(setsByExercise).length === 0 ? (
+          <Card className="border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="p-4 bg-muted rounded-full mb-4">
+                <Dumbbell className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="font-semibold text-foreground mb-1">Нет упражнений</h3>
+              <p className="text-muted-foreground text-sm">
+                В этой тренировке пока нет упражнений
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {Object.entries(setsByExercise).map(([exerciseId, { exercise, sets }]) => (
+              <Card key={exerciseId}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      {exercise?.type === "weighted" ? (
+                        <Dumbbell className="h-5 w-5 text-primary" />
+                      ) : exercise?.type === "cardio" ? (
+                        <Activity className="h-5 w-5 text-primary" />
+                      ) : exercise?.type === "timed" ? (
+                        <Timer className="h-5 w-5 text-primary" />
+                      ) : (
+                        <User className="h-5 w-5 text-primary" />
+                      )}
+                      {exercise?.name}
+                    </CardTitle>
+                    {exercise?.image_url && (
+                      <div className="w-24 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                        <img
+                          src={exercise.image_url}
+                          alt={exercise.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {/* Table Header */}
+                  <div className={cn(
+                    "grid gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground uppercase",
+                    exercise?.type === "bodyweight" || exercise?.type === "timed"
+                      ? "grid-cols-[60px_1fr]"
+                      : "grid-cols-[60px_1fr_1fr]"
+                  )}>
+                    <div className="text-center">Подход</div>
+                    <div className="text-center">
+                      {exercise?.type === "cardio" ? "Дистанция" :
+                       exercise?.type === "timed" ? "Время" :
+                       "Повторений"}
+                    </div>
+                    {exercise?.type !== "bodyweight" && exercise?.type !== "timed" && (
+                      <div className="text-center">
+                        {exercise?.type === "cardio" ? "Время" : "Вес"}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Table Rows */}
+                  {sets.sort((a, b) => a.set_number - b.set_number).map((set) => (
+                    <div
+                      key={set.id}
+                      className={cn(
+                        "relative grid gap-2 items-center p-3 rounded-lg",
+                        exercise?.type === "bodyweight" || exercise?.type === "timed"
+                          ? "grid-cols-[60px_1fr]"
+                          : "grid-cols-[60px_1fr_1fr]",
+                        recordSetIds.has(set.id)
+                          ? "bg-yellow-100 dark:bg-yellow-900/30"
+                          : "bg-muted/50"
+                      )}
+                    >
+                      {recordSetIds.has(set.id) && (
+                        <Trophy className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-yellow-500" />
+                      )}
+                      <div className="text-center font-bold text-foreground">
+                        {set.set_number}
+                      </div>
+                      {exercise?.type === "cardio" ? (
+                        <>
+                          <div className="text-center font-semibold text-foreground">
+                            {set.distance_km ? `${set.distance_km} км` : '—'}
+                          </div>
+                          <div className="text-center font-medium text-primary">
+                            {set.duration_minutes ? `${set.duration_minutes} мин` : '—'}
+                          </div>
+                        </>
+                      ) : exercise?.type === "timed" ? (
+                        <div className="text-center font-semibold text-primary">
+                          {set.plank_seconds ? `${set.plank_seconds} сек` : '—'}
+                        </div>
+                      ) : exercise?.type === "bodyweight" ? (
+                        <div className="text-center font-semibold text-foreground">
+                          {set.reps || '—'}
+                        </div>
+                      ) : (
+                        <>
+                          <div className="text-center font-semibold text-foreground">
+                            {set.reps || '—'}
+                          </div>
+                          <div className="text-center font-medium text-primary">
+                            {set.weight ? `${set.weight} кг` : '—'}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Notes Card */}
+        {workout.notes && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-primary" />
+                Комментарий
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-foreground whitespace-pre-wrap">
+                {workout.notes}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Photo Card */}
+        {workout.photo_url && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <ImageIcon className="h-5 w-5 text-primary" />
+                Фото
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <img
+                src={workout.photo_url}
+                alt="Фото тренировки"
+                className="w-full rounded-lg object-cover max-h-96"
+              />
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* Fixed Bottom CTA */}
+      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border p-4">
+        <div className="max-w-4xl mx-auto flex flex-col gap-3">
+          <p className="text-center text-sm text-muted-foreground">
+            Начни отслеживать свои тренировки с FitTrack
+          </p>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              className="flex-1 gap-2"
+              onClick={() => navigate("/auth")}
+            >
+              <LogIn className="h-4 w-4" />
+              Войти
+            </Button>
+            <Button
+              className="flex-1 gap-2"
+              onClick={() => navigate("/auth")}
+            >
+              <UserPlus className="h-4 w-4" />
+              Зарегистрироваться
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

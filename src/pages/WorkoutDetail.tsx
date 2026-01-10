@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { format, isToday, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
-import { ArrowLeft, Plus, Trash2, User, Dumbbell, MessageSquare, Save, Pencil, X, Activity, Timer, Camera, Loader2, ImageIcon, LayoutGrid, Trophy, Search } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, User, Dumbbell, MessageSquare, Save, Pencil, X, Activity, Timer, Camera, Loader2, ImageIcon, LayoutGrid, Trophy, Search, Share2, Copy, Check, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useSingleWorkout, useAddSet, useDeleteSet, useUpdateSet, useUpdateWorkout, useUserAllTimeBests } from "@/hooks/useWorkouts";
 import { useExercises, Exercise } from "@/hooks/useExercises";
+import { useWorkoutShare, useCreateWorkoutShare, useDeactivateWorkoutShare } from "@/hooks/useWorkoutShare";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -71,6 +72,13 @@ export default function WorkoutDetail() {
   const [photoToDelete, setPhotoToDelete] = useState(false);
   const [isPhotoFullscreen, setIsPhotoFullscreen] = useState(false);
   const [showTimer, setShowTimer] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  // Share hooks
+  const { data: workoutShare } = useWorkoutShare(workout?.id);
+  const createShare = useCreateWorkoutShare();
+  const deactivateShare = useDeactivateWorkoutShare();
 
   // Load workout notes when workout changes
   useEffect(() => {
@@ -389,6 +397,49 @@ export default function WorkoutDetail() {
     }
   };
 
+  const handleShareWorkout = async () => {
+    if (!workout || !user) return;
+
+    try {
+      const share = await createShare.mutateAsync({
+        workoutId: workout.id,
+        userId: user.id,
+      });
+
+      const shareUrl = `${window.location.origin}/share/${share.share_token}`;
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast.success("Ссылка скопирована в буфер обмена");
+    } catch (error) {
+      console.error("Share error:", error);
+      toast.error("Ошибка создания ссылки");
+    }
+  };
+
+  const handleDeactivateShare = async () => {
+    if (!workoutShare) return;
+
+    try {
+      await deactivateShare.mutateAsync(workoutShare.id);
+      toast.success("Ссылка деактивирована");
+      setShareDialogOpen(false);
+    } catch (error) {
+      console.error("Deactivate error:", error);
+      toast.error("Ошибка деактивации ссылки");
+    }
+  };
+
+  const copyShareLink = async () => {
+    if (!workoutShare) return;
+
+    const shareUrl = `${window.location.origin}/share/${workoutShare.share_token}`;
+    await navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast.success("Ссылка скопирована");
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-4">
@@ -415,6 +466,69 @@ export default function WorkoutDetail() {
             </span>
           </div>
         </div>
+        {isOwner && (
+          <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Share2 className="h-5 w-5" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Поделиться тренировкой</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 mt-4">
+                {workoutShare ? (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Публичная ссылка</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          readOnly
+                          value={`${window.location.origin}/share/${workoutShare.share_token}`}
+                          className="font-mono text-sm"
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={copyShareLink}
+                        >
+                          {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Любой человек с этой ссылкой сможет посмотреть вашу тренировку
+                      </p>
+                    </div>
+                    <Button
+                      variant="destructive"
+                      className="w-full gap-2"
+                      onClick={handleDeactivateShare}
+                      disabled={deactivateShare.isPending}
+                    >
+                      <Ban className="h-4 w-4" />
+                      Деактивировать ссылку
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground">
+                      Создайте публичную ссылку, чтобы поделиться своей тренировкой с друзьями
+                    </p>
+                    <Button
+                      className="w-full gap-2"
+                      onClick={handleShareWorkout}
+                      disabled={createShare.isPending}
+                    >
+                      <Share2 className="h-4 w-4" />
+                      Создать ссылку
+                    </Button>
+                  </>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       {!isOwner && workoutOwnerProfile && (

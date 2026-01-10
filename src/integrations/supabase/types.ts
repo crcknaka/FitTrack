@@ -191,6 +191,48 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_shares: {
+        Row: {
+          id: string
+          workout_id: string
+          user_id: string
+          share_token: string
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          workout_id: string
+          user_id: string
+          share_token: string
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          workout_id?: string
+          user_id?: string
+          share_token?: string
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_shares_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "workouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_shares_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

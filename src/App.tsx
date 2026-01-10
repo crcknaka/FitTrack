@@ -18,6 +18,7 @@ const Progress = lazy(() => import("@/pages/Progress"));
 const Exercises = lazy(() => import("@/pages/Exercises"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
+const SharedWorkout = lazy(() => import("@/pages/SharedWorkout"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 // Schema version - increment this when you make breaking database changes
@@ -69,6 +70,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/auth" element={<Auth />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/share/:token" element={<SharedWorkout />} />
         <Route
           path="/"
           element={
