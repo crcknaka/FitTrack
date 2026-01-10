@@ -104,7 +104,8 @@ export default function Settings() {
       setHeight(profile.height?.toString() || "");
       setCurrentWeight(profile.current_weight?.toString() || "");
       setAvatar(profile.avatar || "");
-      setSkufLevel(profile.is_skuf ? 4 : 0); // Конвертируем boolean в уровень
+      // Загружаем уровень скуфа напрямую (0-4), если null - устанавливаем 0 (Нормис)
+      setSkufLevel(profile.is_skuf !== null && profile.is_skuf !== undefined ? profile.is_skuf : 0);
     }
   }, [profile]);
 
@@ -117,7 +118,8 @@ export default function Settings() {
         height: height ? parseFloat(height) : null,
         current_weight: currentWeight ? parseFloat(currentWeight) : null,
         avatar: avatar || null,
-        is_skuf: skufLevel > 0, // Конвертируем уровень в boolean для БД
+        // Сохраняем уровень скуфа напрямую (0-4)
+        is_skuf: skufLevel,
       });
       toast.success("Профиль обновлен");
     } catch (error) {

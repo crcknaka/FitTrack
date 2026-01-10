@@ -75,6 +75,11 @@ export type Database = {
           display_name: string | null
           id: string
           user_id: string
+          gender: string | null
+          date_of_birth: string | null
+          height: number | null
+          avatar: string | null
+          is_skuf: number | null
         }
         Insert: {
           created_at?: string
@@ -82,6 +87,11 @@ export type Database = {
           display_name?: string | null
           id?: string
           user_id: string
+          gender?: string | null
+          date_of_birth?: string | null
+          height?: number | null
+          avatar?: string | null
+          is_skuf?: number | null
         }
         Update: {
           created_at?: string
@@ -89,6 +99,11 @@ export type Database = {
           display_name?: string | null
           id?: string
           user_id?: string
+          gender?: string | null
+          date_of_birth?: string | null
+          height?: number | null
+          avatar?: string | null
+          is_skuf?: number | null
         }
         Relationships: []
       }
