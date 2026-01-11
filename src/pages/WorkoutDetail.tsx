@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { format, isToday, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
-import { ArrowLeft, Plus, Trash2, User, Dumbbell, MessageSquare, Save, Pencil, X, Activity, Timer, Camera, Loader2, ImageIcon, LayoutGrid, Trophy, Search, Share2, Copy, Check, Ban, Lock, Unlock, Star } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, User, Dumbbell, MessageSquare, Save, Pencil, X, Activity, Timer, Camera, Loader2, ImageIcon, LayoutGrid, Trophy, Search, Share2, Copy, Check, Ban, Lock, Unlock, Star, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -97,6 +98,18 @@ export default function WorkoutDetail() {
       setNotes("");
     }
   }, [workout]);
+
+  // Block scroll when photo is fullscreen
+  useEffect(() => {
+    if (isPhotoFullscreen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isPhotoFullscreen]);
 
   // Auto-open dialog with selected exercise if coming from Exercises page
   useEffect(() => {
@@ -1335,13 +1348,20 @@ export default function WorkoutDetail() {
         </CardHeader>
         <CardContent className="px-4 pb-4">
           {workout?.photo_url ? (
-            <div className="relative">
+            <div
+              className="relative group cursor-pointer"
+              onClick={() => setIsPhotoFullscreen(true)}
+            >
               <img
                 src={workout.photo_url}
                 alt="Фото тренировки"
-                className="w-full rounded-lg object-cover max-h-80 cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={() => setIsPhotoFullscreen(true)}
+                className="w-full rounded-lg object-cover max-h-80 transition-all duration-200 group-hover:opacity-90"
               />
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="bg-black/50 rounded-full p-3">
+                  <Maximize2 className="h-6 w-6 text-white" />
+                </div>
+              </div>
             </div>
           ) : isOwner && !workout?.is_locked ? (
             <label className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
@@ -1391,25 +1411,57 @@ export default function WorkoutDetail() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Fullscreen Photo Viewer */}
-      {isPhotoFullscreen && workout?.photo_url && (
+      {/* Fullscreen Photo Viewer - rendered via portal to document.body */}
+      {isPhotoFullscreen && workout?.photo_url && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'black',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            touchAction: 'none',
+          }}
           onClick={() => setIsPhotoFullscreen(false)}
         >
           <button
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-            onClick={() => setIsPhotoFullscreen(false)}
+            style={{
+              position: 'absolute',
+              top: '16px',
+              right: '16px',
+              padding: '8px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(255,255,255,0.1)',
+              border: 'none',
+              cursor: 'pointer',
+              zIndex: 10,
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsPhotoFullscreen(false);
+            }}
           >
             <X className="h-6 w-6 text-white" />
           </button>
           <img
             src={workout.photo_url}
             alt="Фото тренировки"
-            className="max-w-full max-h-full object-contain rounded-lg"
+            style={{
+              maxWidth: 'calc(100vw - 32px)',
+              maxHeight: 'calc(100vh - 32px)',
+              width: 'auto',
+              height: 'auto',
+              objectFit: 'contain',
+            }}
             onClick={(e) => e.stopPropagation()}
           />
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Delete Set Confirmation Dialog */}
