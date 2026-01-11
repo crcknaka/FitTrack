@@ -1128,15 +1128,32 @@ export default function Progress() {
 
           {/* Friends filter toggle */}
           {friends && friends.length > 0 && (
-            <Button
-              variant={leaderboardFriendsOnly ? "default" : "outline"}
-              size="sm"
-              className="w-full gap-2 text-xs"
-              onClick={() => setLeaderboardFriendsOnly(!leaderboardFriendsOnly)}
-            >
-              <Users className="h-3.5 w-3.5" />
-              {leaderboardFriendsOnly ? "Только друзья" : "Все пользователи"}
-            </Button>
+            <div className="flex rounded-lg bg-muted p-1 gap-1">
+              <button
+                onClick={() => setLeaderboardFriendsOnly(false)}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-medium transition-all",
+                  !leaderboardFriendsOnly
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Trophy className="h-3.5 w-3.5" />
+                Все
+              </button>
+              <button
+                onClick={() => setLeaderboardFriendsOnly(true)}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-medium transition-all",
+                  leaderboardFriendsOnly
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Users className="h-3.5 w-3.5" />
+                Друзья
+              </button>
+            </div>
           )}
 
           {/* Exercise image */}
