@@ -27,6 +27,7 @@ export interface OfflineExercise extends Omit<ExerciseRow, "name_translations"> 
 }
 
 export interface OfflineProfile extends ProfileRow {
+  is_admin: boolean; // Not in ProfileRow but used in app
   _synced: boolean;
   _lastModified: number;
 }

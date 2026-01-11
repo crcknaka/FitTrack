@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
 import { User, Save, LogOut, Lock, Eye, EyeOff, ChevronDown, Sun, Moon, Monitor, Download, FileJson, FileSpreadsheet } from "lucide-react";
@@ -100,9 +100,13 @@ export default function Settings() {
   const [dataOpen, setDataOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
 
-  // Load profile data when it's available
+  // Track if form has been initialized to prevent overwriting user edits
+  const formInitializedRef = useRef(false);
+
+  // Load profile data only on initial load (not on every profile update)
   useEffect(() => {
-    if (profile) {
+    if (profile && !formInitializedRef.current) {
+      formInitializedRef.current = true;
       setDisplayName(profile.display_name || "");
       setGender(profile.gender || "none");
       setDateOfBirth(profile.date_of_birth || "");

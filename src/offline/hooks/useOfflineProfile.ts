@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useOffline } from "@/contexts/OfflineContext";
 import { offlineDb } from "../db";
 import { syncQueue } from "../syncQueue";
 import type { OfflineProfile } from "../types";
@@ -10,7 +9,6 @@ import type { Profile } from "@/hooks/useProfile";
 // Offline-first profile hook
 export function useOfflineProfile() {
   const { user } = useAuth();
-  const { isOnline, isInitialized } = useOffline();
 
   return useQuery({
     queryKey: ["profile", user?.id],
@@ -20,8 +18,8 @@ export function useOfflineProfile() {
       // Always try cache first for instant display
       const cachedProfile = await offlineDb.profiles.get(user.id);
 
-      // If online and cache is stale or empty, refresh from server
-      if (isOnline) {
+      // If online, try to refresh from server
+      if (navigator.onLine) {
         try {
           const { data, error } = await supabase
             .from("profiles")
@@ -52,7 +50,7 @@ export function useOfflineProfile() {
 
       return null;
     },
-    enabled: !!user && isInitialized,
+    enabled: !!user,
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 30, // 30 minutes
   });
@@ -62,7 +60,6 @@ export function useOfflineProfile() {
 export function useOfflineUpdateProfile() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { isOnline } = useOffline();
 
   return useMutation({
     mutationFn: async (profileData: Partial<Profile>) => {
@@ -70,6 +67,9 @@ export function useOfflineUpdateProfile() {
 
       // Get current profile from cache
       const currentProfile = await offlineDb.profiles.get(user.id);
+
+      // Use navigator.onLine directly for most accurate online status
+      const online = navigator.onLine;
 
       const updatedProfile: OfflineProfile = {
         id: currentProfile?.id || user.id,
@@ -84,15 +84,15 @@ export function useOfflineUpdateProfile() {
         is_admin: currentProfile?.is_admin || false,
         created_at: currentProfile?.created_at || new Date().toISOString(),
         ...profileData,
-        _synced: isOnline,
+        _synced: false, // Will be set to true after successful sync
         _lastModified: Date.now(),
       };
 
-      // Save to IndexedDB immediately
+      // Save to IndexedDB immediately (optimistic update)
       await offlineDb.profiles.put(updatedProfile);
 
-      // If online, sync to server
-      if (isOnline) {
+      // If online, try to sync to server
+      if (online) {
         try {
           const { data, error } = await supabase
             .from("profiles")
@@ -101,41 +101,34 @@ export function useOfflineUpdateProfile() {
             .select()
             .single();
 
-          if (error) throw error;
-
-          // Update cache with server response
-          const syncedProfile: OfflineProfile = {
-            ...data,
-            _synced: true,
-            _lastModified: Date.now(),
-          };
-          await offlineDb.profiles.put(syncedProfile);
-
-          return data as Profile;
+          if (!error && data) {
+            // Update cache with server response
+            const syncedProfile: OfflineProfile = {
+              ...data,
+              _synced: true,
+              _lastModified: Date.now(),
+            };
+            await offlineDb.profiles.put(syncedProfile);
+            return data as Profile;
+          }
         } catch {
-          // Mark as unsynced and queue
-          updatedProfile._synced = false;
-          await offlineDb.profiles.put(updatedProfile);
-
-          await syncQueue.enqueue("profiles", "update", user.id, {
-            ...profileData,
-            user_id: user.id,
-          });
+          // Network error - already saved locally, queue for sync
         }
-      } else {
-        // Queue for sync when back online
-        await syncQueue.enqueue("profiles", "update", user.id, {
-          ...profileData,
-          user_id: user.id,
-        });
       }
+
+      // Queue for sync when back online (if not already synced)
+      await syncQueue.enqueue("profiles", "update", user.id, {
+        ...profileData,
+        user_id: user.id,
+      });
 
       // Return the updated profile from cache
       const { _synced, _lastModified, ...profile } = updatedProfile;
       return profile as Profile;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    onSuccess: (data) => {
+      // Update query cache directly instead of invalidating (prevents form reset)
+      queryClient.setQueryData(["profile", data.user_id], data);
     },
   });
 }
