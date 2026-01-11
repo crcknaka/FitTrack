@@ -1114,36 +1114,6 @@ export default function Progress() {
           </CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-4 space-y-3">
-          {/* Exercise selector */}
-          <div className="flex gap-2">
-            <Select value={leaderboardExercise} onValueChange={setLeaderboardExercise}>
-              <SelectTrigger className="h-9 text-xs px-3 flex-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {baseExercises.map((exerciseName) => {
-                  const ex = exercises?.find(e => e.name === exerciseName);
-                  return (
-                    <SelectItem key={exerciseName} value={exerciseName}>
-                      {ex ? getExerciseName(ex.name, ex.name_translations) : exerciseName}
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
-
-            <Select value={leaderboardPeriod} onValueChange={(v) => setLeaderboardPeriod(v as "all" | "month" | "today")}>
-              <SelectTrigger className="h-9 w-auto min-w-[100px] text-xs px-3">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("progress.allTime")}</SelectItem>
-                <SelectItem value="month">{t("workouts.filter.thisMonth")}</SelectItem>
-                <SelectItem value="today">{t("workouts.today")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Friends filter toggle */}
           {friends && friends.length > 0 && (
             <div className="flex rounded-lg bg-muted p-1 gap-1">
@@ -1173,6 +1143,36 @@ export default function Progress() {
               </button>
             </div>
           )}
+
+          {/* Exercise selector */}
+          <div className="flex gap-2">
+            <Select value={leaderboardExercise} onValueChange={setLeaderboardExercise}>
+              <SelectTrigger className="h-9 text-xs px-3 flex-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {baseExercises.map((exerciseName) => {
+                  const ex = exercises?.find(e => e.name === exerciseName);
+                  return (
+                    <SelectItem key={exerciseName} value={exerciseName}>
+                      {ex ? getExerciseName(ex.name, ex.name_translations) : exerciseName}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+
+            <Select value={leaderboardPeriod} onValueChange={(v) => setLeaderboardPeriod(v as "all" | "month" | "today")}>
+              <SelectTrigger className="h-9 w-auto min-w-[100px] text-xs px-3">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("progress.allTime")}</SelectItem>
+                <SelectItem value="month">{t("workouts.filter.thisMonth")}</SelectItem>
+                <SelectItem value="today">{t("workouts.today")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Exercise image */}
           {(() => {
