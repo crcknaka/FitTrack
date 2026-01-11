@@ -85,9 +85,34 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <Layout>{children}</Layout>;
 }
 
+// Preload all lazy-loaded pages for offline support
+function usePreloadPages() {
+  useEffect(() => {
+    // Only preload when online to cache chunks for offline use
+    if (navigator.onLine) {
+      // Small delay to let critical resources load first
+      const timer = setTimeout(() => {
+        import("@/pages/Auth");
+        import("@/pages/Workouts");
+        import("@/pages/WorkoutDetail");
+        import("@/pages/Progress");
+        import("@/pages/Friends");
+        import("@/pages/Exercises");
+        import("@/pages/Settings");
+        import("@/pages/ResetPassword");
+        import("@/pages/SharedWorkout");
+        import("@/pages/NotFound");
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+}
+
 function AppRoutes() {
   // Check and update schema version on app load
   useSchemaVersionCheck();
+  // Preload all pages for offline support
+  usePreloadPages();
 
   return (
     <Suspense fallback={<PageLoader />}>

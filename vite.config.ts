@@ -22,8 +22,12 @@ export default defineConfig(() => ({
         enabled: false, // PWA disabled in dev mode - use npm run build && npm run preview to test
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,json,jpg,jpeg,webp}"],
-        // Ensure all lazy-loaded chunks are precached
+        // Precache all assets including lazy-loaded chunks
+        globPatterns: [
+          "**/*.{js,css,html,ico,png,svg,woff2,json,jpg,jpeg,webp}",
+        ],
+        // Increase precache size limit for all chunks
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
         navigateFallback: "index.html",
         navigateFallbackDenylist: [/^\/api/, /^\/auth/],
         runtimeCaching: [
@@ -79,14 +83,14 @@ export default defineConfig(() => ({
     },
   },
   build: {
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
         manualChunks: {
-          // Разделяем React и связанные библиотеки
+          // React core
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
 
-          // UI библиотека и иконки в отдельный чанк
+          // UI components
           'ui-vendor': [
             'lucide-react',
             '@radix-ui/react-dialog',
@@ -95,15 +99,26 @@ export default defineConfig(() => ({
             '@radix-ui/react-alert-dialog',
             '@radix-ui/react-label',
             '@radix-ui/react-slot',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-popover',
           ],
 
-          // Библиотеки для работы с датами
+          // Date utilities
           'date-vendor': ['date-fns'],
 
-          // Supabase и React Query
-          'data-vendor': ['@supabase/supabase-js', '@tanstack/react-query'],
+          // Data layer - Supabase
+          'supabase-vendor': ['@supabase/supabase-js'],
 
-          // Остальные утилиты
+          // Data layer - React Query
+          'query-vendor': ['@tanstack/react-query'],
+
+          // Offline/IndexedDB
+          'offline-vendor': ['dexie', 'dexie-react-hooks'],
+
+          // i18n
+          'i18n-vendor': ['i18next', 'react-i18next'],
+
+          // Other utilities
           'utils-vendor': ['sonner', 'class-variance-authority', 'clsx', 'tailwind-merge'],
         },
       },
