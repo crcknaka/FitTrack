@@ -968,22 +968,22 @@ export default function WorkoutDetail() {
               className="animate-fade-in"
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between gap-3">
-                  <CardTitle className="flex items-center gap-2 text-lg">
+              <CardHeader className="pb-2 pt-4 px-4">
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="flex items-center gap-2 text-base">
                     {exercise?.type === "weighted" ? (
-                      <Dumbbell className="h-5 w-5 text-primary" />
+                      <Dumbbell className="h-4 w-4 text-primary" />
                     ) : exercise?.type === "cardio" ? (
-                      <Activity className="h-5 w-5 text-primary" />
+                      <Activity className="h-4 w-4 text-primary" />
                     ) : exercise?.type === "timed" ? (
-                      <Timer className="h-5 w-5 text-primary" />
+                      <Timer className="h-4 w-4 text-primary" />
                     ) : (
-                      <User className="h-5 w-5 text-primary" />
+                      <User className="h-4 w-4 text-primary" />
                     )}
                     {exercise?.name}
                   </CardTitle>
                   {exercise?.image_url ? (
-                    <div className="w-24 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                       <img
                         src={exercise.image_url}
                         alt={exercise.name}
@@ -991,33 +991,33 @@ export default function WorkoutDetail() {
                       />
                     </div>
                   ) : (
-                    <div className="w-24 h-24 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                    <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
                       {exercise?.type === "weighted" ? (
-                        <Dumbbell className="h-12 w-12 text-muted-foreground" />
+                        <Dumbbell className="h-8 w-8 text-muted-foreground" />
                       ) : exercise?.type === "cardio" ? (
-                        <Activity className="h-12 w-12 text-muted-foreground" />
+                        <Activity className="h-8 w-8 text-muted-foreground" />
                       ) : exercise?.type === "timed" ? (
-                        <Timer className="h-12 w-12 text-muted-foreground" />
+                        <Timer className="h-8 w-8 text-muted-foreground" />
                       ) : (
-                        <User className="h-12 w-12 text-muted-foreground" />
+                        <User className="h-8 w-8 text-muted-foreground" />
                       )}
                     </div>
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-1 px-4 pb-4">
                 {/* Table Header */}
                 <div className={cn(
-                  "grid gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground uppercase",
+                  "grid gap-1 px-2 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide",
                   exercise?.type === "bodyweight" || exercise?.type === "timed"
-                    ? "grid-cols-[60px_1fr_56px]"
-                    : "grid-cols-[60px_1fr_1fr_56px]"
+                    ? "grid-cols-[44px_1fr_48px]"
+                    : "grid-cols-[44px_1fr_1fr_48px]"
                 )}>
-                  <div className="text-center">Подход</div>
+                  <div className="text-center">#</div>
                   <div className="text-center">
-                    {exercise?.type === "cardio" ? "Дистанция" :
+                    {exercise?.type === "cardio" ? "Дист." :
                      exercise?.type === "timed" ? "Время" :
-                     "Повторений"}
+                     "Повт."}
                   </div>
                   {exercise?.type !== "bodyweight" && exercise?.type !== "timed" && (
                     <div className="text-center">
@@ -1038,13 +1038,13 @@ export default function WorkoutDetail() {
                     <TooltipTrigger asChild>
                       <div
                         className={cn(
-                          "relative grid gap-2 items-center p-3 rounded-lg cursor-pointer select-none",
+                          "relative grid gap-1 items-center py-2 px-2 rounded-md cursor-pointer select-none",
                           exercise?.type === "bodyweight" || exercise?.type === "timed"
-                            ? "grid-cols-[60px_1fr_56px]"
-                            : "grid-cols-[60px_1fr_1fr_56px]",
+                            ? "grid-cols-[44px_1fr_48px]"
+                            : "grid-cols-[44px_1fr_1fr_48px]",
                           recordSetIds.has(set.id)
                             ? "bg-yellow-100 dark:bg-yellow-900/30"
-                            : "bg-muted/50"
+                            : "bg-muted/30"
                         )}
                         onClick={(e) => {
                           // Не открывать тултип если кликнули на кнопки редактирования/удаления
@@ -1056,9 +1056,9 @@ export default function WorkoutDetail() {
                       >
                     {/* Trophy icon - absolute positioned on the left */}
                     {recordSetIds.has(set.id) && (
-                      <Trophy className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-yellow-500" />
+                      <Trophy className="absolute left-1.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-yellow-500" />
                     )}
-                    <div className="text-center font-bold text-foreground">
+                    <div className="text-center text-sm font-medium text-muted-foreground">
                       {set.set_number}
                     </div>
 
@@ -1074,7 +1074,7 @@ export default function WorkoutDetail() {
                               value={editDistance}
                               onChange={(e) => setEditDistance(e.target.value)}
                               onKeyDown={(e) => { if (e.key === "Enter") { (e.currentTarget.nextElementSibling as HTMLInputElement)?.focus(); } }}
-                              className="h-8 text-center"
+                              className="h-7 text-center text-sm px-2"
                               placeholder="км"
                               autoFocus
                             />
@@ -1085,7 +1085,7 @@ export default function WorkoutDetail() {
                               value={editDuration}
                               onChange={(e) => setEditDuration(e.target.value)}
                               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSaveEdit(); } }}
-                              className="h-8 text-center"
+                              className="h-7 text-center text-sm px-2"
                               placeholder="мин"
                             />
                           </>
@@ -1098,7 +1098,7 @@ export default function WorkoutDetail() {
                               value={editDuration}
                               onChange={(e) => setEditDuration(e.target.value)}
                               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSaveEdit(); } }}
-                              className="h-8 text-center"
+                              className="h-7 text-center text-sm px-2"
                               placeholder="сек"
                               autoFocus
                             />
@@ -1112,7 +1112,7 @@ export default function WorkoutDetail() {
                               value={editReps}
                               onChange={(e) => setEditReps(e.target.value)}
                               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSaveEdit(); } }}
-                              className="h-8 text-center"
+                              className="h-7 text-center text-sm px-2"
                               autoFocus
                             />
                           </>
@@ -1125,7 +1125,7 @@ export default function WorkoutDetail() {
                               value={editReps}
                               onChange={(e) => setEditReps(e.target.value)}
                               onKeyDown={(e) => { if (e.key === "Enter") { (e.currentTarget.nextElementSibling as HTMLInputElement)?.focus(); } }}
-                              className="h-8 text-center"
+                              className="h-7 text-center text-sm px-2"
                               autoFocus
                             />
                             <Input
@@ -1136,27 +1136,27 @@ export default function WorkoutDetail() {
                               value={editWeight}
                               onChange={(e) => setEditWeight(e.target.value)}
                               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSaveEdit(); } }}
-                              className="h-8 text-center"
+                              className="h-7 text-center text-sm px-2"
                               placeholder="—"
                             />
                           </>
                         )}
-                        <div className="flex gap-1">
+                        <div className="flex gap-0.5 justify-end">
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                            className="h-6 w-6 text-muted-foreground hover:text-foreground"
                             onClick={handleSaveEdit}
                           >
-                            <Save className="h-3.5 w-3.5" />
+                            <Save className="h-3 w-3" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                            className="h-6 w-6 text-muted-foreground hover:text-foreground"
                             onClick={handleCancelEdit}
                           >
-                            <X className="h-3.5 w-3.5" />
+                            <X className="h-3 w-3" />
                           </Button>
                         </div>
                       </>
@@ -1164,31 +1164,31 @@ export default function WorkoutDetail() {
                       <>
                         {exercise?.type === "cardio" ? (
                           <>
-                            <div className="text-center font-semibold text-foreground">
+                            <div className="text-center text-sm font-semibold text-foreground">
                               {set.distance_km ? `${set.distance_km} км` : '—'}
                             </div>
-                            <div className="text-center font-medium text-primary">
+                            <div className="text-center text-sm font-medium text-primary">
                               {set.duration_minutes ? `${set.duration_minutes} мин` : '—'}
                             </div>
                           </>
                         ) : exercise?.type === "timed" ? (
                           <>
-                            <div className="text-center font-semibold text-primary">
+                            <div className="text-center text-sm font-semibold text-primary">
                               {set.plank_seconds ? `${set.plank_seconds} сек` : '—'}
                             </div>
                           </>
                         ) : exercise?.type === "bodyweight" ? (
                           <>
-                            <div className="text-center font-semibold text-foreground">
+                            <div className="text-center text-sm font-semibold text-foreground">
                               {set.reps || '—'}
                             </div>
                           </>
                         ) : (
                           <>
-                            <div className="text-center font-semibold text-foreground">
+                            <div className="text-center text-sm font-semibold text-foreground">
                               {set.reps || '—'}
                             </div>
-                            <div className="text-center font-medium text-primary">
+                            <div className="text-center text-sm font-medium text-primary">
                               {set.weight ? `${set.weight} кг` : '—'}
                             </div>
                           </>
@@ -1230,7 +1230,8 @@ export default function WorkoutDetail() {
                 {isOwner && !workout?.is_locked && (
                   <Button
                     variant="outline"
-                    className="w-full mt-2 gap-2"
+                    size="sm"
+                    className="w-full mt-2 gap-1.5 h-8"
                     onClick={() => {
                       // Найти полное упражнение из списка exercises
                       const fullExercise = exercises?.find(e => e.id === exerciseId);
@@ -1240,8 +1241,8 @@ export default function WorkoutDetail() {
                       }
                     }}
                   >
-                    <Plus className="h-4 w-4" />
-                    Ешё подход
+                    <Plus className="h-3.5 w-3.5" />
+                    Ещё подход
                   </Button>
                 )}
               </CardContent>
@@ -1252,10 +1253,10 @@ export default function WorkoutDetail() {
 
       {/* Notes Card */}
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-2 pt-4 px-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-primary" />
+            <CardTitle className="text-base flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-primary" />
               Комментарий
             </CardTitle>
             {isOwner && !isEditingNotes && !workout?.is_locked && (
@@ -1270,27 +1271,30 @@ export default function WorkoutDetail() {
             )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 pb-4">
           {isOwner && isEditingNotes ? (
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Textarea
                 placeholder="Как прошла тренировка? Какие ощущения?"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                rows={4}
-                className="resize-none"
+                rows={3}
+                className="resize-none text-sm"
               />
               <div className="flex gap-2">
                 <Button
+                  size="sm"
                   onClick={handleSaveNotes}
                   disabled={updateWorkout.isPending}
-                  className="flex-1"
+                  className="flex-1 h-8"
                 >
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="h-3.5 w-3.5 mr-1.5" />
                   Сохранить
                 </Button>
                 <Button
                   variant="outline"
+                  size="sm"
+                  className="h-8"
                   onClick={() => {
                     setNotes(workout?.notes || "");
                     setIsEditingNotes(false);
@@ -1302,7 +1306,7 @@ export default function WorkoutDetail() {
               </div>
             </div>
           ) : (
-            <div className="text-muted-foreground whitespace-pre-wrap">
+            <div className="text-sm text-muted-foreground whitespace-pre-wrap">
               {notes || "Пока пусто"}
             </div>
           )}
@@ -1311,10 +1315,10 @@ export default function WorkoutDetail() {
 
       {/* Photo Card */}
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-2 pt-4 px-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <ImageIcon className="h-5 w-5 text-primary" />
+            <CardTitle className="text-base flex items-center gap-2">
+              <ImageIcon className="h-4 w-4 text-primary" />
               Фото
             </CardTitle>
             {isOwner && workout?.photo_url && !workout?.is_locked && (
@@ -1329,26 +1333,26 @@ export default function WorkoutDetail() {
             )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 pb-4">
           {workout?.photo_url ? (
             <div className="relative">
               <img
                 src={workout.photo_url}
                 alt="Фото тренировки"
-                className="w-full rounded-lg object-cover max-h-96 cursor-pointer hover:opacity-90 transition-opacity"
+                className="w-full rounded-lg object-cover max-h-80 cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={() => setIsPhotoFullscreen(true)}
               />
             </div>
           ) : isOwner && !workout?.is_locked ? (
-            <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
+            <label className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
               {isUploadingPhoto ? (
                 <>
-                  <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                  <Loader2 className="h-8 w-8 text-primary animate-spin" />
                   <span className="text-sm text-muted-foreground">Загрузка...</span>
                 </>
               ) : (
                 <>
-                  <Camera className="h-10 w-10 text-muted-foreground" />
+                  <Camera className="h-8 w-8 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Нажмите чтобы добавить фото</span>
                   <span className="text-xs text-muted-foreground/70">JPG, PNG или WebP до 20 MB</span>
                 </>
@@ -1362,7 +1366,7 @@ export default function WorkoutDetail() {
               />
             </label>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-6 text-sm text-muted-foreground">
               Нет фото
             </div>
           )}
