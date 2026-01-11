@@ -44,6 +44,8 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   const hydrateFromServer = useCallback(async () => {
     if (!user || hasHydratedRef.current) return;
 
+    console.log("[Offline] Hydrating data from server for user:", user.id);
+
     try {
       // Fetch exercises (all exercises, preset and user's custom)
       const { data: exercises } = await supabase
@@ -52,6 +54,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
         .or(`is_preset.eq.true,user_id.eq.${user.id}`);
 
       if (exercises) {
+        console.log("[Offline] Caching", exercises.length, "exercises");
         await offlineDb.exercises.bulkPut(
           exercises.map((e) => ({
             ...e,
@@ -73,6 +76,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
         .gte("date", dateStr);
 
       if (workouts) {
+        console.log("[Offline] Caching", workouts.length, "workouts");
         await offlineDb.workouts.bulkPut(
           workouts.map((w) => ({
             ...w,

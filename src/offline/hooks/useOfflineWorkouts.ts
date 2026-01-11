@@ -66,7 +66,7 @@ export function useOfflineWorkouts() {
                 }
               }
             }
-            return data as Workout[];
+            return data as unknown as Workout[];
           }
         } catch {
           // Fall through to offline data
@@ -74,11 +74,13 @@ export function useOfflineWorkouts() {
       }
 
       // Use offline data
+      console.log("[Offline] Loading workouts from IndexedDB for user:", user!.id);
       const workouts = await offlineDb.workouts
         .where("user_id")
         .equals(user!.id)
         .reverse()
         .sortBy("date");
+      console.log("[Offline] Found workouts in IndexedDB:", workouts.length);
 
       // Load workout sets with exercises for each workout
       const workoutsWithSets: Workout[] = await Promise.all(

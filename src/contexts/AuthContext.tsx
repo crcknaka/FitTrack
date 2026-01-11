@@ -15,8 +15,19 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Initialize user from cache for immediate offline access
+function getCachedUser(): User | null {
+  const cachedUserId = localStorage.getItem("fittrack_user_id");
+  const cachedEmail = localStorage.getItem("fittrack_user_email");
+  if (cachedUserId) {
+    return { id: cachedUserId, email: cachedEmail } as User;
+  }
+  return null;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  // Start with cached user for immediate offline access
+  const [user, setUser] = useState<User | null>(getCachedUser);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -24,7 +35,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setUser(session?.user ?? null);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      // Cache user ID for offline access
+      if (currentUser) {
+        localStorage.setItem("fittrack_user_id", currentUser.id);
+        localStorage.setItem("fittrack_user_email", currentUser.email || "");
+      }
+
+      setLoading(false);
+    }).catch(() => {
+      // If offline, try to restore from cache
+      const cachedUserId = localStorage.getItem("fittrack_user_id");
+      const cachedEmail = localStorage.getItem("fittrack_user_email");
+      if (cachedUserId) {
+        // Create minimal user object for offline use
+        setUser({ id: cachedUserId, email: cachedEmail } as User);
+      }
       setLoading(false);
     });
 
@@ -32,7 +60,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
-        setUser(session?.user ?? null);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+
+        // Cache user ID for offline access
+        if (currentUser) {
+          localStorage.setItem("fittrack_user_id", currentUser.id);
+          localStorage.setItem("fittrack_user_email", currentUser.email || "");
+        }
+
         setLoading(false);
       }
     );
@@ -66,6 +102,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error && error.message !== 'Auth session missing!') {
       throw error;
     }
+    // Clear cached user data
+    localStorage.removeItem("fittrack_user_id");
+    localStorage.removeItem("fittrack_user_email");
     // Принудительно очищаем состояние на клиенте
     setSession(null);
     setUser(null);
