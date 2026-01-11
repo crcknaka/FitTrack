@@ -4,6 +4,7 @@ import { TrendingUp, ListPlus, LogOut, Activity, Settings, Users } from "lucide-
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
+import { usePendingRequestsCount } from "@/hooks/useFriends";
 
 interface LayoutProps {
   children: ReactNode;
@@ -23,6 +24,8 @@ export default function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
   const { resolvedTheme } = useTheme();
   const logoSrc = resolvedTheme === "dark" ? "/logo-white.png" : "/logo-black.png";
+  const { data: pendingCount = 0 } = usePendingRequestsCount();
+  const hasPendingRequests = pendingCount > 0;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -57,6 +60,9 @@ export default function Layout({ children }: LayoutProps) {
                     "h-5 w-5 transition-transform duration-200",
                     isActive && "scale-110"
                   )} />
+                  {item.to === "/friends" && hasPendingRequests && (
+                    <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-destructive rounded-full" />
+                  )}
                 </div>
                 <span className={cn(
                   "text-[10px] font-medium mt-0.5 transition-all duration-200",
@@ -103,10 +109,15 @@ export default function Layout({ children }: LayoutProps) {
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-[0.98]"
                 )}
               >
-                <item.icon className={cn(
-                  "h-5 w-5 transition-transform duration-200",
-                  !isActive && "group-hover:scale-110"
-                )} />
+                <div className="relative">
+                  <item.icon className={cn(
+                    "h-5 w-5 transition-transform duration-200",
+                    !isActive && "group-hover:scale-110"
+                  )} />
+                  {item.to === "/friends" && hasPendingRequests && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full" />
+                  )}
+                </div>
                 <span className="font-medium">{item.label}</span>
                 {isActive && (
                   <span className="absolute right-3 w-1.5 h-1.5 rounded-full bg-primary-foreground/80" />
