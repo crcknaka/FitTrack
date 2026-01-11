@@ -233,29 +233,32 @@ export default function Workouts() {
             </Popover>
           )}
         </div>
-        <Select value={targetUserId || ""} onValueChange={handleUserChange}>
-          <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="Выберите" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={user?.id || ""}>
-              <div className="flex items-center gap-2">
-                <span>{currentUserProfile?.avatar || "👤"}</span>
-                <span className="truncate">{currentUserProfile?.display_name || "Я"}</span>
-                <span className="text-muted-foreground text-xs">(Вы)</span>
-              </div>
-            </SelectItem>
-            <SelectSeparator />
-            {allProfiles?.filter(p => p.user_id !== user?.id).map((profile) => (
-              <SelectItem key={profile.user_id} value={profile.user_id}>
+        {/* User selector - only visible to admins */}
+        {currentUserProfile?.is_admin && (
+          <Select value={targetUserId || ""} onValueChange={handleUserChange}>
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectValue placeholder="Выберите" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={user?.id || ""}>
                 <div className="flex items-center gap-2">
-                  <span>{profile.avatar || "👤"}</span>
-                  <span className="truncate">{profile.display_name || "Аноним"}</span>
+                  <span>{currentUserProfile?.avatar || "👤"}</span>
+                  <span className="truncate">{currentUserProfile?.display_name || "Я"}</span>
+                  <span className="text-muted-foreground text-xs">(Вы)</span>
                 </div>
               </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+              <SelectSeparator />
+              {allProfiles?.filter(p => p.user_id !== user?.id).map((profile) => (
+                <SelectItem key={profile.user_id} value={profile.user_id}>
+                  <div className="flex items-center gap-2">
+                    <span>{profile.avatar || "👤"}</span>
+                    <span className="truncate">{profile.display_name || "Аноним"}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {isViewingOther && viewingUserProfile && (

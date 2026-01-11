@@ -5,6 +5,7 @@ export interface UserProfile {
   user_id: string;
   display_name: string | null;
   avatar: string | null;
+  is_admin: boolean;
 }
 
 export function useAllProfiles() {
@@ -17,7 +18,8 @@ export function useAllProfiles() {
         .order("display_name", { ascending: true });
 
       if (error) throw error;
-      return data as UserProfile[];
+      // Временно возвращаем is_admin как false, пока не применим миграцию
+      return (data || []).map(profile => ({ ...profile, is_admin: false })) as UserProfile[];
     },
   });
 }
