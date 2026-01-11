@@ -22,7 +22,7 @@ export function useWorkoutShare(workoutId: string | undefined) {
   return useQuery({
     queryKey: ["workout-share", workoutId],
     queryFn: async () => {
-      if (!workoutId) return null;
+      if (!workoutId || !navigator.onLine) return null;
 
       const { data, error } = await supabase
         .from("workout_shares")
@@ -104,7 +104,7 @@ export function useSharedWorkout(shareToken: string | undefined) {
   return useQuery({
     queryKey: ["shared-workout", shareToken],
     queryFn: async () => {
-      if (!shareToken) return null;
+      if (!shareToken || !navigator.onLine) return null;
 
       // Сначала получаем share запись
       const { data: share, error: shareError } = await supabase

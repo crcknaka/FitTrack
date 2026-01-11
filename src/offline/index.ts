@@ -12,6 +12,7 @@ export { syncService, syncWithRetry, type SyncResult } from "./syncService";
 export { useOfflineStatus, type OfflineStatus } from "./hooks/useOfflineStatus";
 export {
   useOfflineWorkouts,
+  useOfflineSingleWorkout,
   useOfflineCreateWorkout,
   useOfflineAddSet,
   useOfflineUpdateSet,
@@ -26,6 +27,10 @@ export {
   useOfflineFavoriteExercises,
   useOfflineToggleFavoriteExercise,
 } from "./hooks/useOfflineExercises";
+export {
+  useOfflineProfile,
+  useOfflineUpdateProfile,
+} from "./hooks/useOfflineProfile";
 
 // Components
 export {

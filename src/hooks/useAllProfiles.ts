@@ -12,6 +12,8 @@ export function useAllProfiles() {
   return useQuery({
     queryKey: ["profiles", "all"],
     queryFn: async () => {
+      if (!navigator.onLine) return [];
+
       const { data, error } = await supabase
         .from("profiles")
         .select("user_id, display_name, avatar, is_admin")

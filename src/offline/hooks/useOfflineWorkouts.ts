@@ -74,13 +74,11 @@ export function useOfflineWorkouts() {
       }
 
       // Use offline data
-      console.log("[Offline] Loading workouts from IndexedDB for user:", user!.id);
       const workouts = await offlineDb.workouts
         .where("user_id")
         .equals(user!.id)
         .reverse()
         .sortBy("date");
-      console.log("[Offline] Found workouts in IndexedDB:", workouts.length);
 
       // Load workout sets with exercises for each workout
       const workoutsWithSets: Workout[] = await Promise.all(
@@ -485,6 +483,128 @@ export function useOfflineDeleteWorkout() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workouts"] });
     },
+  });
+}
+
+// Offline-first useSingleWorkout hook
+export function useOfflineSingleWorkout(workoutId: string | undefined) {
+  const { isOnline } = useOffline();
+
+  return useQuery({
+    queryKey: ["workout", workoutId],
+    queryFn: async () => {
+      // Try online first if available
+      if (isOnline) {
+        try {
+          const { data, error } = await supabase
+            .from("workouts")
+            .select(`
+              *,
+              workout_sets (
+                id, workout_id, exercise_id, set_number, reps, weight,
+                distance_km, duration_minutes, plank_seconds, created_at,
+                exercise:exercises (id, name, type, image_url, is_preset, name_translations)
+              )
+            `)
+            .eq("id", workoutId!)
+            .single();
+
+          if (!error && data) {
+            // Update IndexedDB cache
+            await offlineDb.workouts.put({
+              id: data.id,
+              user_id: data.user_id,
+              date: data.date,
+              notes: data.notes,
+              photo_url: data.photo_url,
+              created_at: data.created_at,
+              updated_at: data.updated_at,
+              is_locked: data.is_locked,
+              _synced: true,
+              _lastModified: Date.now(),
+            });
+
+            // Cache workout sets
+            if (data.workout_sets) {
+              for (const set of data.workout_sets) {
+                await offlineDb.workoutSets.put({
+                  id: set.id,
+                  workout_id: set.workout_id,
+                  exercise_id: set.exercise_id,
+                  set_number: set.set_number,
+                  reps: set.reps,
+                  weight: set.weight,
+                  distance_km: set.distance_km,
+                  duration_minutes: set.duration_minutes,
+                  plank_seconds: set.plank_seconds,
+                  created_at: set.created_at,
+                  _synced: true,
+                  _lastModified: Date.now(),
+                });
+              }
+            }
+            return data as unknown as Workout;
+          }
+        } catch {
+          // Fall through to offline data
+        }
+      }
+
+      // Use offline data
+      const workout = await offlineDb.workouts.get(workoutId!);
+      if (!workout) {
+        throw new Error("Workout not found");
+      }
+
+      // Load workout sets with exercises
+      const sets = await offlineDb.workoutSets
+        .where("workout_id")
+        .equals(workoutId!)
+        .toArray();
+
+      const setsWithExercises: WorkoutSet[] = await Promise.all(
+        sets.map(async (set) => {
+          const exercise = await offlineDb.exercises.get(set.exercise_id);
+          return {
+            id: set.id,
+            workout_id: set.workout_id,
+            exercise_id: set.exercise_id,
+            set_number: set.set_number,
+            reps: set.reps,
+            weight: set.weight,
+            distance_km: set.distance_km,
+            duration_minutes: set.duration_minutes,
+            plank_seconds: set.plank_seconds,
+            created_at: set.created_at,
+            exercise: exercise
+              ? {
+                  id: exercise.id,
+                  name: exercise.name,
+                  type: exercise.type,
+                  image_url: exercise.image_url,
+                  is_preset: exercise.is_preset,
+                  name_translations: exercise.name_translations,
+                }
+              : undefined,
+          };
+        })
+      );
+
+      return {
+        id: workout.id,
+        user_id: workout.user_id,
+        date: workout.date,
+        notes: workout.notes,
+        photo_url: workout.photo_url,
+        created_at: workout.created_at,
+        updated_at: workout.updated_at,
+        is_locked: workout.is_locked,
+        workout_sets: setsWithExercises,
+      } as Workout;
+    },
+    enabled: !!workoutId,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
   });
 }
 

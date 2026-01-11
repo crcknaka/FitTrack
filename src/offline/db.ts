@@ -86,3 +86,21 @@ export async function setLastSyncTime(
     value: timestamp,
   });
 }
+
+// Debug function to check IndexedDB contents
+export async function debugOfflineDb(): Promise<void> {
+  try {
+    const workoutsCount = await offlineDb.workouts.count();
+    const setsCount = await offlineDb.workoutSets.count();
+    const exercisesCount = await offlineDb.exercises.count();
+    console.log("[Offline DB Debug] Workouts:", workoutsCount, "Sets:", setsCount, "Exercises:", exercisesCount);
+
+    // Show first workout if any
+    const firstWorkout = await offlineDb.workouts.toCollection().first();
+    if (firstWorkout) {
+      console.log("[Offline DB Debug] First workout:", firstWorkout);
+    }
+  } catch (error) {
+    console.error("[Offline DB Debug] Error:", error);
+  }
+}

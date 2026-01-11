@@ -36,7 +36,7 @@ export function useFriends() {
   return useQuery({
     queryKey: ["friends", user?.id],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user || !navigator.onLine) return [];
 
       // Get friendships where current user is either requester or addressee
       const { data: friendships, error } = await supabase
@@ -85,7 +85,7 @@ export function usePendingFriendRequests() {
   return useQuery({
     queryKey: ["friendRequests", "pending", user?.id],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user || !navigator.onLine) return [];
 
       const { data: requests, error } = await supabase
         .from("friendships")
@@ -128,7 +128,7 @@ export function useSentFriendRequests() {
   return useQuery({
     queryKey: ["friendRequests", "sent", user?.id],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user || !navigator.onLine) return [];
 
       const { data: requests, error } = await supabase
         .from("friendships")
@@ -171,7 +171,7 @@ export function useSearchUsers(query: string) {
   return useQuery({
     queryKey: ["searchUsers", query],
     queryFn: async () => {
-      if (!user || !query || query.length < 2) return [];
+      if (!user || !query || query.length < 2 || !navigator.onLine) return [];
 
       const { data, error } = await supabase
         .from("profiles")
@@ -306,7 +306,7 @@ export function useFriendshipStatus(targetUserId: string | null) {
   return useQuery({
     queryKey: ["friendshipStatus", user?.id, targetUserId],
     queryFn: async () => {
-      if (!user || !targetUserId) return null;
+      if (!user || !targetUserId || !navigator.onLine) return null;
 
       const { data, error } = await supabase
         .from("friendships")
@@ -330,7 +330,7 @@ export function usePendingRequestsCount() {
   return useQuery({
     queryKey: ["friendRequests", "count", user?.id],
     queryFn: async () => {
-      if (!user) return 0;
+      if (!user || !navigator.onLine) return 0;
 
       const { count, error } = await supabase
         .from("friendships")

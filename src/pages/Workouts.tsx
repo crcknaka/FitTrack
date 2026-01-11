@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOffline } from "@/contexts/OfflineContext";
 import { useProfile, useUserProfile } from "@/hooks/useProfile";
 import { useAllProfiles } from "@/hooks/useAllProfiles";
 import { useFriends } from "@/hooks/useFriends";
@@ -46,6 +47,7 @@ export default function Workouts() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
+  const { isOnline } = useOffline();
 
   const viewingUserId = searchParams.get("user");
   const isViewingOther = viewingUserId && viewingUserId !== user?.id;
@@ -136,6 +138,11 @@ export default function Workouts() {
   const handleToggleLock = async (workoutId: string, isLocked: boolean, e: React.MouseEvent) => {
     e.stopPropagation();
 
+    if (!isOnline) {
+      toast.error(t("offline.featureRequiresInternet"));
+      return;
+    }
+
     if (isLocked) {
       // Show confirmation dialog for unlocking
       setWorkoutToUnlock(workoutId);
@@ -152,6 +159,12 @@ export default function Workouts() {
 
   const confirmUnlock = async () => {
     if (!workoutToUnlock) return;
+
+    if (!isOnline) {
+      toast.error(t("offline.featureRequiresInternet"));
+      setWorkoutToUnlock(null);
+      return;
+    }
 
     try {
       await unlockWorkout.mutateAsync(workoutToUnlock);

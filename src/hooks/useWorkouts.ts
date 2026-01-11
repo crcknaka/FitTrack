@@ -286,6 +286,8 @@ export function useUserWorkouts(userId: string | null | undefined) {
   return useQuery({
     queryKey: ["workouts", userId],
     queryFn: async () => {
+      if (!navigator.onLine) return [];
+
       const { data, error } = await supabase
         .from("workouts")
         .select(`
@@ -350,6 +352,8 @@ export function useUserAllTimeBests(userId: string | null | undefined) {
   return useQuery({
     queryKey: ["user-all-time-bests", userId],
     queryFn: async () => {
+      if (!navigator.onLine) return {};
+
       const { data, error } = await supabase
         .from("workout_sets")
         .select(`

@@ -17,7 +17,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";
-import { useOfflineWorkouts, useOfflineExercises } from "@/offline";
+import { useOfflineWorkouts, useOfflineExercises, useOfflineProfile } from "@/offline";
+import { useOffline } from "@/contexts/OfflineContext";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -44,6 +45,8 @@ export default function Progress() {
   // Use offline hooks for workouts and exercises (can view progress offline)
   const { data: workouts } = useOfflineWorkouts();
   const { data: exercises } = useOfflineExercises();
+  const { data: profile } = useOfflineProfile();
+  const { isOnline } = useOffline();
   const { user } = useAuth();
   const { toast } = useToast();
   const { units, convertWeight, convertDistance, toMetricWeight } = useUnits();
@@ -90,43 +93,35 @@ export default function Progress() {
     "Тяга верхнего блока"
   ];
 
-  // Load body weight history
+  // Load body weight history (only when online, as it's not cached)
   useEffect(() => {
-    if (!user) return;
+    if (!user || !isOnline) return;
 
     const loadWeightHistory = async () => {
-      const { data, error } = await supabase
-        .from("body_weight_history")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("date", { ascending: true });
+      try {
+        const { data, error } = await supabase
+          .from("body_weight_history")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("date", { ascending: true });
 
-      if (error) {
-        console.error("Error loading weight history:", error);
-        return;
+        if (!error) {
+          setBodyWeightHistory(data || []);
+        }
+      } catch {
+        // Silently fail when offline
       }
-
-      setBodyWeightHistory(data || []);
-    };
-
-    const loadCurrentWeight = async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("current_weight")
-        .eq("user_id", user.id)
-        .single();
-
-      if (error) {
-        console.error("Error loading current weight:", error);
-        return;
-      }
-
-      setCurrentWeight(data?.current_weight || null);
     };
 
     loadWeightHistory();
-    loadCurrentWeight();
-  }, [user]);
+  }, [user, isOnline]);
+
+  // Get current weight from offline profile
+  useEffect(() => {
+    if (profile?.current_weight !== undefined) {
+      setCurrentWeight(profile.current_weight);
+    }
+  }, [profile]);
 
   // Get all exercises that have been used
   const usedExercises = useMemo(() => {

@@ -44,8 +44,6 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   const hydrateFromServer = useCallback(async () => {
     if (!user || hasHydratedRef.current) return;
 
-    console.log("[Offline] Hydrating data from server for user:", user.id);
-
     try {
       // Fetch exercises (all exercises, preset and user's custom)
       const { data: exercises } = await supabase
@@ -54,7 +52,6 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
         .or(`is_preset.eq.true,user_id.eq.${user.id}`);
 
       if (exercises) {
-        console.log("[Offline] Caching", exercises.length, "exercises");
         await offlineDb.exercises.bulkPut(
           exercises.map((e) => ({
             ...e,
@@ -76,7 +73,6 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
         .gte("date", dateStr);
 
       if (workouts) {
-        console.log("[Offline] Caching", workouts.length, "workouts");
         await offlineDb.workouts.bulkPut(
           workouts.map((w) => ({
             ...w,
@@ -133,6 +129,41 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
             _synced: true,
           }))
         );
+      }
+
+      // Precache exercise images for offline use
+      if (exercises) {
+        const imageUrls = exercises
+          .filter((e) => e.image_url)
+          .map((e) => e.image_url as string);
+
+        if (imageUrls.length > 0) {
+          // Trigger fetch for each image to populate service worker cache
+          await Promise.allSettled(
+            imageUrls.map((url) =>
+              fetch(url, { mode: "no-cors" }).catch(() => {
+                // Ignore errors - some images may not be accessible
+              })
+            )
+          );
+        }
+      }
+
+      // Precache workout photos
+      if (workouts) {
+        const photoUrls = workouts
+          .filter((w) => w.photo_url)
+          .map((w) => w.photo_url as string);
+
+        if (photoUrls.length > 0) {
+          await Promise.allSettled(
+            photoUrls.map((url) =>
+              fetch(url, { mode: "no-cors" }).catch(() => {
+                // Ignore errors
+              })
+            )
+          );
+        }
       }
 
       await setLastSyncTime("all", Date.now());

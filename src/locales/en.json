@@ -487,6 +487,7 @@
     "syncError": "Sync failed. Will retry.",
     "offlineReady": "App ready for offline use",
     "updateAvailable": "Update available",
-    "notSynced": "Not synced yet"
+    "notSynced": "Not synced yet",
+    "featureRequiresInternet": "This feature requires internet connection"
   }
 }

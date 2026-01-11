@@ -26,7 +26,29 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 // Schema version - increment this when you make breaking database changes
 const SCHEMA_VERSION = "2"; // Updated for cardio exercise type
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Don't retry when offline
+      retry: (failureCount) => {
+        // Don't retry network errors when offline
+        if (!navigator.onLine) return false;
+        // Default retry logic: 3 attempts
+        return failureCount < 3;
+      },
+      // Don't refetch on window focus when offline
+      refetchOnWindowFocus: () => navigator.onLine,
+      // Don't refetch on reconnect - we handle this manually in OfflineContext
+      refetchOnReconnect: false,
+      // Keep stale data visible while fetching
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+    mutations: {
+      // Don't retry mutations when offline
+      retry: false,
+    },
+  },
+});
 
 // Check schema version and clear cache if needed
 function useSchemaVersionCheck() {

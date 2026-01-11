@@ -46,6 +46,9 @@ export function useLeaderboard(
   return useQuery({
     queryKey: ["leaderboard", exerciseName, timeFilter, friendsOnly, friendIds],
     queryFn: async () => {
+      // Return empty when offline - leaderboard requires network
+      if (!navigator.onLine) return [];
+
       // Build date filter
       let dateFilter = "";
       if (timeFilter === "month") {

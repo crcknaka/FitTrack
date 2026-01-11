@@ -4,7 +4,7 @@ import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(() => ({
   server: {
     host: "::",
     port: 8080,
@@ -18,9 +18,39 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "icon-192.png", "icon-512.png", "logo-white.png", "logo-black.png"],
       manifest: false, // Use existing manifest.json
+      devOptions: {
+        enabled: false, // PWA disabled in dev mode - use npm run build && npm run preview to test
+      },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,json,jpg,jpeg,webp}"],
+        // Ensure all lazy-loaded chunks are precached
+        navigateFallback: "index.html",
+        navigateFallbackDenylist: [/^\/api/, /^\/auth/],
         runtimeCaching: [
+          {
+            // Cache app JS/CSS chunks (for lazy loading)
+            urlPattern: /\/assets\/.*\.(js|css)$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "app-assets",
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+            },
+          },
+          {
+            // Cache local exercise images
+            urlPattern: /\/exercises\/.*\.(jpg|jpeg|png|webp)$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "exercise-images",
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+            },
+          },
           {
             // Cache Supabase storage (exercise images, avatars)
             urlPattern: /^https:\/\/.*\.supabase\.co\/storage\/.*/i,
@@ -36,24 +66,10 @@ export default defineConfig(({ mode }) => ({
               },
             },
           },
-          {
-            // Network-only for API requests (we use IndexedDB for data)
-            urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/.*/i,
-            handler: "NetworkOnly",
-          },
-          {
-            // Network-first for auth endpoints
-            urlPattern: /^https:\/\/.*\.supabase\.co\/auth\/.*/i,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "supabase-auth",
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 5, // 5 minutes
-              },
-            },
-          },
         ],
+        // Skip Supabase API/auth requests - app handles offline with IndexedDB
+        skipWaiting: true,
+        clientsClaim: true,
       },
     }),
   ],

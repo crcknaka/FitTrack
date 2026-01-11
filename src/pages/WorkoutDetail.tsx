@@ -24,14 +24,23 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useSingleWorkout, useUserAllTimeBests, useLockWorkout, useUnlockWorkout } from "@/hooks/useWorkouts";
-import { useExercises, Exercise } from "@/hooks/useExercises";
+import { useUserAllTimeBests, useLockWorkout, useUnlockWorkout } from "@/hooks/useWorkouts";
+import { Exercise } from "@/hooks/useExercises";
 import { useWorkoutShare, useCreateWorkoutShare, useDeactivateWorkoutShare } from "@/hooks/useWorkoutShare";
-import { useFavoriteExercises, useToggleFavoriteExercise } from "@/hooks/useFavoriteExercises";
-import { useOfflineAddSet, useOfflineDeleteSet, useOfflineUpdateSet, useOfflineUpdateWorkout } from "@/offline";
+import {
+  useOfflineSingleWorkout,
+  useOfflineAddSet,
+  useOfflineDeleteSet,
+  useOfflineUpdateSet,
+  useOfflineUpdateWorkout,
+  useOfflineExercises,
+  useOfflineFavoriteExercises,
+  useOfflineToggleFavoriteExercise,
+} from "@/offline";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOffline } from "@/contexts/OfflineContext";
 import { useUserProfile } from "@/hooks/useProfile";
 import { uploadWorkoutPhoto, deleteWorkoutPhoto, validateImageFile } from "@/lib/photoUpload";
 import { ViewingUserBanner } from "@/components/ViewingUserBanner";
@@ -54,10 +63,12 @@ export default function WorkoutDetail() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const { data: workout, isLoading: isWorkoutLoading } = useSingleWorkout(id);
-  const { data: exercises } = useExercises();
-  const { data: favoriteExercises } = useFavoriteExercises();
-  const toggleFavorite = useToggleFavoriteExercise();
+  const { isOnline } = useOffline();
+  // Use offline-first hooks for data
+  const { data: workout, isLoading: isWorkoutLoading } = useOfflineSingleWorkout(id);
+  const { data: exercises } = useOfflineExercises();
+  const { data: favoriteExercises } = useOfflineFavoriteExercises();
+  const toggleFavorite = useOfflineToggleFavoriteExercise();
   // Use offline hooks for set and workout operations
   const addSet = useOfflineAddSet();
   const deleteSet = useOfflineDeleteSet();
@@ -487,6 +498,10 @@ export default function WorkoutDetail() {
 
   const handleShareWorkout = async () => {
     if (!workout || !user) return;
+    if (!isOnline) {
+      toast.error(t("offline.featureRequiresInternet"));
+      return;
+    }
 
     try {
       const share = await createShare.mutateAsync({
@@ -507,6 +522,10 @@ export default function WorkoutDetail() {
 
   const handleDeactivateShare = async () => {
     if (!workoutShare) return;
+    if (!isOnline) {
+      toast.error(t("offline.featureRequiresInternet"));
+      return;
+    }
 
     try {
       await deactivateShare.mutateAsync(workoutShare.id);
@@ -530,6 +549,10 @@ export default function WorkoutDetail() {
 
   const handleLockWorkout = async () => {
     if (!workout) return;
+    if (!isOnline) {
+      toast.error(t("offline.featureRequiresInternet"));
+      return;
+    }
 
     try {
       await lockWorkout.mutateAsync(workout.id);
@@ -542,6 +565,10 @@ export default function WorkoutDetail() {
 
   const handleUnlockWorkout = async () => {
     if (!workout) return;
+    if (!isOnline) {
+      toast.error(t("offline.featureRequiresInternet"));
+      return;
+    }
 
     try {
       await unlockWorkout.mutateAsync(workout.id);

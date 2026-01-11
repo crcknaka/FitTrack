@@ -487,6 +487,7 @@
     "syncError": "Error de sincronización. Reintentando.",
     "offlineReady": "App lista para uso sin conexión",
     "updateAvailable": "Actualización disponible",
-    "notSynced": "Aún no sincronizado"
+    "notSynced": "Aún no sincronizado",
+    "featureRequiresInternet": "Esta función requiere conexión a internet"
   }
 }

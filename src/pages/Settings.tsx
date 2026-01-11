@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
 import { User, Save, LogOut, Lock, Eye, EyeOff, ChevronDown, Sun, Moon, Monitor, Download, FileJson, FileSpreadsheet } from "lucide-react";
-import { useWorkouts } from "@/hooks/useWorkouts";
+import { useOfflineProfile, useOfflineUpdateProfile, useOfflineWorkouts } from "@/offline";
 import { format } from "date-fns";
 import * as XLSX from "xlsx-js-style";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,13 +15,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { useAccentColor, ACCENT_COLORS } from "@/hooks/useAccentColor";
 import { useUnits, UNIT_SYSTEMS } from "@/hooks/useUnits";
 import { LANGUAGES } from "@/lib/i18n";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { pluralizeWithCount } from "@/lib/pluralize";
 
 const AVATAR_CATEGORIES = [
   {
@@ -72,9 +70,9 @@ const AVATAR_CATEGORIES = [
 
 export default function Settings() {
   const { t, i18n } = useTranslation();
-  const { data: profile, isLoading } = useProfile();
-  const { data: workouts } = useWorkouts();
-  const updateProfile = useUpdateProfile();
+  const { data: profile, isLoading } = useOfflineProfile();
+  const { data: workouts } = useOfflineWorkouts();
+  const updateProfile = useOfflineUpdateProfile();
   const { signOut, updatePassword } = useAuth();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { accentColor, setAccentColor } = useAccentColor();

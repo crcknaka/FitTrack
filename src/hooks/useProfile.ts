@@ -65,6 +65,8 @@ export function useUserProfile(userId: string | null | undefined) {
   return useQuery({
     queryKey: ["profile", userId],
     queryFn: async () => {
+      if (!navigator.onLine) return null;
+
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
