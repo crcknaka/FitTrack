@@ -1,6 +1,7 @@
 import { UserMinus, Check, X, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface FriendCardProps {
   avatar: string | null;
@@ -25,6 +26,7 @@ export function FriendCard({
   onClick,
   isLoading,
 }: FriendCardProps) {
+  const { t } = useTranslation();
   return (
     <div
       className={cn(
@@ -41,15 +43,15 @@ export function FriendCard({
       {/* Name */}
       <div className="flex-1 min-w-0">
         <p className="font-medium text-foreground truncate">
-          {displayName || "Аноним"}
+          {displayName || t("common.anonymous")}
         </p>
         {status === "incoming" && (
-          <p className="text-xs text-muted-foreground">Хочет добавить вас в друзья</p>
+          <p className="text-xs text-muted-foreground">{t("friends.wantsToAdd")}</p>
         )}
         {status === "outgoing" && (
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            Ожидает ответа
+            {t("friends.waitingForResponse")}
           </p>
         )}
       </div>

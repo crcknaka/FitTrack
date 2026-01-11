@@ -3,6 +3,7 @@ import { Play, Pause, RotateCcw, Check, Timer, ArrowUp, ArrowDown } from "lucide
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 type TimerMode = "stopwatch" | "countdown";
 
@@ -12,6 +13,7 @@ interface ExerciseTimerProps {
 }
 
 export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<TimerMode>("stopwatch");
   const [isRunning, setIsRunning] = useState(false);
   const [seconds, setSeconds] = useState(0);
@@ -182,12 +184,12 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
     return (
       <div className="flex flex-col items-center gap-5 py-4">
         <div className="text-center">
-          <p className="text-sm text-muted-foreground mb-2">Результат</p>
+          <p className="text-sm text-muted-foreground mb-2">{t("timer.result")}</p>
           <div className="text-5xl font-bold text-primary tabular-nums">
             {formatTime(finalSeconds)}
           </div>
           <p className="text-base text-muted-foreground mt-2">
-            {finalSeconds} сек
+            {finalSeconds} {t("timer.seconds")}
           </p>
         </div>
 
@@ -199,7 +201,7 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
             onClick={handleReset}
           >
             <RotateCcw className="h-4 w-4 mr-2" />
-            Заново
+            {t("timer.restart")}
           </Button>
           <Button
             type="button"
@@ -207,7 +209,7 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
             onClick={handleSaveResult}
           >
             <Check className="h-4 w-4 mr-2" />
-            Сохранить
+            {t("common.save")}
           </Button>
         </div>
       </div>
@@ -230,7 +232,7 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
           disabled={isRunning}
         >
           <ArrowUp className="h-4 w-4" />
-          Секундомер
+          {t("timer.stopwatch")}
         </button>
         <button
           type="button"
@@ -244,7 +246,7 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
           disabled={isRunning}
         >
           <ArrowDown className="h-4 w-4" />
-          Обратный
+          {t("timer.countdown")}
         </button>
       </div>
 
@@ -252,7 +254,7 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
       {mode === "countdown" && !isRunning && seconds === countdownTarget && (
         <div className="w-full space-y-3">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground shrink-0">Цель:</span>
+            <span className="text-sm text-muted-foreground shrink-0">{t("timer.target")}</span>
             <Input
               type="number"
               inputMode="numeric"
@@ -266,7 +268,7 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
               min={1}
               max={3600}
             />
-            <span className="text-sm text-muted-foreground">сек</span>
+            <span className="text-sm text-muted-foreground">{t("units.sec")}</span>
           </div>
 
           {/* Quick presets */}
@@ -315,7 +317,7 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
               className="flex-1"
               onClick={onCancel}
             >
-              Отмена
+              {t("common.cancel")}
             </Button>
             <Button
               type="button"
@@ -324,7 +326,7 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
               disabled={mode === "countdown" && countdownTarget <= 0}
             >
               <Play className="h-4 w-4 mr-2" />
-              {seconds > 0 && mode === "stopwatch" ? "Продолжить" : "Старт"}
+              {seconds > 0 && mode === "stopwatch" ? t("common.continue") : t("common.start")}
             </Button>
           </>
         ) : (
@@ -336,7 +338,7 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
               onClick={handlePause}
             >
               <Pause className="h-4 w-4 mr-2" />
-              Пауза
+              {t("common.pause")}
             </Button>
             <Button
               type="button"
@@ -344,7 +346,7 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
               onClick={handleStop}
             >
               <Check className="h-4 w-4 mr-2" />
-              Стоп
+              {t("common.stop")}
             </Button>
           </>
         )}
@@ -360,14 +362,14 @@ export function ExerciseTimer({ onSave, onCancel }: ExerciseTimerProps) {
           className="text-muted-foreground"
         >
           <RotateCcw className="h-4 w-4 mr-2" />
-          Сбросить
+          {t("common.reset")}
         </Button>
       )}
 
       {/* Wake Lock indicator */}
       {isRunning && (
         <p className="text-xs text-muted-foreground text-center">
-          Экран не выключится пока таймер работает
+          {t("timer.screenStaysOn")}
         </p>
       )}
     </div>

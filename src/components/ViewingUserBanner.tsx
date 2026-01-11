@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface ViewingUserBannerProps {
   avatar: string | null;
@@ -9,6 +10,7 @@ interface ViewingUserBannerProps {
 }
 
 export function ViewingUserBanner({ avatar, displayName, onClose }: ViewingUserBannerProps) {
+  const { t } = useTranslation();
   return (
     <div className={cn(
       "flex items-center gap-3 p-3 rounded-lg mb-4",
@@ -20,9 +22,9 @@ export function ViewingUserBanner({ avatar, displayName, onClose }: ViewingUserB
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-muted-foreground">Просмотр тренировок</p>
+        <p className="text-sm text-muted-foreground">{t("workout.viewingWorkouts")}</p>
         <p className="font-semibold text-foreground truncate">
-          {displayName || "Аноним"}
+          {displayName || t("common.anonymous")}
         </p>
       </div>
 
@@ -33,7 +35,7 @@ export function ViewingUserBanner({ avatar, displayName, onClose }: ViewingUserB
         className="gap-2 shrink-0"
       >
         <X className="h-4 w-4" />
-        <span className="hidden sm:inline">Мои тренировки</span>
+        <span className="hidden sm:inline">{t("workout.myWorkouts")}</span>
       </Button>
     </div>
   );

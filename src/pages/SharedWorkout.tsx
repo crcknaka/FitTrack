@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { format, isToday, parseISO, differenceInYears } from "date-fns";
-import { ru } from "date-fns/locale";
+import { ru, enUS, es, ptBR, de, fr, Locale } from "date-fns/locale";
 import { Loader2, Dumbbell, User, Activity, Timer, MessageSquare, ImageIcon, Trophy, LogIn, UserPlus, Calendar, Weight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,8 +9,20 @@ import { useUserProfile } from "@/hooks/useProfile";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 import { useTheme } from "next-themes";
+import { useTranslation } from "react-i18next";
+
+const DATE_LOCALES: Record<string, Locale> = {
+  en: enUS,
+  es: es,
+  "pt-BR": ptBR,
+  de: de,
+  fr: fr,
+  ru: ru,
+};
 
 export default function SharedWorkout() {
+  const { t, i18n } = useTranslation();
+  const dateLocale = DATE_LOCALES[i18n.language] || enUS;
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { data: workout, isLoading } = useSharedWorkout(token);
@@ -107,10 +119,10 @@ export default function SharedWorkout() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4">
         <div className="text-center space-y-4">
-          <h1 className="text-2xl font-bold text-foreground">Тренировка не найдена</h1>
-          <p className="text-muted-foreground">Эта ссылка недействительна или была деактивирована</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("workout.notFound")}</h1>
+          <p className="text-muted-foreground">{t("workout.linkDeactivated")}</p>
           <Button onClick={() => navigate("/auth")}>
-            Перейти к приложению
+            {t("auth.login")}
           </Button>
         </div>
       </div>
@@ -135,7 +147,7 @@ export default function SharedWorkout() {
                 <div className="relative w-16 h-16">
                   <img
                     src={ownerProfile.avatar}
-                    alt={ownerProfile.display_name || "Пользователь"}
+                    alt={ownerProfile.display_name || t("common.anonymous")}
                     className="w-16 h-16 rounded-full object-cover border-2 border-primary/30"
                     onError={(e) => {
                       // Fallback to default icon if image fails to load
@@ -160,19 +172,19 @@ export default function SharedWorkout() {
               </div>
             )}
             <div className="flex-1">
-              <p className="text-sm text-muted-foreground">Тренировка пользователя</p>
-              <p className="font-bold text-base text-foreground">{ownerProfile?.display_name || "Пользователь"}</p>
+              <p className="text-sm text-muted-foreground">{t("workout.viewingWorkouts")}</p>
+              <p className="font-bold text-base text-foreground">{ownerProfile?.display_name || t("common.anonymous")}</p>
               <div className="flex items-center gap-3 mt-1 flex-wrap">
                 {ownerAge && (
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Calendar className="h-3.5 w-3.5" />
-                    <span>{ownerAge} {ownerAge === 1 ? 'год' : ownerAge < 5 ? 'года' : 'лет'}</span>
+                    <span>{ownerAge} {t("plurals.year.other")}</span>
                   </div>
                 )}
                 {ownerProfile?.current_weight && (
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Weight className="h-3.5 w-3.5" />
-                    <span>{ownerProfile.current_weight} кг</span>
+                    <span>{ownerProfile.current_weight} {t("units.kg")}</span>
                   </div>
                 )}
               </div>
@@ -195,12 +207,12 @@ export default function SharedWorkout() {
         {/* Date Header */}
         <div className="space-y-1">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-            {format(new Date(workout.date), "d MMMM yyyy", { locale: ru })}
+            {format(new Date(workout.date), "d MMMM yyyy", { locale: dateLocale })}
           </h1>
           <div className="flex items-center gap-2">
             {isToday(parseISO(workout.date)) && (
               <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-green-500/15 text-green-600 dark:text-green-400">
-                сегодня
+                {t("workouts.today")}
               </span>
             )}
             <span className={cn(
@@ -209,7 +221,7 @@ export default function SharedWorkout() {
                 ? "bg-primary/10 text-primary"
                 : "bg-sky-500/10 text-sky-600 dark:text-sky-400"
             )}>
-              {format(new Date(workout.date), "EEEE", { locale: ru })}
+              {format(new Date(workout.date), "EEEE", { locale: dateLocale })}
             </span>
           </div>
         </div>
@@ -221,9 +233,9 @@ export default function SharedWorkout() {
               <div className="p-4 bg-muted rounded-full mb-4">
                 <Dumbbell className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="font-semibold text-foreground mb-1">Нет упражнений</h3>
+              <h3 className="font-semibold text-foreground mb-1">{t("workout.noExercises")}</h3>
               <p className="text-muted-foreground text-sm">
-                В этой тренировке пока нет упражнений
+                {t("workout.addFirstSet")}
               </p>
             </CardContent>
           </Card>
@@ -266,13 +278,13 @@ export default function SharedWorkout() {
                   )}>
                     <div className="text-center">#</div>
                     <div className="text-center">
-                      {exercise?.type === "cardio" ? "Дист." :
-                       exercise?.type === "timed" ? "Время" :
-                       "Повт."}
+                      {exercise?.type === "cardio" ? t("progress.distance") :
+                       exercise?.type === "timed" ? t("progress.time") :
+                       t("workout.reps")}
                     </div>
                     {exercise?.type !== "bodyweight" && exercise?.type !== "timed" && (
                       <div className="text-center">
-                        {exercise?.type === "cardio" ? "Время" : "Вес"}
+                        {exercise?.type === "cardio" ? t("progress.time") : t("workout.weightKg")}
                       </div>
                     )}
                   </div>
@@ -300,15 +312,15 @@ export default function SharedWorkout() {
                       {exercise?.type === "cardio" ? (
                         <>
                           <div className="text-center text-sm font-semibold text-foreground">
-                            {set.distance_km ? `${set.distance_km} км` : '—'}
+                            {set.distance_km ? `${set.distance_km} ${t("units.km")}` : '—'}
                           </div>
                           <div className="text-center text-sm font-medium text-primary">
-                            {set.duration_minutes ? `${set.duration_minutes} мин` : '—'}
+                            {set.duration_minutes ? `${set.duration_minutes} ${t("units.min")}` : '—'}
                           </div>
                         </>
                       ) : exercise?.type === "timed" ? (
                         <div className="text-center text-sm font-semibold text-primary">
-                          {set.plank_seconds ? `${set.plank_seconds} сек` : '—'}
+                          {set.plank_seconds ? `${set.plank_seconds} ${t("units.sec")}` : '—'}
                         </div>
                       ) : exercise?.type === "bodyweight" ? (
                         <div className="text-center text-sm font-semibold text-foreground">
@@ -320,7 +332,7 @@ export default function SharedWorkout() {
                             {set.reps || '—'}
                           </div>
                           <div className="text-center text-sm font-medium text-primary">
-                            {set.weight ? `${set.weight} кг` : '—'}
+                            {set.weight ? `${set.weight} ${t("units.kg")}` : '—'}
                           </div>
                         </>
                       )}
@@ -338,7 +350,7 @@ export default function SharedWorkout() {
             <CardHeader className="pb-2 pt-4 px-4">
               <CardTitle className="text-base flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-primary" />
-                Комментарий
+                {t("workout.comment")}
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-4">
@@ -355,13 +367,13 @@ export default function SharedWorkout() {
             <CardHeader className="pb-2 pt-4 px-4">
               <CardTitle className="text-base flex items-center gap-2">
                 <ImageIcon className="h-4 w-4 text-primary" />
-                Фото
+                {t("workout.photos")}
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-4">
               <img
                 src={workout.photo_url}
-                alt="Фото тренировки"
+                alt={t("workout.workoutPhoto")}
                 className="w-full rounded-lg object-cover max-h-80"
               />
             </CardContent>
@@ -373,7 +385,7 @@ export default function SharedWorkout() {
       <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border p-4">
         <div className="max-w-4xl mx-auto flex flex-col gap-3">
           <p className="text-center text-sm text-muted-foreground">
-            Начни отслеживать свои тренировки с FitTrack
+            {t("auth.subtitle")}
           </p>
           <div className="flex gap-3">
             <Button
@@ -382,14 +394,14 @@ export default function SharedWorkout() {
               onClick={() => navigate("/auth")}
             >
               <LogIn className="h-4 w-4" />
-              Войти
+              {t("auth.loginButton")}
             </Button>
             <Button
               className="flex-1 gap-2"
               onClick={() => navigate("/auth")}
             >
               <UserPlus className="h-4 w-4" />
-              Зарегистрироваться
+              {t("auth.register")}
             </Button>
           </div>
         </div>

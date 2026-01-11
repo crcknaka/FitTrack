@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Lock, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export default function ResetPassword() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { updatePassword, user } = useAuth();
   const { resolvedTheme } = useTheme();
@@ -26,17 +28,17 @@ export default function ResetPassword() {
     e.preventDefault();
 
     if (!newPassword || !confirmPassword) {
-      toast.error("Заполните оба поля");
+      toast.error(t("settings.fillBothFields"));
       return;
     }
 
     if (newPassword.length < 6) {
-      toast.error("Пароль должен быть минимум 6 символов");
+      toast.error(t("settings.passwordMinLength"));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error("Пароли не совпадают");
+      toast.error(t("settings.passwordsNoMatch"));
       return;
     }
 
@@ -44,9 +46,9 @@ export default function ResetPassword() {
     try {
       await updatePassword(newPassword);
       setSuccess(true);
-      toast.success("Пароль успешно изменен!");
+      toast.success(t("settings.passwordChanged"));
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Ошибка смены пароля";
+      const errorMessage = error instanceof Error ? error.message : t("settings.passwordChangeError");
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -80,9 +82,9 @@ export default function ResetPassword() {
             <CardContent className="pt-6">
               <div className="flex flex-col items-center gap-4 text-center">
                 <CheckCircle className="h-16 w-16 text-green-500" />
-                <h2 className="text-xl font-semibold">Пароль изменен!</h2>
+                <h2 className="text-xl font-semibold">{t("settings.passwordChanged")}</h2>
                 <p className="text-muted-foreground">
-                  Перенаправление на главную страницу...
+                  {t("common.loading")}
                 </p>
               </div>
             </CardContent>
@@ -108,19 +110,19 @@ export default function ResetPassword() {
             <div className="flex justify-center mb-2">
               <Lock className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle className="text-xl">Новый пароль</CardTitle>
+            <CardTitle className="text-xl">{t("settings.newPassword")}</CardTitle>
             <CardDescription>
-              Введите новый пароль для вашего аккаунта
+              {t("auth.resetDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="newPassword">Новый пароль</Label>
+                <Label htmlFor="newPassword">{t("settings.newPassword")}</Label>
                 <Input
                   id="newPassword"
                   type="password"
-                  placeholder="Минимум 6 символов"
+                  placeholder={t("auth.minPassword")}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
@@ -128,11 +130,11 @@ export default function ResetPassword() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Подтвердите пароль</Label>
+                <Label htmlFor="confirmPassword">{t("settings.confirmPassword")}</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
-                  placeholder="Повторите пароль"
+                  placeholder={t("settings.repeatPassword")}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -140,7 +142,7 @@ export default function ResetPassword() {
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Сохранить пароль
+                {t("settings.changePasswordButton")}
               </Button>
               <Button
                 type="button"
@@ -148,7 +150,7 @@ export default function ResetPassword() {
                 className="w-full"
                 onClick={() => navigate("/auth")}
               >
-                Назад к входу
+                {t("auth.backToLogin")}
               </Button>
             </form>
           </CardContent>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Users, UserPlus, Inbox, Send, UserX } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,6 +29,7 @@ import {
 import { toast } from "sonner";
 
 export default function Friends() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [friendToRemove, setFriendToRemove] = useState<{ id: string; name: string } | null>(null);
 
@@ -43,18 +45,18 @@ export default function Friends() {
   const handleAccept = async (friendshipId: string) => {
     try {
       await acceptRequest.mutateAsync(friendshipId);
-      toast.success("Запрос принят");
+      toast.success(t("friends.requestAccepted"));
     } catch {
-      toast.error("Ошибка при принятии запроса");
+      toast.error(t("friends.acceptError"));
     }
   };
 
   const handleReject = async (friendshipId: string) => {
     try {
       await rejectRequest.mutateAsync(friendshipId);
-      toast.success("Запрос отклонен");
+      toast.success(t("friends.requestRejected"));
     } catch {
-      toast.error("Ошибка при отклонении запроса");
+      toast.error(t("friends.rejectError"));
     }
   };
 
@@ -62,19 +64,19 @@ export default function Friends() {
     if (!friendToRemove) return;
     try {
       await removeFriend.mutateAsync(friendToRemove.id);
-      toast.success("Друг удален");
+      toast.success(t("friends.friendRemoved"));
       setFriendToRemove(null);
     } catch {
-      toast.error("Ошибка при удалении друга");
+      toast.error(t("friends.removeError"));
     }
   };
 
   const handleCancelRequest = async (friendshipId: string) => {
     try {
       await cancelRequest.mutateAsync(friendshipId);
-      toast.success("Запрос отменен");
+      toast.success(t("friends.requestCanceled"));
     } catch {
-      toast.error("Ошибка при отмене запроса");
+      toast.error(t("friends.cancelError"));
     }
   };
 
@@ -85,17 +87,17 @@ export default function Friends() {
       <div className="flex items-center justify-between gap-3">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-            Друзья
+            {t("friends.title")}
           </h1>
           <p className="text-muted-foreground text-sm">
-            {friends?.length || 0} {friends?.length === 1 ? "друг" : friends?.length && friends.length >= 2 && friends.length <= 4 ? "друга" : "друзей"}
+            {friends?.length || 0} {t("friends.tabs.friends").toLowerCase()}
           </p>
         </div>
         <AddFriendDialog
           trigger={
             <Button className="gap-2 shadow-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold transition-all hover:shadow-xl hover:scale-105 active:scale-95">
               <UserPlus className="h-5 w-5 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Добавить</span>
+              <span className="hidden sm:inline">{t("friends.addFriend")}</span>
             </Button>
           }
         />
@@ -105,13 +107,13 @@ export default function Friends() {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="friends" className="gap-1.5 text-xs sm:text-sm">
             <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">Мои друзья</span>
-            <span className="sm:hidden">Друзья</span>
+            <span className="hidden sm:inline">{t("friends.tabs.myFriends")}</span>
+            <span className="sm:hidden">{t("friends.tabs.friends")}</span>
           </TabsTrigger>
           <TabsTrigger value="incoming" className="gap-1.5 text-xs sm:text-sm relative">
             <Inbox className="h-4 w-4" />
-            <span className="hidden sm:inline">Входящие</span>
-            <span className="sm:hidden">Входящие</span>
+            <span className="hidden sm:inline">{t("friends.tabs.incoming")}</span>
+            <span className="sm:hidden">{t("friends.tabs.incoming")}</span>
             {pendingCount > 0 && (
               <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold bg-destructive text-destructive-foreground rounded-full px-1">
                 {pendingCount}
@@ -120,8 +122,8 @@ export default function Friends() {
           </TabsTrigger>
           <TabsTrigger value="outgoing" className="gap-1.5 text-xs sm:text-sm">
             <Send className="h-4 w-4" />
-            <span className="hidden sm:inline">Исходящие</span>
-            <span className="sm:hidden">Исходящие</span>
+            <span className="hidden sm:inline">{t("friends.tabs.outgoing")}</span>
+            <span className="sm:hidden">{t("friends.tabs.outgoing")}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -141,9 +143,9 @@ export default function Friends() {
                 <div className="p-4 bg-muted rounded-full mb-4">
                   <Users className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-1">Нет друзей</h3>
+                <h3 className="font-semibold text-foreground mb-1">{t("friends.noFriends")}</h3>
                 <p className="text-muted-foreground text-sm mb-4">
-                  Найди друзей и тренируйтесь вместе!
+                  {t("friends.addFriendsToSee")}
                 </p>
                 <AddFriendDialog />
               </CardContent>
@@ -163,7 +165,7 @@ export default function Friends() {
                     onRemove={() =>
                       setFriendToRemove({
                         id: friendship.id,
-                        name: friendship.friend.display_name || "Аноним",
+                        name: friendship.friend.display_name || t("common.anonymous"),
                       })
                     }
                     onClick={() => navigate(`/?user=${friendship.friend.user_id}`)}
@@ -191,9 +193,9 @@ export default function Friends() {
                 <div className="p-4 bg-muted rounded-full mb-4">
                   <Inbox className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-1">Нет входящих запросов</h3>
+                <h3 className="font-semibold text-foreground mb-1">{t("friends.noIncomingRequests")}</h3>
                 <p className="text-muted-foreground text-sm">
-                  Когда кто-то захочет добавить вас в друзья, запрос появится здесь
+                  {t("friends.noIncomingDescription")}
                 </p>
               </CardContent>
             </Card>
@@ -235,9 +237,9 @@ export default function Friends() {
                 <div className="p-4 bg-muted rounded-full mb-4">
                   <Send className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-1">Нет исходящих запросов</h3>
+                <h3 className="font-semibold text-foreground mb-1">{t("friends.noOutgoingRequests")}</h3>
                 <p className="text-muted-foreground text-sm">
-                  Здесь будут отображаться ваши отправленные запросы на дружбу
+                  {t("friends.noOutgoingDescription")}
                 </p>
               </CardContent>
             </Card>
@@ -269,20 +271,19 @@ export default function Friends() {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <UserX className="h-5 w-5 text-destructive" />
-              Удалить друга?
+              {t("friends.removeFriendTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Вы уверены, что хотите удалить <strong>{friendToRemove?.name}</strong> из друзей?
-              Вы больше не сможете видеть тренировки друг друга.
+              {t("friends.removeFriendConfirm", { name: friendToRemove?.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleRemoveFriend}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Удалить
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

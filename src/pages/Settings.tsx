@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
+import { useTranslation } from "react-i18next";
 import { User, Save, LogOut, Lock, Eye, EyeOff, ChevronDown, Sun, Moon, Monitor, Download, FileJson, FileSpreadsheet } from "lucide-react";
 import { useWorkouts } from "@/hooks/useWorkouts";
 import { format } from "date-fns";
@@ -16,58 +17,60 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { useAccentColor, ACCENT_COLORS } from "@/hooks/useAccentColor";
+import { LANGUAGES } from "@/lib/i18n";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { pluralizeWithCount } from "@/lib/pluralize";
 
 const AVATAR_CATEGORIES = [
   {
-    name: "Спорт",
+    key: "sport",
     emojis: ["💪", "🏋️", "🏃", "🚴", "🏊", "🧘", "🤸", "🏆", "🥇", "🎯", "⚽", "🏀", "🎾", "🥊", "🏈"]
   },
   {
-    name: "Крутые",
+    key: "cool",
     emojis: ["😎", "🔥", "⚡", "🚀", "💥", "✨", "👑", "🌟", "💯", "🦾", "🎖️", "💎", "🏅", "⭐", "🔱"]
   },
   {
-    name: "Животные",
+    key: "animals",
     emojis: ["🦁", "🐯", "🐺", "🦅", "🦊", "🐻", "🦍", "🐉", "🦈", "🐸", "🦖", "🦏", "🐘", "🦬", "🐗"]
   },
   {
-    name: "Смешные",
+    key: "funny",
     emojis: ["🤪", "😜", "🤓", "🥸", "🤡", "👻", "💀", "🎃", "👽", "🤖", "🥴", "😵‍💫", "🫠", "🤯", "🫡"]
   },
   {
-    name: "Мемы",
+    key: "memes",
     emojis: ["🗿", "💅", "🤌", "😤", "🙃", "😏", "🫣", "🤭", "😈", "👀", "🤷", "🙈", "🤦", "😬", "🥶"]
   },
   {
-    name: "Еда",
+    key: "food",
     emojis: ["🍕", "🍔", "🌮", "🍣", "🍩", "🍪", "🥑", "🍗", "🥩", "🍺", "🍟", "🌭", "🍦", "🧁", "🍿"]
   },
   {
-    name: "Природа",
+    key: "nature",
     emojis: ["🌴", "🌵", "🍀", "🌸", "🌺", "🌻", "🍁", "🌊", "⛰️", "🌙", "☀️", "🌈", "❄️", "🔥", "💧"]
   },
   {
-    name: "Техника",
+    key: "tech",
     emojis: ["🎮", "🕹️", "💻", "📱", "🎧", "🎬", "📸", "🔧", "⚙️", "🔌", "💡", "🔋", "📡", "🛸", "🚗"]
   },
   {
-    name: "Музыка",
+    key: "music",
     emojis: ["🎸", "🎹", "🥁", "🎺", "🎻", "🎤", "🎵", "🎶", "🎼", "🪗", "🎷", "📯", "🪕", "🪘", "🎚️"]
   },
   {
-    name: "Магия",
+    key: "magic",
     emojis: ["🧙", "🧚", "🧛", "🧜", "🧝", "🦸", "🦹", "🥷", "🧞", "🧟", "🪄", "🔮", "⚗️", "🪬", "🧿"]
   },
   {
-    name: "Разное",
+    key: "misc",
     emojis: ["🎭", "🎪", "🎨", "🤘", "🖖", "🦄", "☯️", "♾️", "🎲", "🃏", "🀄", "🧩", "🪅", "🎁", "🧸"]
   }
 ];
 
 export default function Settings() {
+  const { t, i18n } = useTranslation();
   const { data: profile, isLoading } = useProfile();
   const { data: workouts } = useWorkouts();
   const updateProfile = useUpdateProfile();
@@ -123,33 +126,33 @@ export default function Settings() {
         // Сохраняем уровень скуфа напрямую (0-4)
         is_skuf: skufLevel,
       });
-      toast.success("Профиль обновлен");
+      toast.success(t("settings.profileUpdated"));
     } catch (error) {
-      toast.error("Ошибка сохранения профиля");
+      toast.error(t("settings.profileError"));
     }
   };
 
   const handleChangePassword = async () => {
     if (!newPassword || !confirmPassword) {
-      toast.error("Заполните оба поля");
+      toast.error(t("settings.fillBothFields"));
       return;
     }
     if (newPassword.length < 6) {
-      toast.error("Пароль должен быть минимум 6 символов");
+      toast.error(t("settings.passwordMinLength"));
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error("Пароли не совпадают");
+      toast.error(t("settings.passwordsNoMatch"));
       return;
     }
     setPasswordLoading(true);
     try {
       await updatePassword(newPassword);
-      toast.success("Пароль успешно изменен");
+      toast.success(t("settings.passwordChanged"));
       setNewPassword("");
       setConfirmPassword("");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Ошибка смены пароля";
+      const errorMessage = error instanceof Error ? error.message : t("settings.passwordChangeError");
       toast.error(errorMessage);
     } finally {
       setPasswordLoading(false);
@@ -158,7 +161,7 @@ export default function Settings() {
 
   const exportToJSON = () => {
     if (!workouts || workouts.length === 0) {
-      toast.error("Нет данных для экспорта");
+      toast.error(t("settings.noDataToExport"));
       return;
     }
     setExportLoading(true);
@@ -195,9 +198,9 @@ export default function Settings() {
       a.download = `fittrack-export-${format(new Date(), "yyyy-MM-dd")}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success("Данные экспортированы в JSON");
+      toast.success(t("settings.exportedToJson"));
     } catch {
-      toast.error("Ошибка экспорта");
+      toast.error(t("settings.exportError"));
     } finally {
       setExportLoading(false);
     }
@@ -205,13 +208,13 @@ export default function Settings() {
 
   const exportToCSV = () => {
     if (!workouts || workouts.length === 0) {
-      toast.error("Нет данных для экспорта");
+      toast.error(t("settings.noDataToExport"));
       return;
     }
     setExportLoading(true);
     try {
       const rows: string[] = [];
-      rows.push("Дата,Упражнение,Тип,Подход,Повторения,Вес (кг),Дистанция (км),Время (мин),Планка (сек),Заметки");
+      rows.push("Date,Exercise,Type,Set,Reps,Weight (kg),Distance (km),Time (min),Plank (sec),Notes");
 
       workouts.forEach(w => {
         const notes = w.notes?.replace(/"/g, '""') || "";
@@ -244,9 +247,9 @@ export default function Settings() {
       a.download = `fittrack-export-${format(new Date(), "yyyy-MM-dd")}.csv`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success("Данные экспортированы в CSV");
+      toast.success(t("settings.exportedToCsv"));
     } catch {
-      toast.error("Ошибка экспорта");
+      toast.error(t("settings.exportError"));
     } finally {
       setExportLoading(false);
     }
@@ -254,12 +257,12 @@ export default function Settings() {
 
   const exportToXLS = () => {
     if (!workouts || workouts.length === 0) {
-      toast.error("Нет данных для экспорта");
+      toast.error(t("settings.noDataToExport"));
       return;
     }
     setExportLoading(true);
     try {
-      const headers = ["Дата", "Упражнение", "Тип", "Подход", "Повторения", "Вес (кг)", "Дистанция (км)", "Время (мин)", "Планка (сек)", "Заметки"];
+      const headers = ["Date", "Exercise", "Type", "Set", "Reps", "Weight (kg)", "Distance (km)", "Time (min)", "Plank (sec)", "Notes"];
       const data: (string | number | null)[][] = [headers];
 
       workouts.forEach(w => {
@@ -285,25 +288,25 @@ export default function Settings() {
 
       const worksheet = XLSX.utils.aoa_to_sheet(data);
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Тренировки");
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Workouts");
 
       // Column widths
       const colWidths = [
-        { wch: 12 }, // Дата
-        { wch: 25 }, // Упражнение
-        { wch: 12 }, // Тип
-        { wch: 8 },  // Подход
-        { wch: 12 }, // Повторения
-        { wch: 10 }, // Вес
-        { wch: 14 }, // Дистанция
-        { wch: 12 }, // Время
-        { wch: 12 }, // Планка
-        { wch: 30 }, // Заметки
+        { wch: 12 }, // Date
+        { wch: 25 }, // Exercise
+        { wch: 12 }, // Type
+        { wch: 8 },  // Set
+        { wch: 12 }, // Reps
+        { wch: 10 }, // Weight
+        { wch: 14 }, // Distance
+        { wch: 12 }, // Time
+        { wch: 12 }, // Plank
+        { wch: 30 }, // Notes
       ];
       worksheet["!cols"] = colWidths;
 
       // Style headers (bold) and center numeric columns
-      const centerCols = [3, 4, 5, 6, 7, 8]; // Подход, Повторения, Вес, Дистанция, Время, Планка (0-indexed)
+      const centerCols = [3, 4, 5, 6, 7, 8]; // Set, Reps, Weight, Distance, Time, Plank (0-indexed)
       const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1");
 
       for (let C = range.s.c; C <= range.e.c; C++) {
@@ -328,9 +331,9 @@ export default function Settings() {
       }
 
       XLSX.writeFile(workbook, `fittrack-export-${format(new Date(), "yyyy-MM-dd")}.xlsx`);
-      toast.success("Данные экспортированы в Excel");
+      toast.success(t("settings.exportedToExcel"));
     } catch {
-      toast.error("Ошибка экспорта");
+      toast.error(t("settings.exportError"));
     } finally {
       setExportLoading(false);
     }
@@ -341,9 +344,9 @@ export default function Settings() {
       <div className="space-y-6 animate-fade-in">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-            Настройки
+            {t("settings.title")}
           </h1>
-          <p className="text-muted-foreground text-sm">Загрузка...</p>
+          <p className="text-muted-foreground text-sm">{t("common.loading")}</p>
         </div>
       </div>
     );
@@ -355,7 +358,7 @@ export default function Settings() {
         {/* Title and subtitle */}
         <div className="flex-1 space-y-1">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-            Настройки
+            {t("settings.title")}
           </h1>
         </div>
 
@@ -380,7 +383,7 @@ export default function Settings() {
               <CardTitle className="text-sm font-semibold flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-primary" />
-                  Профиль
+                  {t("settings.profile")}
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{avatar || "👤"}</span>
@@ -406,12 +409,12 @@ export default function Settings() {
                     </DialogTrigger>
                     <DialogContent className="max-w-sm max-h-[80vh] overflow-y-auto">
                       <DialogHeader>
-                        <DialogTitle>Выбери аватар</DialogTitle>
+                        <DialogTitle>{t("settings.selectAvatar")}</DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4 pt-2">
                         {AVATAR_CATEGORIES.map((category) => (
-                          <div key={category.name}>
-                            <p className="text-xs font-medium text-muted-foreground mb-2">{category.name}</p>
+                          <div key={category.key}>
+                            <p className="text-xs font-medium text-muted-foreground mb-2">{t(`settings.avatarCategories.${category.key}`)}</p>
                             <div className="grid grid-cols-5 gap-2">
                               {category.emojis.map((emoji) => (
                                 <button
@@ -445,16 +448,7 @@ export default function Settings() {
                       age--;
                     }
                     if (age >= 0 && age < 150) {
-                      const lastDigit = age % 10;
-                      const lastTwoDigits = age % 100;
-                      let suffix = "лет";
-                      if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
-                        suffix = "лет";
-                      } else if (lastDigit === 1) {
-                        suffix = "год";
-                      } else if (lastDigit >= 2 && lastDigit <= 4) {
-                        suffix = "года";
-                      }
+                      const suffix = age === 1 ? t("plurals.year.one") : t("plurals.year.other");
                       return (
                         <div className="text-center">
                           <div className="text-3xl font-bold text-primary">{age}</div>
@@ -471,7 +465,7 @@ export default function Settings() {
                       <span className="text-2xl">👑</span>
                       <div className="text-center">
                         <div className="text-xs font-bold text-amber-600 dark:text-amber-400">ADMIN</div>
-                        <div className="text-[10px] text-muted-foreground">Администратор</div>
+                        <div className="text-[10px] text-muted-foreground">{t("settings.admin")}</div>
                       </div>
                     </div>
                   )}
@@ -480,28 +474,28 @@ export default function Settings() {
                 {/* Display Name and Gender */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="displayName" className="text-xs">Имя</Label>
+                    <Label htmlFor="displayName" className="text-xs">{t("settings.name")}</Label>
                     <Input
                       id="displayName"
                       type="text"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
-                      placeholder="Введите имя"
+                      placeholder={t("settings.enterName")}
                       className="h-9 text-xs"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="gender" className="text-xs">Пол</Label>
+                    <Label htmlFor="gender" className="text-xs">{t("settings.gender")}</Label>
                     <Select value={gender} onValueChange={(v) => setGender(v as "male" | "female" | "other" | "none")}>
                       <SelectTrigger id="gender" className="h-9 text-xs">
-                        <SelectValue placeholder="Выберите пол" />
+                        <SelectValue placeholder={t("settings.selectGender")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">Не указано</SelectItem>
-                        <SelectItem value="male">Мужской</SelectItem>
-                        <SelectItem value="female">Женский</SelectItem>
-                        <SelectItem value="other">Другой</SelectItem>
+                        <SelectItem value="none">{t("settings.genderNone")}</SelectItem>
+                        <SelectItem value="male">{t("settings.genderMale")}</SelectItem>
+                        <SelectItem value="female">{t("settings.genderFemale")}</SelectItem>
+                        <SelectItem value="other">{t("settings.genderOther")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -510,7 +504,7 @@ export default function Settings() {
                 {/* Date of Birth and Zodiac */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="dateOfBirth" className="text-xs">Дата рождения</Label>
+                    <Label htmlFor="dateOfBirth" className="text-xs">{t("settings.dateOfBirth")}</Label>
                     <Input
                       id="dateOfBirth"
                       type="date"
@@ -521,25 +515,25 @@ export default function Settings() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Знак зодиака</Label>
+                    <Label className="text-xs">{t("settings.zodiacSign")}</Label>
                     {dateOfBirth ? (() => {
                       const birthDate = new Date(dateOfBirth);
                       const month = birthDate.getMonth() + 1;
                       const day = birthDate.getDate();
                       const zodiacSigns = [
-                        { sign: "♑", name: "Козерог", end: [1, 19], desc: "Работает даже в зале. Цель — стать CEO фитнеса" },
-                        { sign: "♒", name: "Водолей", end: [2, 18], desc: "Изобретает новые упражнения. Никто не понимает технику" },
-                        { sign: "♓", name: "Рыбы", end: [3, 20], desc: "Мечтает о кубиках, лёжа на диване" },
-                        { sign: "♈", name: "Овен", end: [4, 19], desc: "Первый у штанги, первый в травмпункте" },
-                        { sign: "♉", name: "Телец", end: [5, 20], desc: "Тренируется ради еды после тренировки" },
-                        { sign: "♊", name: "Близнецы", end: [6, 20], desc: "Полтренировки — селфи, полтренировки — сплетни" },
-                        { sign: "♋", name: "Рак", end: [7, 22], desc: "Тренируется дома. Люди — это слишком" },
-                        { sign: "♌", name: "Лев", end: [8, 22], desc: "Зеркало в зале — главный тренажёр" },
-                        { sign: "♍", name: "Дева", end: [9, 22], desc: "Идеальная техника. Поправляет всех вокруг" },
-                        { sign: "♎", name: "Весы", end: [10, 22], desc: "40 минут выбирает программу тренировок" },
-                        { sign: "♏", name: "Скорпион", end: [11, 21], desc: "Тренируется в чёрном. Смотрит исподлобья" },
-                        { sign: "♐", name: "Стрелец", end: [12, 21], desc: "Сегодня йога, завтра кроссфит, послезавтра бокс" },
-                        { sign: "♑", name: "Козерог", end: [12, 31], desc: "Работает даже в зале. Цель — стать CEO фитнеса" },
+                        { sign: "♑", key: "capricorn", end: [1, 19] },
+                        { sign: "♒", key: "aquarius", end: [2, 18] },
+                        { sign: "♓", key: "pisces", end: [3, 20] },
+                        { sign: "♈", key: "aries", end: [4, 19] },
+                        { sign: "♉", key: "taurus", end: [5, 20] },
+                        { sign: "♊", key: "gemini", end: [6, 20] },
+                        { sign: "♋", key: "cancer", end: [7, 22] },
+                        { sign: "♌", key: "leo", end: [8, 22] },
+                        { sign: "♍", key: "virgo", end: [9, 22] },
+                        { sign: "♎", key: "libra", end: [10, 22] },
+                        { sign: "♏", key: "scorpio", end: [11, 21] },
+                        { sign: "♐", key: "sagittarius", end: [12, 21] },
+                        { sign: "♑", key: "capricorn", end: [12, 31] },
                       ];
                       const zodiac = zodiacSigns.find(z =>
                         month < z.end[0] || (month === z.end[0] && day <= z.end[1])
@@ -549,15 +543,14 @@ export default function Settings() {
                           <PopoverTrigger asChild>
                             <button className="flex items-center gap-2 h-9 px-3 rounded-md border border-input bg-background hover:bg-muted/50 transition-colors w-full text-xs">
                               <span className="text-base">{zodiac.sign}</span>
-                              <span>{zodiac.name}</span>
+                              <span>{t(`zodiac.${zodiac.key}`)}</span>
                             </button>
                           </PopoverTrigger>
                           <PopoverContent className="w-64 p-3">
                             <div className="flex items-start gap-2">
                               <span className="text-2xl">{zodiac.sign}</span>
                               <div>
-                                <p className="font-medium">{zodiac.name}</p>
-                                <p className="text-sm text-muted-foreground">{zodiac.desc}</p>
+                                <p className="font-medium">{t(`zodiac.${zodiac.key}`)}</p>
                               </div>
                             </div>
                           </PopoverContent>
@@ -574,27 +567,27 @@ export default function Settings() {
                 {/* Height and Weight */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="height" className="text-xs">Рост (см)</Label>
+                    <Label htmlFor="height" className="text-xs">{t("settings.height")}</Label>
                     <Input
                       id="height"
                       type="number"
                       step="0.1"
                       value={height}
                       onChange={(e) => setHeight(e.target.value)}
-                      placeholder="Введите рост"
+                      placeholder={t("settings.enterHeight")}
                       className="h-9 text-xs"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="currentWeight" className="text-xs">Вес (кг)</Label>
+                    <Label htmlFor="currentWeight" className="text-xs">{t("settings.weight")}</Label>
                     <Input
                       id="currentWeight"
                       type="number"
                       step="0.1"
                       value={currentWeight}
                       onChange={(e) => setCurrentWeight(e.target.value)}
-                      placeholder="Введите вес"
+                      placeholder={t("settings.enterWeight")}
                       className="h-9 text-xs"
                     />
                   </div>
@@ -603,18 +596,18 @@ export default function Settings() {
                 {/* Skuf Level Slider - Easter Egg */}
                 <div className="space-y-3 pt-2">
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>Нормис</span>
-                    <span>Альфа-Скуф</span>
+                    <span>{t("settings.skufLevels.normie")}</span>
+                    <span>{t("settings.skufLevels.alpha")}-{t("settings.skufLevels.skuf")}</span>
                   </div>
 
                   {/* Level buttons */}
                   <div className="grid grid-cols-5 gap-1">
                     {[
-                      { level: 0, emoji: "😊", label: "Нормис", color: "from-blue-400 to-cyan-500" },
-                      { level: 1, emoji: "😏", label: "Дерзкий", color: "from-green-400 to-emerald-500" },
-                      { level: 2, emoji: "😤", label: "Качок", color: "from-yellow-400 to-orange-500" },
-                      { level: 3, emoji: "🔥", label: "Скуф", color: "from-orange-400 to-red-500" },
-                      { level: 4, emoji: "🗿", label: "Альфа", color: "from-red-500 to-rose-600" },
+                      { level: 0, emoji: "😊", labelKey: "settings.skufLevels.normie", color: "from-blue-400 to-cyan-500" },
+                      { level: 1, emoji: "😏", labelKey: "settings.skufLevels.bold", color: "from-green-400 to-emerald-500" },
+                      { level: 2, emoji: "😤", labelKey: "settings.skufLevels.jock", color: "from-yellow-400 to-orange-500" },
+                      { level: 3, emoji: "🔥", labelKey: "settings.skufLevels.skuf", color: "from-orange-400 to-red-500" },
+                      { level: 4, emoji: "🗿", labelKey: "settings.skufLevels.alpha", color: "from-red-500 to-rose-600" },
                     ].map((item) => (
                       <button
                         key={item.level}
@@ -627,7 +620,7 @@ export default function Settings() {
                         )}
                       >
                         <span className="text-xl">{item.emoji}</span>
-                        <span className="text-[10px] font-medium leading-tight">{item.label}</span>
+                        <span className="text-[10px] font-medium leading-tight">{t(item.labelKey)}</span>
                       </button>
                     ))}
                   </div>
@@ -641,11 +634,8 @@ export default function Settings() {
                     skufLevel === 3 && "bg-orange-500/10 text-orange-500",
                     skufLevel === 4 && "bg-red-500/10 text-red-500"
                   )}>
-                    {skufLevel === 0 && "Обычный пользователь"}
-                    {skufLevel === 1 && "Начинающий качок"}
-                    {skufLevel === 2 && "Опытный качок"}
-                    {skufLevel === 3 && "Режим скуфа активен!"}
-                    {skufLevel === 4 && "АЛЬФА-СКУФ ДЕТЕКТЕД 🗿🗿🗿"}
+                    {t(`settings.skufStatus.${skufLevel}`)}
+                    {skufLevel === 4 && " 🗿🗿🗿"}
                   </div>
                 </div>
 
@@ -657,7 +647,7 @@ export default function Settings() {
                   className="w-full gap-2 text-xs"
                 >
                   <Save className="h-3.5 w-3.5" />
-                  Сохранить
+                  {t("common.save")}
                 </Button>
               </div>
             </CardContent>
@@ -677,11 +667,11 @@ export default function Settings() {
                   {theme === "dark" ? <Moon className="h-4 w-4 text-primary" /> :
                    theme === "light" ? <Sun className="h-4 w-4 text-primary" /> :
                    <Monitor className="h-4 w-4 text-primary" />}
-                  Приложение
+                  {t("settings.application")}
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-muted-foreground">
-                    {theme === "dark" ? "Тёмная" : theme === "light" ? "Светлая" : "Авто"}
+                    {theme === "dark" ? t("settings.themeDark") : theme === "light" ? t("settings.themeLight") : t("settings.themeAuto")}
                   </span>
                   <ChevronDown className={cn(
                     "h-4 w-4 text-muted-foreground transition-transform duration-200",
@@ -695,7 +685,7 @@ export default function Settings() {
             <CardContent className="px-4 pb-4 space-y-4">
               {/* Тема */}
               <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">Тема</p>
+                <p className="text-sm font-medium text-muted-foreground">{t("settings.theme")}</p>
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => setTheme("light")}
@@ -707,7 +697,7 @@ export default function Settings() {
                     )}
                   >
                     <Sun className="h-5 w-5" />
-                    <span className="text-sm font-medium">Светлая</span>
+                    <span className="text-sm font-medium">{t("settings.themeLight")}</span>
                   </button>
                   <button
                     onClick={() => setTheme("dark")}
@@ -719,7 +709,7 @@ export default function Settings() {
                     )}
                   >
                     <Moon className="h-5 w-5" />
-                    <span className="text-sm font-medium">Тёмная</span>
+                    <span className="text-sm font-medium">{t("settings.themeDark")}</span>
                   </button>
                   <button
                     onClick={() => setTheme("system")}
@@ -731,14 +721,14 @@ export default function Settings() {
                     )}
                   >
                     <Monitor className="h-5 w-5" />
-                    <span className="text-sm font-medium">Авто</span>
+                    <span className="text-sm font-medium">{t("settings.themeAuto")}</span>
                   </button>
                 </div>
               </div>
 
               {/* Цвет акцента */}
               <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">Цвет акцента</p>
+                <p className="text-sm font-medium text-muted-foreground">{t("settings.accentColor")}</p>
                 <div className="grid grid-cols-6 gap-2">
                   {ACCENT_COLORS.map((color) => (
                     <button
@@ -753,6 +743,28 @@ export default function Settings() {
                       style={{ backgroundColor: color.color }}
                       title={color.label}
                     />
+                  ))}
+                </div>
+              </div>
+
+              {/* Язык / Language */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">{t("settings.language")}</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {LANGUAGES.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => i18n.changeLanguage(lang.code)}
+                      className={cn(
+                        "flex items-center justify-center gap-2 p-3 rounded-lg transition-all",
+                        i18n.language === lang.code || (i18n.language.startsWith(lang.code.split('-')[0]) && lang.code.includes('-'))
+                          ? "bg-primary text-primary-foreground shadow-md"
+                          : "bg-muted hover:bg-muted/70"
+                      )}
+                    >
+                      <span className="text-lg">{lang.flag}</span>
+                      <span className="text-sm font-medium">{lang.native}</span>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -771,11 +783,11 @@ export default function Settings() {
               <CardTitle className="text-sm font-semibold flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Download className="h-4 w-4 text-primary" />
-                  Данные
+                  {t("settings.data")}
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-muted-foreground">
-                    {pluralizeWithCount(workouts?.length || 0, "тренировка", "тренировки", "тренировок")}
+                    {workouts?.length || 0} {t("plurals.workout.other")}
                   </span>
                   <ChevronDown className={cn(
                     "h-4 w-4 text-muted-foreground transition-transform duration-200",
@@ -788,7 +800,7 @@ export default function Settings() {
           <CollapsibleContent>
             <CardContent className="px-4 pb-4">
               <p className="text-xs text-muted-foreground mb-3">
-                Скачайте все ваши тренировки для резервного копирования или анализа
+                {t("settings.exportDescription")}
               </p>
               <div className="grid grid-cols-3 gap-2">
                 <Button
@@ -837,7 +849,7 @@ export default function Settings() {
               <CardTitle className="text-sm font-semibold flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Lock className="h-4 w-4 text-primary" />
-                  Смена пароля
+                  {t("settings.changePassword")}
                 </div>
                 <ChevronDown className={cn(
                   "h-4 w-4 text-muted-foreground transition-transform duration-200",
@@ -850,12 +862,12 @@ export default function Settings() {
             <CardContent className="px-4 pb-4">
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="newPassword" className="text-xs">Новый пароль</Label>
+                  <Label htmlFor="newPassword" className="text-xs">{t("settings.newPassword")}</Label>
                   <div className="relative">
                     <Input
                       id="newPassword"
                       type={showNewPassword ? "text" : "password"}
-                      placeholder="Минимум 6 символов"
+                      placeholder={t("auth.minPassword")}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       className="pr-10 h-9 text-xs"
@@ -870,11 +882,11 @@ export default function Settings() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="confirmPassword" className="text-xs">Подтвердите пароль</Label>
+                  <Label htmlFor="confirmPassword" className="text-xs">{t("settings.confirmPassword")}</Label>
                   <Input
                     id="confirmPassword"
                     type="password"
-                    placeholder="Повторите пароль"
+                    placeholder={t("settings.repeatPassword")}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="h-9 text-xs"
@@ -888,7 +900,7 @@ export default function Settings() {
                   className="w-full gap-2 text-xs"
                 >
                   <Lock className="h-3.5 w-3.5" />
-                  {passwordLoading ? "Сохранение..." : "Изменить пароль"}
+                  {passwordLoading ? t("settings.saving") : t("settings.changePasswordButton")}
                 </Button>
               </div>
             </CardContent>
@@ -907,23 +919,23 @@ export default function Settings() {
             className="w-full gap-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
           >
             <LogOut className="h-3.5 w-3.5" />
-            Выйти из аккаунта
+            {t("settings.logoutButton")}
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Выйти из аккаунта?</AlertDialogTitle>
+            <AlertDialogTitle>{t("settings.logoutConfirmTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Вы уверены, что хотите выйти из аккаунта?
+              {t("settings.logoutConfirmDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={signOut}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Выйти
+              {t("nav.logout")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

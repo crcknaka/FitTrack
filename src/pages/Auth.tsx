@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Auth() {
+  const { t } = useTranslation();
   const { user, signIn, signUp, resetPassword, loading: authLoading } = useAuth();
   const { resolvedTheme } = useTheme();
   const logoSrc = resolvedTheme === "dark" ? "/logo-white.png" : "/logo-black.png";
@@ -42,9 +44,9 @@ export default function Auth() {
     setLoading(true);
     try {
       await signIn(loginEmail, loginPassword);
-      toast.success("Добро пожаловать!");
+      toast.success(t("auth.welcome"));
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Ошибка входа";
+      const errorMessage = error instanceof Error ? error.message : t("auth.loginError");
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -56,9 +58,9 @@ export default function Auth() {
     setLoading(true);
     try {
       await signUp(signupEmail, signupPassword, signupName);
-      toast.success("Аккаунт создан! Проверьте вашу электронную почту для подтверждения.");
+      toast.success(t("auth.accountCreated"));
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Ошибка регистрации";
+      const errorMessage = error instanceof Error ? error.message : t("auth.registerError");
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -68,17 +70,17 @@ export default function Auth() {
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!forgotPasswordEmail) {
-      toast.error("Введите email");
+      toast.error(t("auth.enterEmail"));
       return;
     }
     setLoading(true);
     try {
       await resetPassword(forgotPasswordEmail);
-      toast.success("Письмо для сброса пароля отправлено! Проверьте почту.");
+      toast.success(t("auth.resetEmailSent"));
       setShowForgotPassword(false);
       setForgotPasswordEmail("");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Ошибка отправки письма";
+      const errorMessage = error instanceof Error ? error.message : t("auth.resetEmailError");
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -100,15 +102,15 @@ export default function Auth() {
 
           <Card className="border-border/50 shadow-lg">
             <CardHeader className="text-center">
-              <CardTitle className="text-xl">Восстановление пароля</CardTitle>
+              <CardTitle className="text-xl">{t("auth.resetPassword")}</CardTitle>
               <CardDescription>
-                Введите email, и мы отправим ссылку для сброса пароля
+                {t("auth.resetDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="forgot-email">Email</Label>
+                  <Label htmlFor="forgot-email">{t("auth.email")}</Label>
                   <Input
                     id="forgot-email"
                     type="email"
@@ -120,7 +122,7 @@ export default function Auth() {
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Отправить ссылку
+                  {t("auth.sendLink")}
                 </Button>
                 <Button
                   type="button"
@@ -128,7 +130,7 @@ export default function Auth() {
                   className="w-full"
                   onClick={() => setShowForgotPassword(false)}
                 >
-                  Назад к входу
+                  {t("auth.backToLogin")}
                 </Button>
               </form>
             </CardContent>
@@ -151,22 +153,22 @@ export default function Auth() {
 
         <Card className="border-border/50 shadow-lg">
           <CardHeader className="text-center">
-            <CardTitle className="text-xl">Трекер тренировок</CardTitle>
+            <CardTitle className="text-xl">{t("auth.title")}</CardTitle>
             <CardDescription>
-              Отслеживай прогресс. Достигай целей.
+              {t("auth.subtitle")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="login">Вход</TabsTrigger>
-                <TabsTrigger value="signup">Регистрация</TabsTrigger>
+                <TabsTrigger value="login">{t("auth.login")}</TabsTrigger>
+                <TabsTrigger value="signup">{t("auth.register")}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
+                    <Label htmlFor="login-email">{t("auth.email")}</Label>
                     <Input
                       id="login-email"
                       type="email"
@@ -177,7 +179,7 @@ export default function Auth() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">Пароль</Label>
+                    <Label htmlFor="login-password">{t("auth.password")}</Label>
                     <Input
                       id="login-password"
                       type="password"
@@ -189,14 +191,14 @@ export default function Auth() {
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Войти
+                    {t("auth.loginButton")}
                   </Button>
                   <button
                     type="button"
                     onClick={() => setShowForgotPassword(true)}
                     className="w-full text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
-                    Забыли пароль?
+                    {t("auth.forgotPassword")}
                   </button>
                 </form>
               </TabsContent>
@@ -204,17 +206,17 @@ export default function Auth() {
               <TabsContent value="signup">
                 <form onSubmit={handleSignup} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-name">Имя</Label>
+                    <Label htmlFor="signup-name">{t("auth.name")}</Label>
                     <Input
                       id="signup-name"
                       type="text"
-                      placeholder="Ваше имя"
+                      placeholder={t("auth.yourName")}
                       value={signupName}
                       onChange={(e) => setSignupName(e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
+                    <Label htmlFor="signup-email">{t("auth.email")}</Label>
                     <Input
                       id="signup-email"
                       type="email"
@@ -225,11 +227,11 @@ export default function Auth() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">Пароль</Label>
+                    <Label htmlFor="signup-password">{t("auth.password")}</Label>
                     <Input
                       id="signup-password"
                       type="password"
-                      placeholder="Минимум 6 символов"
+                      placeholder={t("auth.minPassword")}
                       value={signupPassword}
                       onChange={(e) => setSignupPassword(e.target.value)}
                       required
@@ -238,7 +240,7 @@ export default function Auth() {
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Создать аккаунт
+                    {t("auth.createAccount")}
                   </Button>
                 </form>
               </TabsContent>

@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { format, isWithinInterval, startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, subMonths, parseISO, isToday, eachDayOfInterval, isSameDay, addMonths } from "date-fns";
-import { ru } from "date-fns/locale";
+import { ru, enUS, es, ptBR, de, fr } from "date-fns/locale";
 import { Plus, Calendar as CalendarIcon, Trash2, Filter, X, Dumbbell, MessageSquare, Lock, Unlock, List, ChevronLeft, ChevronRight, Activity, Timer, User } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
@@ -21,7 +22,6 @@ import { useWorkouts, useCreateWorkout, useDeleteWorkout, useUserWorkouts, useLo
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { pluralizeWithCount } from "@/lib/pluralize";
 import { DateRange } from "react-day-picker";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useUserProfile } from "@/hooks/useProfile";
@@ -29,7 +29,18 @@ import { useAllProfiles } from "@/hooks/useAllProfiles";
 import { useFriends } from "@/hooks/useFriends";
 import { ViewingUserBanner } from "@/components/ViewingUserBanner";
 
+const DATE_LOCALES: Record<string, Locale> = {
+  en: enUS,
+  es: es,
+  "pt-BR": ptBR,
+  de: de,
+  fr: fr,
+  ru: ru,
+};
+
 export default function Workouts() {
+  const { t, i18n } = useTranslation();
+  const dateLocale = DATE_LOCALES[i18n.language] || enUS;
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
@@ -76,16 +87,16 @@ export default function Workouts() {
 
   const handleCreateWorkout = async () => {
     if (!date) return;
-    
+
     try {
       const workout = await createWorkout.mutateAsync(
         format(date, "yyyy-MM-dd")
       );
-      toast.success("Тренировка создана!");
+      toast.success(t("workouts.workoutCreated"));
       setOpen(false);
       navigate(`/workout/${workout.id}`);
     } catch (error) {
-      toast.error("Ошибка создания тренировки");
+      toast.error(t("workouts.createError"));
     }
   };
 
@@ -100,17 +111,17 @@ export default function Workouts() {
     // Check if workout is locked
     const workout = workouts?.find(w => w.id === workoutToDelete);
     if (workout?.is_locked) {
-      toast.error("Невозможно удалить заблокированную тренировку");
+      toast.error(t("workouts.cannotDeleteLocked"));
       setWorkoutToDelete(null);
       return;
     }
 
     try {
       await deleteWorkout.mutateAsync(workoutToDelete);
-      toast.success("Тренировка удалена");
+      toast.success(t("workouts.workoutDeleted"));
       setWorkoutToDelete(null);
     } catch (error) {
-      toast.error("Ошибка удаления");
+      toast.error(t("workouts.deleteError"));
     }
   };
 
@@ -124,9 +135,9 @@ export default function Workouts() {
       // Lock without confirmation
       try {
         await lockWorkout.mutateAsync(workoutId);
-        toast.success("Тренировка заблокирована");
+        toast.success(t("workouts.workoutLocked"));
       } catch (error) {
-        toast.error("Ошибка блокировки");
+        toast.error(t("workouts.lockError"));
       }
     }
   };
@@ -136,10 +147,10 @@ export default function Workouts() {
 
     try {
       await unlockWorkout.mutateAsync(workoutToUnlock);
-      toast.success("Тренировка разблокирована");
+      toast.success(t("workouts.workoutUnlocked"));
       setWorkoutToUnlock(null);
     } catch (error) {
-      toast.error("Ошибка разблокировки");
+      toast.error(t("workouts.unlockError"));
     }
   };
 
@@ -176,7 +187,15 @@ export default function Workouts() {
   const calendarDays = eachDayOfInterval({ start: calendarMonthStart, end: calendarMonthEnd });
   const calendarStartDayOfWeek = calendarMonthStart.getDay();
   const adjustedStartDay = calendarStartDayOfWeek === 0 ? 6 : calendarStartDayOfWeek - 1;
-  const weekDays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+  const weekDays = [
+    t("workouts.weekDays.mon"),
+    t("workouts.weekDays.tue"),
+    t("workouts.weekDays.wed"),
+    t("workouts.weekDays.thu"),
+    t("workouts.weekDays.fri"),
+    t("workouts.weekDays.sat"),
+    t("workouts.weekDays.sun")
+  ];
 
   const selectedWorkout = selectedCalendarDate ? getWorkoutForDate(selectedCalendarDate) : null;
 
@@ -232,7 +251,7 @@ export default function Workouts() {
     <div className="space-y-6 animate-fade-in">
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">Тренировки</h1>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">{t("workouts.title")}</h1>
           <div className="flex items-center gap-2">
             {/* View toggle */}
             <div className="flex items-center bg-muted rounded-lg p-0.5">
@@ -264,7 +283,7 @@ export default function Workouts() {
                 <PopoverTrigger asChild>
                   <Button className="gap-2 shadow-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold transition-all hover:shadow-xl hover:scale-105 active:scale-95">
                     <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
-                    <span className="hidden sm:inline">Новая</span>
+                    <span className="hidden sm:inline">{t("workouts.new")}</span>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="end">
@@ -272,7 +291,7 @@ export default function Workouts() {
                     mode="single"
                     selected={date}
                     onSelect={setDate}
-                    locale={ru}
+                    locale={dateLocale}
                     className="rounded-md border-0"
                   />
                   <div className="p-3 border-t border-border">
@@ -281,7 +300,7 @@ export default function Workouts() {
                       onClick={handleCreateWorkout}
                       disabled={createWorkout.isPending}
                     >
-                      Создать на {date && format(date, "d MMM", { locale: ru })}
+                      {t("workouts.createFor")} {date && format(date, "d MMM", { locale: dateLocale })}
                     </Button>
                   </div>
                 </PopoverContent>
@@ -293,14 +312,14 @@ export default function Workouts() {
         {currentUserProfile?.is_admin ? (
           <Select value={targetUserId || ""} onValueChange={handleUserChange}>
             <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Выберите" />
+              <SelectValue placeholder={t("common.select")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={user?.id || ""}>
                 <div className="flex items-center gap-2">
                   <span>{currentUserProfile?.avatar || "👤"}</span>
-                  <span className="truncate">{currentUserProfile?.display_name || "Я"}</span>
-                  <span className="text-muted-foreground text-xs">(Вы)</span>
+                  <span className="truncate">{currentUserProfile?.display_name || t("common.you")}</span>
+                  <span className="text-muted-foreground text-xs">({t("common.you")})</span>
                 </div>
               </SelectItem>
               <SelectSeparator />
@@ -308,7 +327,7 @@ export default function Workouts() {
                 <SelectItem key={profile.user_id} value={profile.user_id}>
                   <div className="flex items-center gap-2">
                     <span>{profile.avatar || "👤"}</span>
-                    <span className="truncate">{profile.display_name || "Аноним"}</span>
+                    <span className="truncate">{profile.display_name || t("common.anonymous")}</span>
                   </div>
                 </SelectItem>
               ))}
@@ -317,14 +336,14 @@ export default function Workouts() {
         ) : friends && friends.length > 0 && (
           <Select value={targetUserId || ""} onValueChange={handleUserChange}>
             <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Выберите" />
+              <SelectValue placeholder={t("common.select")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={user?.id || ""}>
                 <div className="flex items-center gap-2">
                   <span>{currentUserProfile?.avatar || "👤"}</span>
-                  <span className="truncate">{currentUserProfile?.display_name || "Я"}</span>
-                  <span className="text-muted-foreground text-xs">(Вы)</span>
+                  <span className="truncate">{currentUserProfile?.display_name || t("common.you")}</span>
+                  <span className="text-muted-foreground text-xs">({t("common.you")})</span>
                 </div>
               </SelectItem>
               <SelectSeparator />
@@ -332,7 +351,7 @@ export default function Workouts() {
                 <SelectItem key={friendship.friend.user_id} value={friendship.friend.user_id}>
                   <div className="flex items-center gap-2">
                     <span>{friendship.friend.avatar || "👤"}</span>
-                    <span className="truncate">{friendship.friend.display_name || "Аноним"}</span>
+                    <span className="truncate">{friendship.friend.display_name || t("common.anonymous")}</span>
                   </div>
                 </SelectItem>
               ))}
@@ -368,13 +387,13 @@ export default function Workouts() {
                   {dateRange?.from ? (
                     dateRange.to ? (
                       <>
-                        {format(dateRange.from, "d MMM", { locale: ru })} – {format(dateRange.to, "d MMM", { locale: ru })}
+                        {format(dateRange.from, "d MMM", { locale: dateLocale })} – {format(dateRange.to, "d MMM", { locale: dateLocale })}
                       </>
                     ) : (
-                      <>С {format(dateRange.from, "d MMM", { locale: ru })}</>
+                      <>{format(dateRange.from, "d MMM", { locale: dateLocale })}</>
                     )
                   ) : (
-                    "Все"
+                    t("workouts.filter.all")
                   )}
                 </Button>
               </PopoverTrigger>
@@ -390,7 +409,7 @@ export default function Workouts() {
                         setFilterOpen(false);
                       }}
                     >
-                      Все тренировки
+                      {t("workouts.filter.allWorkouts")}
                     </Button>
                     <Button
                       variant="ghost"
@@ -398,7 +417,7 @@ export default function Workouts() {
                       className="w-full justify-start text-xs h-8"
                       onClick={() => handleQuickFilter(7)}
                     >
-                      Последние 7 дней
+                      {t("workouts.filter.last7days")}
                     </Button>
                     <Button
                       variant="ghost"
@@ -406,7 +425,7 @@ export default function Workouts() {
                       className="w-full justify-start text-xs h-8"
                       onClick={() => handleQuickFilter(30)}
                     >
-                      Последние 30 дней
+                      {t("workouts.filter.last30days")}
                     </Button>
                     <Button
                       variant="ghost"
@@ -414,7 +433,7 @@ export default function Workouts() {
                       className="w-full justify-start text-xs h-8"
                       onClick={() => handleQuickFilter("current-month")}
                     >
-                      Этот месяц
+                      {t("workouts.filter.thisMonth")}
                     </Button>
                     <Button
                       variant="ghost"
@@ -422,7 +441,7 @@ export default function Workouts() {
                       className="w-full justify-start text-xs h-8"
                       onClick={() => handleQuickFilter("last-month")}
                     >
-                      Прошлый месяц
+                      {t("workouts.filter.lastMonth")}
                     </Button>
                     <Button
                       variant="ghost"
@@ -430,7 +449,7 @@ export default function Workouts() {
                       className="w-full justify-start text-xs h-8"
                       onClick={() => setDatePickerOpen(true)}
                     >
-                      По дате...
+                      {t("workouts.filter.byDate")}
                     </Button>
                   </div>
                 ) : (
@@ -443,7 +462,7 @@ export default function Workouts() {
                         onClick={() => setDatePickerOpen(false)}
                       >
                         <ChevronLeft className="h-3.5 w-3.5" />
-                        Назад
+                        {t("common.back")}
                       </Button>
                     </div>
                     <Calendar
@@ -456,7 +475,7 @@ export default function Workouts() {
                           setFilterOpen(false);
                         }
                       }}
-                      locale={ru}
+                      locale={dateLocale}
                       className="rounded-md border-0"
                       numberOfMonths={1}
                     />
@@ -471,7 +490,7 @@ export default function Workouts() {
                           setFilterOpen(false);
                         }}
                       >
-                        Сбросить
+                        {t("common.reset")}
                       </Button>
                     </div>
                   </div>
@@ -482,7 +501,7 @@ export default function Workouts() {
         {dateRange?.from && (
           <>
             <span className="text-xs text-muted-foreground">
-              {pluralizeWithCount(filteredWorkouts.length, "тренировка", "тренировки", "тренировок")}
+              {filteredWorkouts.length} {t("workouts.workoutsCount")}
             </span>
             <Button
               variant="ghost"
@@ -514,12 +533,12 @@ export default function Workouts() {
               <CalendarIcon className="h-8 w-8 text-muted-foreground" />
             </div>
             <h3 className="font-semibold text-foreground mb-1">
-              {dateRange?.from ? "Нет тренировок в выбранном периоде" : "Нет тренировок"}
+              {dateRange?.from ? t("workouts.noWorkoutsFiltered") : t("workouts.noWorkouts")}
             </h3>
             <p className="text-muted-foreground text-sm mb-4">
               {dateRange?.from
-                ? "Попробуй изменить диапазон дат"
-                : "Создай первую тренировку, чтобы начать отслеживать прогресс"}
+                ? t("workouts.tryDifferentDates")
+                : t("workouts.createFirstWorkout")}
             </p>
           </CardContent>
         </Card>
@@ -555,11 +574,11 @@ export default function Workouts() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-foreground">
-                      {format(new Date(workout.date), "d MMMM", { locale: ru })}
+                      {format(new Date(workout.date), "d MMMM", { locale: dateLocale })}
                     </span>
                     {isToday(parseISO(workout.date)) && (
                       <span className="hidden md:inline text-xs px-1.5 py-0.5 rounded font-medium bg-green-500/15 text-green-600 dark:text-green-400">
-                        сегодня
+                        {t("workouts.today")}
                       </span>
                     )}
                     <span className={cn(
@@ -568,11 +587,11 @@ export default function Workouts() {
                         ? "bg-primary/10 text-primary"
                         : "bg-sky-500/10 text-sky-600 dark:text-sky-400"
                     )}>
-                      {format(new Date(workout.date), "EEEE", { locale: ru })}
+                      {format(new Date(workout.date), "EEEE", { locale: dateLocale })}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {getUniqueExercises(workout)} упр · {getTotalSets(workout)} подх
+                    {getUniqueExercises(workout)} {t("workouts.exercises")} · {getTotalSets(workout)} {t("workouts.sets")}
                   </p>
                   {workout.notes && (
                     <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
@@ -632,7 +651,7 @@ export default function Workouts() {
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <span className="text-sm font-semibold capitalize">
-                  {format(calendarMonth, "LLLL yyyy", { locale: ru })}
+                  {format(calendarMonth, "LLLL yyyy", { locale: dateLocale })}
                 </span>
                 <Button
                   variant="ghost"
@@ -712,14 +731,14 @@ export default function Workouts() {
 
               {/* Intensity legend */}
               <div className="flex items-center justify-center gap-2 mt-3 text-[10px] sm:text-xs text-muted-foreground">
-                <span>Меньше</span>
+                <span>{t("common.less")}</span>
                 <div className="flex gap-0.5">
                   <div className="w-2.5 h-2.5 rounded bg-primary/30" />
                   <div className="w-2.5 h-2.5 rounded bg-primary/50" />
                   <div className="w-2.5 h-2.5 rounded bg-primary/75" />
                   <div className="w-2.5 h-2.5 rounded bg-primary" />
                 </div>
-                <span>Больше</span>
+                <span>{t("common.more")}</span>
               </div>
             </CardContent>
           </Card>
@@ -730,9 +749,9 @@ export default function Workouts() {
               <Card className="animate-scale-in">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="font-semibold">{format(new Date(selectedWorkout.date), "d MMMM", { locale: ru })}</span>
+                    <span className="font-semibold">{format(new Date(selectedWorkout.date), "d MMMM", { locale: dateLocale })}</span>
                     <Button size="sm" onClick={() => navigate(`/workout/${selectedWorkout.id}`)}>
-                      Открыть
+                      {t("common.open")}
                     </Button>
                   </div>
                   {selectedWorkout.workout_sets && selectedWorkout.workout_sets.length > 0 ? (
@@ -742,7 +761,7 @@ export default function Workouts() {
                           const exerciseId = set.exercise_id;
                           if (!acc[exerciseId]) {
                             acc[exerciseId] = {
-                              name: set.exercise?.name || "Упражнение",
+                              name: set.exercise?.name || t("exercises.exercise"),
                               type: set.exercise?.type || "weighted",
                               sets: 0,
                               totalReps: 0,
@@ -787,13 +806,13 @@ export default function Workouts() {
                           </div>
                           <div className="text-xs text-muted-foreground mt-1 ml-6">
                             {exercise.type === "cardio" ? (
-                              <>{exercise.sets} подх · {exercise.totalDistance.toFixed(1)} км · {exercise.totalDuration} мин</>
+                              <>{exercise.sets} {t("workouts.sets")} · {exercise.totalDistance.toFixed(1)} {t("units.km")} · {exercise.totalDuration} {t("units.min")}</>
                             ) : exercise.type === "timed" ? (
-                              <>{exercise.sets} подх · {exercise.totalPlankSeconds} сек</>
+                              <>{exercise.sets} {t("workouts.sets")} · {exercise.totalPlankSeconds} {t("units.sec")}</>
                             ) : exercise.type === "bodyweight" ? (
-                              <>{exercise.sets} подх · {exercise.totalReps} повт</>
+                              <>{exercise.sets} {t("workouts.sets")} · {exercise.totalReps} {t("units.reps")}</>
                             ) : (
-                              <>{exercise.sets} подх · {exercise.totalReps} повт{exercise.maxWeight > 0 && ` · ${exercise.maxWeight} кг`}</>
+                              <>{exercise.sets} {t("workouts.sets")} · {exercise.totalReps} {t("units.reps")}{exercise.maxWeight > 0 && ` · ${exercise.maxWeight} ${t("units.kg")}`}</>
                             )}
                           </div>
                         </div>
@@ -821,7 +840,7 @@ export default function Workouts() {
                     </div>
                   ) : (
                     <p className="text-muted-foreground text-sm text-center py-4">
-                      Нет записей
+                      {t("workouts.noEntries")}
                     </p>
                   )}
                 </CardContent>
@@ -831,7 +850,7 @@ export default function Workouts() {
                 <CardContent className="p-8 text-center">
                   <CalendarIcon className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
                   <p className="text-muted-foreground text-sm">
-                    Выберите день с тренировкой на календаре
+                    {t("workouts.selectDayWithWorkout")}
                   </p>
                 </CardContent>
               </Card>
@@ -844,15 +863,15 @@ export default function Workouts() {
       <AlertDialog open={!!workoutToDelete} onOpenChange={(open) => !open && setWorkoutToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Удалить тренировку?</AlertDialogTitle>
+            <AlertDialogTitle>{t("workouts.deleteWorkout")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Вы уверены, что хотите удалить эту тренировку? Это действие нельзя будет отменить.
+              {t("workouts.deleteWorkoutConfirm")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Удалить
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -862,15 +881,15 @@ export default function Workouts() {
       <AlertDialog open={!!workoutToUnlock} onOpenChange={(open) => !open && setWorkoutToUnlock(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Разблокировать тренировку?</AlertDialogTitle>
+            <AlertDialogTitle>{t("workouts.unlockWorkout")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Вы уверены, что хотите разблокировать эту тренировку? После разблокировки вы сможете редактировать и удалять данные.
+              {t("workouts.unlockWorkoutConfirm")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmUnlock}>
-              Разблокировать
+              {t("common.unlock")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

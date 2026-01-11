@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { format, isToday, parseISO } from "date-fns";
-import { ru } from "date-fns/locale";
+import { ru, enUS, es, ptBR, de, fr, Locale } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, Plus, Trash2, User, Dumbbell, MessageSquare, Save, Pencil, X, Activity, Timer, Camera, Loader2, ImageIcon, LayoutGrid, Trophy, Search, Share2, Copy, Check, Ban, Lock, Unlock, Star, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,7 +35,18 @@ import { uploadWorkoutPhoto, deleteWorkoutPhoto, validateImageFile } from "@/lib
 import { ViewingUserBanner } from "@/components/ViewingUserBanner";
 import { ExerciseTimer } from "@/components/ExerciseTimer";
 
+const DATE_LOCALES: Record<string, Locale> = {
+  en: enUS,
+  es: es,
+  "pt-BR": ptBR,
+  de: de,
+  fr: fr,
+  ru: ru,
+};
+
 export default function WorkoutDetail() {
+  const { t, i18n } = useTranslation();
+  const dateLocale = DATE_LOCALES[i18n.language] || enUS;
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -233,7 +245,7 @@ export default function WorkoutDetail() {
   if (!workout) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <p className="text-muted-foreground">Тренировка не найдена</p>
+        <p className="text-muted-foreground">{t("workout.notFound")}</p>
       </div>
     );
   }
@@ -244,55 +256,55 @@ export default function WorkoutDetail() {
 
     try {
       await toggleFavorite.mutateAsync({ exerciseId, isFavorite });
-      toast.success(isFavorite ? "Убрано из избранного" : "Добавлено в избранное");
+      toast.success(isFavorite ? t("workout.removedFromFavorites") : t("workout.addedToFavorites"));
     } catch (error) {
-      toast.error("Ошибка при обновлении избранного");
+      toast.error(t("workout.favoriteError"));
     }
   };
 
   const handleAddSet = async () => {
     if (!selectedExercise) {
-      toast.error("Выбери упражнение");
+      toast.error(t("workout.enterExercise"));
       return;
     }
 
-    // Валидация для кардио
+    // Cardio validation
     if (selectedExercise.type === "cardio") {
       if (!distance || !duration) {
-        toast.error("Для кардио упражнений необходимо указать дистанцию и время");
+        toast.error(t("workout.cardioRequired"));
         return;
       }
       const distanceNum = parseFloat(distance);
       const durationNum = parseInt(duration);
       if (isNaN(distanceNum) || distanceNum <= 0 || distanceNum > 500) {
-        toast.error("Дистанция должна быть от 0 до 500 км");
+        toast.error(t("workout.distanceRange"));
         return;
       }
       if (isNaN(durationNum) || durationNum <= 0 || durationNum > 1440) {
-        toast.error("Время должно быть от 0 до 1440 минут");
+        toast.error(t("workout.durationRange"));
         return;
       }
     } else if (selectedExercise.type === "timed") {
-      // Валидация для временных упражнений (например, планка)
+      // Timed exercises validation
       if (!duration) {
-        toast.error("Введи время в секундах");
+        toast.error(t("workout.enterTime"));
         return;
       }
       const durationNum = parseInt(duration);
       if (isNaN(durationNum) || durationNum <= 0 || durationNum > 3600) {
-        toast.error("Время должно быть от 1 до 3600 секунд");
+        toast.error(t("workout.timeRange"));
         return;
       }
     } else if (selectedExercise.type === "weighted") {
-      // Валидация для упражнений с весом
+      // Weighted exercises validation
       if (!reps || !weight) {
-        toast.error("Для упражнений с отягощением необходимо указать повторения и вес");
+        toast.error(t("workout.weightedRequired"));
         return;
       }
     } else if (selectedExercise.type === "bodyweight") {
-      // Валидация для собственного веса
+      // Bodyweight exercises validation
       if (!reps) {
-        toast.error("Введи количество повторений");
+        toast.error(t("workout.enterReps"));
         return;
       }
     }
@@ -310,7 +322,7 @@ export default function WorkoutDetail() {
         duration_minutes: selectedExercise.type === "cardio" && duration ? parseInt(duration) : undefined,
         plank_seconds: selectedExercise.type === "timed" && duration ? parseInt(duration) : undefined,
       });
-      toast.success("Подход добавлен!");
+      toast.success(t("workout.setAdded"));
       setReps("");
       setWeight("");
       setDistance("");
@@ -318,7 +330,7 @@ export default function WorkoutDetail() {
       setSelectedExercise(null);
       setDialogOpen(false);
     } catch (error) {
-      toast.error("Ошибка добавления подхода");
+      toast.error(t("workout.setAddError"));
     }
   };
 
@@ -344,10 +356,10 @@ export default function WorkoutDetail() {
     if (!setToDelete) return;
     try {
       await deleteSet.mutateAsync(setToDelete);
-      toast.success("Подход удален");
+      toast.success(t("workout.setDeleted"));
       setSetToDelete(null);
     } catch (error) {
-      toast.error("Ошибка удаления");
+      toast.error(t("workout.setDeleteError"));
     }
   };
 
@@ -379,14 +391,14 @@ export default function WorkoutDetail() {
         duration_minutes: exerciseType === "cardio" && editDuration ? parseInt(editDuration) : null,
         plank_seconds: exerciseType === "timed" && editDuration ? parseInt(editDuration) : null,
       });
-      toast.success("Подход обновлен");
+      toast.success(t("workout.setUpdated"));
       setEditingSetId(null);
       setEditReps("");
       setEditWeight("");
       setEditDistance("");
       setEditDuration("");
     } catch (error) {
-      toast.error("Ошибка обновления");
+      toast.error(t("workout.setUpdateError"));
     }
   };
 
@@ -405,9 +417,9 @@ export default function WorkoutDetail() {
         notes: notes.trim(),
       });
       setIsEditingNotes(false);
-      toast.success("Комментарий сохранен");
+      toast.success(t("workout.commentSaved"));
     } catch (error) {
-      toast.error("Ошибка сохранения комментария");
+      toast.error(t("workout.commentSaveError"));
     }
   };
 
@@ -429,10 +441,10 @@ export default function WorkoutDetail() {
         workoutId: workout.id,
         photo_url: photoUrl,
       });
-      toast.success("Фото добавлено");
+      toast.success(t("workout.photoAdded"));
     } catch (error) {
       console.error("Photo upload error:", error);
-      toast.error("Ошибка загрузки фото");
+      toast.error(t("workout.photoAddError"));
     } finally {
       setIsUploadingPhoto(false);
       // Reset input
@@ -450,10 +462,10 @@ export default function WorkoutDetail() {
         photo_url: null,
       });
       setPhotoToDelete(false);
-      toast.success("Фото удалено");
+      toast.success(t("workout.photoDeleted"));
     } catch (error) {
       console.error("Photo delete error:", error);
-      toast.error("Ошибка удаления фото");
+      toast.error(t("workout.photoDeleteError"));
     }
   };
 
@@ -470,10 +482,10 @@ export default function WorkoutDetail() {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-      toast.success("Ссылка скопирована в буфер обмена");
+      toast.success(t("workout.linkCopied"));
     } catch (error) {
       console.error("Share error:", error);
-      toast.error("Ошибка создания ссылки");
+      toast.error(t("workout.linkCreateError"));
     }
   };
 
@@ -482,11 +494,11 @@ export default function WorkoutDetail() {
 
     try {
       await deactivateShare.mutateAsync(workoutShare.id);
-      toast.success("Ссылка деактивирована");
+      toast.success(t("workout.linkDeactivated"));
       setShareDialogOpen(false);
     } catch (error) {
       console.error("Deactivate error:", error);
-      toast.error("Ошибка деактивации ссылки");
+      toast.error(t("workout.linkDeactivateError"));
     }
   };
 
@@ -497,7 +509,7 @@ export default function WorkoutDetail() {
     await navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast.success("Ссылка скопирована");
+    toast.success(t("workout.linkCopied"));
   };
 
   const handleLockWorkout = async () => {
@@ -505,10 +517,10 @@ export default function WorkoutDetail() {
 
     try {
       await lockWorkout.mutateAsync(workout.id);
-      toast.success("Тренировка заблокирована");
+      toast.success(t("workouts.workoutLocked"));
     } catch (error) {
       console.error("Lock error:", error);
-      toast.error("Ошибка блокировки");
+      toast.error(t("workouts.lockError"));
     }
   };
 
@@ -517,11 +529,11 @@ export default function WorkoutDetail() {
 
     try {
       await unlockWorkout.mutateAsync(workout.id);
-      toast.success("Тренировка разблокирована");
+      toast.success(t("workouts.workoutUnlocked"));
       setUnlockDialogOpen(false);
     } catch (error) {
       console.error("Unlock error:", error);
-      toast.error("Ошибка разблокировки");
+      toast.error(t("workouts.unlockError"));
     }
   };
 
@@ -533,12 +545,12 @@ export default function WorkoutDetail() {
         </Button>
         <div className="flex-1 space-y-1">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-            {format(new Date(workout.date), "d MMMM yyyy", { locale: ru })}
+            {format(new Date(workout.date), "d MMMM yyyy", { locale: dateLocale })}
           </h1>
           <div className="flex items-center gap-2">
             {isToday(parseISO(workout.date)) && (
               <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-green-500/15 text-green-600 dark:text-green-400">
-                сегодня
+                {t("workouts.today")}
               </span>
             )}
             <span className={cn(
@@ -547,7 +559,7 @@ export default function WorkoutDetail() {
                 ? "bg-primary/10 text-primary"
                 : "bg-sky-500/10 text-sky-600 dark:text-sky-400"
             )}>
-              {format(new Date(workout.date), "EEEE", { locale: ru })}
+              {format(new Date(workout.date), "EEEE", { locale: dateLocale })}
             </span>
           </div>
         </div>
@@ -561,13 +573,13 @@ export default function WorkoutDetail() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Поделиться тренировкой</DialogTitle>
+                  <DialogTitle>{t("workout.shareWorkout")}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
                   {workoutShare ? (
                     <>
                       <div className="space-y-2">
-                        <Label>Публичная ссылка</Label>
+                        <Label>{t("workout.publicLink")}</Label>
                         <div className="flex gap-2">
                           <Input
                             readOnly
@@ -583,7 +595,7 @@ export default function WorkoutDetail() {
                           </Button>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          Любой человек с этой ссылкой сможет посмотреть вашу тренировку
+                          {t("workout.anyoneWithLink")}
                         </p>
                       </div>
                       <Button
@@ -593,13 +605,13 @@ export default function WorkoutDetail() {
                         disabled={deactivateShare.isPending}
                       >
                         <Ban className="h-4 w-4" />
-                        Деактивировать ссылку
+                        {t("workout.deactivateLink")}
                       </Button>
                     </>
                   ) : (
                     <>
                       <p className="text-sm text-muted-foreground">
-                        Создайте публичную ссылку, чтобы поделиться своей тренировкой с друзьями
+                        {t("workout.createLinkDescription")}
                       </p>
                       <Button
                         className="w-full gap-2"
@@ -607,7 +619,7 @@ export default function WorkoutDetail() {
                         disabled={createShare.isPending}
                       >
                         <Share2 className="h-4 w-4" />
-                        Создать ссылку
+                        {t("workout.createLink")}
                       </Button>
                     </>
                   )}
@@ -630,18 +642,18 @@ export default function WorkoutDetail() {
                 <AlertDialog open={unlockDialogOpen} onOpenChange={setUnlockDialogOpen}>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Разблокировать тренировку?</AlertDialogTitle>
+                      <AlertDialogTitle>{t("workouts.unlockWorkoutTitle")}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Вы уверены, что хотите разблокировать эту тренировку? После разблокировки вы сможете редактировать и удалять данные.
+                        {t("workouts.unlockWorkoutDescription")}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Отмена</AlertDialogCancel>
+                      <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={handleUnlockWorkout}
                         disabled={unlockWorkout.isPending}
                       >
-                        Разблокировать
+                        {t("common.unlock")}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -674,16 +686,16 @@ export default function WorkoutDetail() {
           <DialogTrigger asChild>
             <Button className="w-full gap-2 shadow-lg">
               <Plus className="h-4 w-4" />
-              Добавить подход
+              {t("workout.addSet")}
             </Button>
           </DialogTrigger>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" aria-describedby="exercise-dialog-description">
           <DialogHeader>
             <DialogTitle>
-              {selectedExercise ? selectedExercise.name : "Выбери упражнение"}
+              {selectedExercise ? selectedExercise.name : t("workout.selectExercise")}
             </DialogTitle>
             <p id="exercise-dialog-description" className="sr-only">
-              {selectedExercise ? "Добавление подходов для упражнения" : "Выбор упражнения для тренировки"}
+              {selectedExercise ? t("workout.addingSetFor") : t("workout.selectingExercise")}
             </p>
           </DialogHeader>
           
@@ -696,7 +708,7 @@ export default function WorkoutDetail() {
                   className="flex-1"
                   onClick={() => setExerciseTab("all")}
                 >
-                  Все
+                  {t("common.all")}
                 </Button>
                 <Button
                   variant={exerciseTab === "favorites" ? "default" : "outline"}
@@ -704,7 +716,7 @@ export default function WorkoutDetail() {
                   onClick={() => setExerciseTab("favorites")}
                 >
                   <Star className="h-4 w-4" />
-                  Избранные
+                  {t("workout.favorites")}
                 </Button>
               </div>
 
@@ -718,31 +730,31 @@ export default function WorkoutDetail() {
                     <SelectItem value="all">
                       <div className="flex items-center gap-2">
                         <LayoutGrid className="h-4 w-4" />
-                        Все типы
+                        {t("progress.allTypes")}
                       </div>
                     </SelectItem>
                     <SelectItem value="bodyweight">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4" />
-                        Собственный вес
+                        {t("progress.bodyweight")}
                       </div>
                     </SelectItem>
                     <SelectItem value="weighted">
                       <div className="flex items-center gap-2">
                         <Dumbbell className="h-4 w-4" />
-                        С отягощением
+                        {t("progress.weighted")}
                       </div>
                     </SelectItem>
                     <SelectItem value="cardio">
                       <div className="flex items-center gap-2">
                         <Activity className="h-4 w-4" />
-                        Кардио
+                        {t("progress.cardio")}
                       </div>
                     </SelectItem>
                     <SelectItem value="timed">
                       <div className="flex items-center gap-2">
                         <Timer className="h-4 w-4" />
-                        На время
+                        {t("progress.timed")}
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -751,7 +763,7 @@ export default function WorkoutDetail() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Поиск упражнения..."
+                    placeholder={t("workout.exerciseSearch")}
                     value={exerciseSearchQuery}
                     onChange={(e) => setExerciseSearchQuery(e.target.value)}
                     className="pl-9 h-12"
@@ -762,7 +774,7 @@ export default function WorkoutDetail() {
               <div className="grid grid-cols-2 gap-3 mt-4">
               {filteredExercises.length === 0 ? (
                 <div className="col-span-2 text-center py-12 text-muted-foreground">
-                  {exerciseTab === "favorites" ? "Нет избранных упражнений" : "Упражнения не найдены"}
+                  {exerciseTab === "favorites" ? t("workout.noFavorites") : t("exercises.noExercisesFound")}
                 </div>
               ) : (
                 filteredExercises.map((exercise) => {
@@ -813,10 +825,10 @@ export default function WorkoutDetail() {
                         <div className="p-3 bg-card">
                           <p className="font-medium text-foreground text-center">{exercise.name}</p>
                           <p className="text-xs text-muted-foreground text-center">
-                            {exercise.type === "weighted" ? "С отягощением" :
-                             exercise.type === "cardio" ? "Кардио" :
-                             exercise.type === "timed" ? "На время" :
-                             "Собственный вес"}
+                            {exercise.type === "weighted" ? t("progress.weighted") :
+                             exercise.type === "cardio" ? t("progress.cardio") :
+                             exercise.type === "timed" ? t("progress.timed") :
+                             t("progress.bodyweight")}
                           </p>
                         </div>
                       </div>
@@ -837,7 +849,7 @@ export default function WorkoutDetail() {
                   className="mb-2"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Назад
+                  {t("common.back")}
                 </Button>
               )}
 
@@ -845,7 +857,7 @@ export default function WorkoutDetail() {
                 {selectedExercise.type === "cardio" ? (
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Дистанция (км)</Label>
+                      <Label>{t("workout.distanceKm")}</Label>
                       <Input
                         id="add-distance"
                         type="number"
@@ -860,7 +872,7 @@ export default function WorkoutDetail() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Время (мин)</Label>
+                      <Label>{t("workout.timeMin")}</Label>
                       <Input
                         id="add-duration"
                         type="number"
@@ -884,7 +896,7 @@ export default function WorkoutDetail() {
                   ) : (
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label>Время (сек)</Label>
+                        <Label>{t("workout.timeSec")}</Label>
                         <Input
                           type="number"
                           inputMode="numeric"
@@ -902,14 +914,14 @@ export default function WorkoutDetail() {
                         onClick={() => setShowTimer(true)}
                       >
                         <Timer className="h-4 w-4" />
-                        Включить таймер
+                        {t("workout.enableTimer")}
                       </Button>
                     </div>
                   )
                 ) : (
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Повторения</Label>
+                      <Label>{t("workout.reps")}</Label>
                       <Input
                         id="add-reps"
                         type="number"
@@ -924,7 +936,7 @@ export default function WorkoutDetail() {
                     </div>
                     {selectedExercise.type === "weighted" && (
                       <div className="space-y-2">
-                        <Label>Вес (кг)</Label>
+                        <Label>{t("workout.weightKg")}</Label>
                         <Input
                           id="add-weight"
                           type="number"
@@ -937,7 +949,7 @@ export default function WorkoutDetail() {
                         />
                         {selectedExercise.name.toLowerCase().includes("гантел") && (
                           <p className="text-xs text-muted-foreground">
-                            Укажи вес одной гантели
+                            {t("workout.dumbbellNote")}
                           </p>
                         )}
                       </div>
@@ -951,7 +963,7 @@ export default function WorkoutDetail() {
                     className="w-full mt-4"
                     disabled={addSet.isPending}
                   >
-                    Добавить
+                    {t("common.add")}
                   </Button>
                 )}
               </form>
@@ -967,9 +979,9 @@ export default function WorkoutDetail() {
             <div className="p-4 bg-muted rounded-full mb-4">
               <Dumbbell className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h3 className="font-semibold text-foreground mb-1">Нет упражнений</h3>
+            <h3 className="font-semibold text-foreground mb-1">{t("workout.noExercises")}</h3>
             <p className="text-muted-foreground text-sm">
-              Добавь первый подход, чтобы начать тренировку
+              {t("workout.addFirstSet")}
             </p>
           </CardContent>
         </Card>
@@ -1028,13 +1040,13 @@ export default function WorkoutDetail() {
                 )}>
                   <div className="text-center">#</div>
                   <div className="text-center">
-                    {exercise?.type === "cardio" ? "Дист." :
-                     exercise?.type === "timed" ? "Время" :
-                     "Повт."}
+                    {exercise?.type === "cardio" ? t("progress.distance") :
+                     exercise?.type === "timed" ? t("progress.time") :
+                     t("workout.reps")}
                   </div>
                   {exercise?.type !== "bodyweight" && exercise?.type !== "timed" && (
                     <div className="text-center">
-                      {exercise?.type === "cardio" ? "Время" : "Вес"}
+                      {exercise?.type === "cardio" ? t("progress.time") : t("workout.weightKg")}
                     </div>
                   )}
                   <div></div>
@@ -1088,7 +1100,7 @@ export default function WorkoutDetail() {
                               onChange={(e) => setEditDistance(e.target.value)}
                               onKeyDown={(e) => { if (e.key === "Enter") { (e.currentTarget.nextElementSibling as HTMLInputElement)?.focus(); } }}
                               className="h-7 text-center text-sm px-2"
-                              placeholder="км"
+                              placeholder={t("units.km")}
                               autoFocus
                             />
                             <Input
@@ -1099,7 +1111,7 @@ export default function WorkoutDetail() {
                               onChange={(e) => setEditDuration(e.target.value)}
                               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSaveEdit(); } }}
                               className="h-7 text-center text-sm px-2"
-                              placeholder="мин"
+                              placeholder={t("units.min")}
                             />
                           </>
                         ) : exercise?.type === "timed" ? (
@@ -1112,7 +1124,7 @@ export default function WorkoutDetail() {
                               onChange={(e) => setEditDuration(e.target.value)}
                               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSaveEdit(); } }}
                               className="h-7 text-center text-sm px-2"
-                              placeholder="сек"
+                              placeholder={t("units.sec")}
                               autoFocus
                             />
                           </>
@@ -1178,16 +1190,16 @@ export default function WorkoutDetail() {
                         {exercise?.type === "cardio" ? (
                           <>
                             <div className="text-center text-sm font-semibold text-foreground">
-                              {set.distance_km ? `${set.distance_km} км` : '—'}
+                              {set.distance_km ? `${set.distance_km} ${t("units.km")}` : '—'}
                             </div>
                             <div className="text-center text-sm font-medium text-primary">
-                              {set.duration_minutes ? `${set.duration_minutes} мин` : '—'}
+                              {set.duration_minutes ? `${set.duration_minutes} ${t("units.min")}` : '—'}
                             </div>
                           </>
                         ) : exercise?.type === "timed" ? (
                           <>
                             <div className="text-center text-sm font-semibold text-primary">
-                              {set.plank_seconds ? `${set.plank_seconds} сек` : '—'}
+                              {set.plank_seconds ? `${set.plank_seconds} ${t("units.sec")}` : '—'}
                             </div>
                           </>
                         ) : exercise?.type === "bodyweight" ? (
@@ -1202,7 +1214,7 @@ export default function WorkoutDetail() {
                               {set.reps || '—'}
                             </div>
                             <div className="text-center text-sm font-medium text-primary">
-                              {set.weight ? `${set.weight} кг` : '—'}
+                              {set.weight ? `${set.weight} ${t("units.kg")}` : '—'}
                             </div>
                           </>
                         )}
@@ -1255,7 +1267,7 @@ export default function WorkoutDetail() {
                     }}
                   >
                     <Plus className="h-3.5 w-3.5" />
-                    Ещё подход
+                    {t("workout.anotherSet")}
                   </Button>
                 )}
               </CardContent>
@@ -1270,7 +1282,7 @@ export default function WorkoutDetail() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
               <MessageSquare className="h-4 w-4 text-primary" />
-              Комментарий
+              {t("workout.comment")}
             </CardTitle>
             {isOwner && !isEditingNotes && !workout?.is_locked && (
               <Button
@@ -1288,7 +1300,7 @@ export default function WorkoutDetail() {
           {isOwner && isEditingNotes ? (
             <div className="space-y-2">
               <Textarea
-                placeholder="Как прошла тренировка? Какие ощущения?"
+                placeholder={t("workout.commentPlaceholder")}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
@@ -1302,7 +1314,7 @@ export default function WorkoutDetail() {
                   className="flex-1 h-8"
                 >
                   <Save className="h-3.5 w-3.5 mr-1.5" />
-                  Сохранить
+                  {t("common.save")}
                 </Button>
                 <Button
                   variant="outline"
@@ -1314,13 +1326,13 @@ export default function WorkoutDetail() {
                   }}
                   disabled={updateWorkout.isPending}
                 >
-                  Отмена
+                  {t("common.cancel")}
                 </Button>
               </div>
             </div>
           ) : (
             <div className="text-sm text-muted-foreground whitespace-pre-wrap">
-              {notes || "Пока пусто"}
+              {notes || t("workout.emptyComment")}
             </div>
           )}
         </CardContent>
@@ -1332,7 +1344,7 @@ export default function WorkoutDetail() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
               <ImageIcon className="h-4 w-4 text-primary" />
-              Фото
+              {t("workout.photos")}
             </CardTitle>
             {isOwner && workout?.photo_url && !workout?.is_locked && (
               <Button
@@ -1354,7 +1366,7 @@ export default function WorkoutDetail() {
             >
               <img
                 src={workout.photo_url}
-                alt="Фото тренировки"
+                alt={t("workout.workoutPhoto")}
                 className="w-full rounded-lg object-cover max-h-80 transition-all duration-200 group-hover:opacity-90"
               />
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -1368,13 +1380,13 @@ export default function WorkoutDetail() {
               {isUploadingPhoto ? (
                 <>
                   <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                  <span className="text-sm text-muted-foreground">Загрузка...</span>
+                  <span className="text-sm text-muted-foreground">{t("common.loading")}</span>
                 </>
               ) : (
                 <>
                   <Camera className="h-8 w-8 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Нажмите чтобы добавить фото</span>
-                  <span className="text-xs text-muted-foreground/70">JPG, PNG или WebP до 20 MB</span>
+                  <span className="text-sm text-muted-foreground">{t("workout.clickToAddPhoto")}</span>
+                  <span className="text-xs text-muted-foreground/70">{t("workout.photoFormat")}</span>
                 </>
               )}
               <input
@@ -1387,7 +1399,7 @@ export default function WorkoutDetail() {
             </label>
           ) : (
             <div className="text-center py-6 text-sm text-muted-foreground">
-              Нет фото
+              {t("workout.noPhotos")}
             </div>
           )}
         </CardContent>
@@ -1397,15 +1409,15 @@ export default function WorkoutDetail() {
       <AlertDialog open={photoToDelete} onOpenChange={setPhotoToDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Удалить фото?</AlertDialogTitle>
+            <AlertDialogTitle>{t("workout.deletePhotoTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Вы уверены, что хотите удалить это фото? Это действие нельзя будет отменить.
+              {t("workout.deletePhotoDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeletePhoto} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Удалить
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1450,7 +1462,7 @@ export default function WorkoutDetail() {
           </button>
           <img
             src={workout.photo_url}
-            alt="Фото тренировки"
+            alt={t("workout.workoutPhoto")}
             style={{
               maxWidth: 'calc(100vw - 32px)',
               maxHeight: 'calc(100vh - 32px)',
@@ -1468,15 +1480,15 @@ export default function WorkoutDetail() {
       <AlertDialog open={!!setToDelete} onOpenChange={(open) => !open && setSetToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Удалить подход?</AlertDialogTitle>
+            <AlertDialogTitle>{t("workout.deleteSetTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Вы уверены, что хотите удалить этот подход? Это действие нельзя будет отменить.
+              {t("workout.deleteSetDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeleteSet} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Удалить
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

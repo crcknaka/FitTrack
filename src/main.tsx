@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import "./lib/i18n";
 
 // Initialize accent color from localStorage before React renders
 const ACCENT_STORAGE_KEY = "fittrack-accent-color";

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useSearchUsers, useSendFriendRequest, useFriendshipStatus } from "@/hooks/useFriends";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface AddFriendDialogProps {
   trigger?: React.ReactNode;
@@ -20,6 +21,7 @@ interface SearchResultItemProps {
 }
 
 function SearchResultItem({ userId, avatar, displayName, onSendRequest, isPending }: SearchResultItemProps) {
+  const { t } = useTranslation();
   const { data: friendshipStatus } = useFriendshipStatus(userId);
 
   const getButtonContent = () => {
@@ -33,7 +35,7 @@ function SearchResultItem({ userId, avatar, displayName, onSendRequest, isPendin
           disabled={isPending}
         >
           <UserPlus className="h-3.5 w-3.5" />
-          Добавить
+          {t("friends.addFriend")}
         </Button>
       );
     }
@@ -42,7 +44,7 @@ function SearchResultItem({ userId, avatar, displayName, onSendRequest, isPendin
       return (
         <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 px-2 py-1 rounded bg-green-500/10">
           <Check className="h-3.5 w-3.5" />
-          Друзья
+          {t("friends.alreadyFriends")}
         </div>
       );
     }
@@ -51,7 +53,7 @@ function SearchResultItem({ userId, avatar, displayName, onSendRequest, isPendin
       return (
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground px-2 py-1 rounded bg-muted">
           <Clock className="h-3.5 w-3.5" />
-          Запрос отправлен
+          {t("friends.pending")}
         </div>
       );
     }
@@ -66,7 +68,7 @@ function SearchResultItem({ userId, avatar, displayName, onSendRequest, isPendin
         disabled={isPending}
       >
         <UserPlus className="h-3.5 w-3.5" />
-        Добавить
+        {t("friends.addFriend")}
       </Button>
     );
   };
@@ -78,7 +80,7 @@ function SearchResultItem({ userId, avatar, displayName, onSendRequest, isPendin
       </div>
       <div className="flex-1 min-w-0">
         <p className="font-medium text-foreground truncate">
-          {displayName || "Аноним"}
+          {displayName || t("common.anonymous")}
         </p>
       </div>
       {getButtonContent()}
@@ -87,6 +89,7 @@ function SearchResultItem({ userId, avatar, displayName, onSendRequest, isPendin
 }
 
 export function AddFriendDialog({ trigger }: AddFriendDialogProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -106,9 +109,9 @@ export function AddFriendDialog({ trigger }: AddFriendDialogProps) {
   const handleSendRequest = async (userId: string) => {
     try {
       await sendRequest.mutateAsync(userId);
-      toast.success("Запрос на дружбу отправлен");
+      toast.success(t("friends.requestSent"));
     } catch (error) {
-      toast.error("Не удалось отправить запрос");
+      toast.error(t("friends.requestError"));
     }
   };
 
@@ -118,7 +121,7 @@ export function AddFriendDialog({ trigger }: AddFriendDialogProps) {
         {trigger || (
           <Button className="gap-2">
             <UserPlus className="h-4 w-4" />
-            Добавить друга
+            {t("friends.addFriend")}
           </Button>
         )}
       </DialogTrigger>
@@ -126,7 +129,7 @@ export function AddFriendDialog({ trigger }: AddFriendDialogProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="h-5 w-5 text-primary" />
-            Найти друга
+            {t("friends.findFriend")}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
@@ -134,7 +137,7 @@ export function AddFriendDialog({ trigger }: AddFriendDialogProps) {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Введите имя пользователя..."
+              placeholder={t("friends.searchByName")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -146,7 +149,7 @@ export function AddFriendDialog({ trigger }: AddFriendDialogProps) {
           <div className="space-y-2 max-h-[300px] overflow-y-auto">
             {searchQuery.length < 2 && (
               <p className="text-center text-sm text-muted-foreground py-8">
-                Введите минимум 2 символа для поиска
+                {t("friends.enterMinChars")}
               </p>
             )}
 
@@ -158,7 +161,7 @@ export function AddFriendDialog({ trigger }: AddFriendDialogProps) {
 
             {searchQuery.length >= 2 && !isSearching && searchResults?.length === 0 && (
               <p className="text-center text-sm text-muted-foreground py-8">
-                Пользователи не найдены
+                {t("friends.usersNotFound")}
               </p>
             )}
 

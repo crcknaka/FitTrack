@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { TrendingUp, ListPlus, LogOut, Activity, Settings, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
@@ -11,14 +12,15 @@ interface LayoutProps {
 }
 
 const navItems = [
-  { to: "/", icon: Activity, label: "Тренировки" },
-  { to: "/progress", icon: TrendingUp, label: "Прогресс" },
-  { to: "/friends", icon: Users, label: "Друзья" },
-  { to: "/exercises", icon: ListPlus, label: "Упражнения" },
-  { to: "/settings", icon: Settings, label: "Настройки" },
+  { to: "/", icon: Activity, labelKey: "nav.workouts" },
+  { to: "/progress", icon: TrendingUp, labelKey: "nav.progress" },
+  { to: "/friends", icon: Users, labelKey: "nav.friends" },
+  { to: "/exercises", icon: ListPlus, labelKey: "nav.exercises" },
+  { to: "/settings", icon: Settings, labelKey: "nav.settings" },
 ];
 
 export default function Layout({ children }: LayoutProps) {
+  const { t } = useTranslation();
   const { signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -68,7 +70,7 @@ export default function Layout({ children }: LayoutProps) {
                   "text-[10px] font-medium mt-0.5 transition-all duration-200",
                   isActive ? "text-primary" : "text-muted-foreground"
                 )}>
-                  {item.label}
+                  {t(item.labelKey)}
                 </span>
                 {isActive && (
                   <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
@@ -118,7 +120,7 @@ export default function Layout({ children }: LayoutProps) {
                     <span className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full" />
                   )}
                 </div>
-                <span className="font-medium">{item.label}</span>
+                <span className="font-medium">{t(item.labelKey)}</span>
                 {isActive && (
                   <span className="absolute right-3 w-1.5 h-1.5 rounded-full bg-primary-foreground/80" />
                 )}
@@ -133,7 +135,7 @@ export default function Layout({ children }: LayoutProps) {
             className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 active:scale-[0.98] group"
           >
             <LogOut className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-            <span className="font-medium">Выйти</span>
+            <span className="font-medium">{t("nav.logout")}</span>
           </button>
         </div>
       </aside>

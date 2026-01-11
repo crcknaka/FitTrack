@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format, subDays, startOfMonth, endOfMonth, startOfDay, endOfDay, parseISO, subMonths, isWithinInterval } from "date-fns";
-import { ru } from "date-fns/locale";
+import { ru, enUS, es, ptBR, de, fr } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 import { Zap, Repeat, Plus, Trophy, Medal, Activity, Clock, Weight, TrendingUp, User, Dumbbell, Timer, LayoutGrid, ChevronDown, Calendar as CalendarIcon, X, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -22,11 +23,21 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { calculateTotalVolume } from "@/lib/volumeUtils";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
-import { pluralize } from "@/lib/pluralize";
 import { cn } from "@/lib/utils";
 import { useFriends } from "@/hooks/useFriends";
 
+const DATE_LOCALES: Record<string, Locale> = {
+  en: enUS,
+  es: es,
+  "pt-BR": ptBR,
+  de: de,
+  fr: fr,
+  ru: ru,
+};
+
 export default function Progress() {
+  const { t, i18n } = useTranslation();
+  const dateLocale = DATE_LOCALES[i18n.language] || enUS;
   const navigate = useNavigate();
   const { data: workouts } = useWorkouts();
   const { data: exercises } = useExercises();
@@ -184,7 +195,7 @@ export default function Progress() {
       const totalPlankTime = relevantSets.reduce((sum, s) => sum + (s.plank_seconds || 0), 0);
 
       return {
-        date: format(new Date(workout.date), "d MMM", { locale: ru }),
+        date: format(new Date(workout.date), "d MMM", { locale: dateLocale }),
         fullDate: workout.date,
         reps: totalReps,
         weight: maxWeight,
@@ -294,23 +305,23 @@ export default function Progress() {
   const formatSetData = (set: typeof exerciseHistory[0], exerciseType: string | undefined) => {
     switch (exerciseType) {
       case "weighted":
-        return `${set.reps} ${pluralize(set.reps || 0, "раз", "раза", "раз")} по ${set.weight} кг`;
+        return `${set.reps} ${t("units.times")} × ${set.weight} ${t("units.kg")}`;
       case "bodyweight":
-        return `${set.reps} ${pluralize(set.reps || 0, "раз", "раза", "раз")}`;
+        return `${set.reps} ${t("units.times")}`;
       case "cardio": {
         if (set.distance_km && set.duration_minutes) {
-          return `${set.distance_km} км за ${set.duration_minutes} мин`;
+          return `${set.distance_km} ${t("units.km")} / ${set.duration_minutes} ${t("units.min")}`;
         } else if (set.distance_km) {
-          return `${set.distance_km} км`;
+          return `${set.distance_km} ${t("units.km")}`;
         } else if (set.duration_minutes) {
-          return `${set.duration_minutes} мин`;
+          return `${set.duration_minutes} ${t("units.min")}`;
         }
         return "";
       }
       case "timed": {
         const seconds = set.plank_seconds || 0;
         const minutes = (seconds / 60).toFixed(2);
-        return `${seconds} сек (${minutes} мин)`;
+        return `${seconds} ${t("units.sec")} (${minutes} ${t("units.min")})`;
       }
       default:
         return "";
@@ -369,11 +380,11 @@ export default function Progress() {
     return Array.from(groups.entries()).map(([dateKey, setsWithIndex]) => {
       const parsedDate = parseISO(dateKey);
       // Full day name with capital letter
-      const dayOfWeek = format(parsedDate, "EEEE", { locale: ru });
+      const dayOfWeek = format(parsedDate, "EEEE", { locale: dateLocale });
       const capitalizedDay = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1);
       // Full month name with capital letter
-      const day = format(parsedDate, "d", { locale: ru });
-      const month = format(parsedDate, "MMMM", { locale: ru });
+      const day = format(parsedDate, "d", { locale: dateLocale });
+      const month = format(parsedDate, "MMMM", { locale: dateLocale });
       const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
 
       return {
@@ -382,7 +393,7 @@ export default function Progress() {
         setsWithIndex,
       };
     });
-  }, [exerciseHistory]);
+  }, [exerciseHistory, dateLocale]);
 
   // Check if single day is selected (from === to)
   const isSingleDaySelected = dateRange?.from && dateRange?.to &&
@@ -390,14 +401,14 @@ export default function Progress() {
 
   // Get filter period text
   const getFilterText = () => {
-    if (!dateRange?.from) return "за всё время";
+    if (!dateRange?.from) return t("progress.forAllTime");
     if (isSingleDaySelected) {
-      return format(dateRange.from!, "d MMMM", { locale: ru });
+      return format(dateRange.from!, "d MMMM", { locale: dateLocale });
     }
     if (dateRange.from && dateRange.to) {
-      return `${format(dateRange.from, "d MMM", { locale: ru })} — ${format(dateRange.to, "d MMM", { locale: ru })}`;
+      return `${format(dateRange.from, "d MMM", { locale: dateLocale })} — ${format(dateRange.to, "d MMM", { locale: dateLocale })}`;
     }
-    return `с ${format(dateRange.from, "d MMM", { locale: ru })}`;
+    return `${format(dateRange.from, "d MMM", { locale: dateLocale })}`;
   };
 
   // Quick filter handlers
@@ -474,7 +485,7 @@ export default function Progress() {
         return true;
       })
       .map((w) => ({
-        date: format(new Date(w.date), "d MMM", { locale: ru }),
+        date: format(new Date(w.date), "d MMM", { locale: dateLocale }),
         weight: w.weight,
       }));
   }, [bodyWeightHistory, dateRange]);
@@ -485,8 +496,8 @@ export default function Progress() {
     const weight = parseFloat(newWeight);
     if (isNaN(weight) || weight <= 0) {
       toast({
-        title: "Ошибка",
-        description: "Введите корректный вес",
+        title: t("common.error"),
+        description: t("progress.invalidWeight"),
         variant: "destructive",
       });
       return;
@@ -508,8 +519,8 @@ export default function Progress() {
 
     if (historyError) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось сохранить вес",
+        title: t("common.error"),
+        description: t("progress.weightSaveError"),
         variant: "destructive",
       });
       return;
@@ -539,8 +550,8 @@ export default function Progress() {
     setWeightDate(format(new Date(), "yyyy-MM-dd"));
 
     toast({
-      title: "Успешно",
-      description: "Вес сохранён",
+      title: t("common.success"),
+      description: t("progress.weightSaved"),
     });
   };
 
@@ -548,8 +559,8 @@ export default function Progress() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">Прогресс</h1>
-          <p className="text-muted-foreground text-sm">Отслеживай достижения</p>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">{t("progress.title")}</h1>
+          <p className="text-muted-foreground text-sm">{t("progress.subtitle")}</p>
         </div>
       </div>
 
@@ -570,31 +581,31 @@ export default function Progress() {
               <SelectItem value="all">
                 <div className="flex items-center gap-2">
                   <LayoutGrid className="h-3.5 w-3.5" />
-                  Все типы
+                  {t("progress.allTypes")}
                 </div>
               </SelectItem>
               <SelectItem value="bodyweight">
                 <div className="flex items-center gap-2">
                   <User className="h-3.5 w-3.5" />
-                  Собственный вес
+                  {t("progress.bodyweight")}
                 </div>
               </SelectItem>
               <SelectItem value="weighted">
                 <div className="flex items-center gap-2">
                   <Dumbbell className="h-3.5 w-3.5" />
-                  С отягощением
+                  {t("progress.weighted")}
                 </div>
               </SelectItem>
               <SelectItem value="cardio">
                 <div className="flex items-center gap-2">
                   <Activity className="h-3.5 w-3.5" />
-                  Кардио
+                  {t("progress.cardio")}
                 </div>
               </SelectItem>
               <SelectItem value="timed">
                 <div className="flex items-center gap-2">
                   <Timer className="h-3.5 w-3.5" />
-                  На время
+                  {t("progress.timed")}
                 </div>
               </SelectItem>
             </SelectContent>
@@ -602,11 +613,11 @@ export default function Progress() {
 
           <Select value={selectedExercise} onValueChange={setSelectedExercise}>
             <SelectTrigger className="h-9 w-auto min-w-[140px] max-w-[180px] text-xs px-3">
-              <SelectValue placeholder="Упражнение" />
+              <SelectValue placeholder={t("exercises.exercise")} />
             </SelectTrigger>
             <SelectContent>
               {exerciseTypeFilter === "all" && (
-                <SelectItem value="all">Все упражнения</SelectItem>
+                <SelectItem value="all">{t("progress.allExercises")}</SelectItem>
               )}
               {usedExercises.map((exercise) => (
                 <SelectItem key={exercise.id} value={exercise.id}>
@@ -627,14 +638,14 @@ export default function Progress() {
                 <TrendingUp className="h-3.5 w-3.5" />
                 {dateRange?.from ? (
                   isSingleDaySelected ? (
-                    format(dateRange.from, "d MMM", { locale: ru })
+                    format(dateRange.from, "d MMM", { locale: dateLocale })
                   ) : dateRange.to ? (
-                    `${format(dateRange.from, "d MMM", { locale: ru })} – ${format(dateRange.to, "d MMM", { locale: ru })}`
+                    `${format(dateRange.from, "d MMM", { locale: dateLocale })} – ${format(dateRange.to, "d MMM", { locale: dateLocale })}`
                   ) : (
-                    `С ${format(dateRange.from, "d MMM", { locale: ru })}`
+                    format(dateRange.from, "d MMM", { locale: dateLocale })
                   )
                 ) : (
-                  "Всё время"
+                  t("progress.allTime")
                 )}
               </Button>
             </PopoverTrigger>
@@ -646,7 +657,7 @@ export default function Progress() {
                   className="w-full justify-start text-xs h-8"
                   onClick={() => handleQuickFilter("all")}
                 >
-                  Всё время
+                  {t("progress.allTime")}
                 </Button>
                 <Button
                   variant="ghost"
@@ -654,7 +665,7 @@ export default function Progress() {
                   className="w-full justify-start text-xs h-8"
                   onClick={() => handleQuickFilter(7)}
                 >
-                  Последние 7 дней
+                  {t("workouts.filter.last7days")}
                 </Button>
                 <Button
                   variant="ghost"
@@ -662,7 +673,7 @@ export default function Progress() {
                   className="w-full justify-start text-xs h-8"
                   onClick={() => handleQuickFilter(30)}
                 >
-                  Последние 30 дней
+                  {t("workouts.filter.last30days")}
                 </Button>
                 <Button
                   variant="ghost"
@@ -670,7 +681,7 @@ export default function Progress() {
                   className="w-full justify-start text-xs h-8"
                   onClick={() => handleQuickFilter("current-month")}
                 >
-                  Этот месяц
+                  {t("workouts.filter.thisMonth")}
                 </Button>
                 <Button
                   variant="ghost"
@@ -678,7 +689,7 @@ export default function Progress() {
                   className="w-full justify-start text-xs h-8"
                   onClick={() => handleQuickFilter("last-month")}
                 >
-                  Прошлый месяц
+                  {t("workouts.filter.lastMonth")}
                 </Button>
               </div>
             </PopoverContent>
@@ -700,7 +711,7 @@ export default function Progress() {
                 mode="range"
                 selected={dateRange}
                 onSelect={setDateRange}
-                locale={ru}
+                locale={dateLocale}
                 className="rounded-md border-0"
                 numberOfMonths={1}
               />
@@ -711,7 +722,7 @@ export default function Progress() {
                   className="flex-1"
                   onClick={() => setDateRange(undefined)}
                 >
-                  Сбросить
+                  {t("common.reset")}
                 </Button>
               </div>
             </PopoverContent>
@@ -737,11 +748,11 @@ export default function Progress() {
             <div className="p-4 bg-muted rounded-full mb-4">
               <TrendingUp className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h3 className="font-semibold text-foreground mb-1">Нет данных {getFilterText()}</h3>
+            <h3 className="font-semibold text-foreground mb-1">{t("progress.noDataForPeriod")} {getFilterText()}</h3>
             <p className="text-muted-foreground text-sm">
               {selectedExercise === "all"
-                ? "Не будь ленивым скуфом, давай заниматься!"
-                : "Выполни это упражнение, чтобы увидеть статистику"}
+                ? t("progress.noDataMessage")
+                : t("progress.doExerciseToSeeStats")}
             </p>
           </CardContent>
         </Card>
@@ -755,12 +766,12 @@ export default function Progress() {
               <CardContent className="p-3">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <Repeat className="h-3.5 w-3.5" />
-                  <span className="text-xs"> {pluralize(stats.totalReps, "Повторение", "Повторения", "Повторений")}</span>
+                  <span className="text-xs">{t("progress.repetitions")}</span>
                 </div>
                 <p className="text-xl font-bold text-foreground">{stats.totalReps}</p>
                 {stats.repsTrend !== 0 && (
                   <p className={`text-xs ${stats.repsTrend > 0 ? "text-success" : "text-destructive"}`}>
-                    {stats.repsTrend > 0 ? "+" : ""}{stats.repsTrend.toFixed(0)}% за неделю
+                    {stats.repsTrend > 0 ? "+" : ""}{stats.repsTrend.toFixed(0)}% {t("progress.perWeek")}
                   </p>
                 )}
               </CardContent>
@@ -772,10 +783,10 @@ export default function Progress() {
               <CardContent className="p-3">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <Weight className="h-3.5 w-3.5" />
-                  <span className="text-xs">Макс. вес</span>
+                  <span className="text-xs">{t("progress.maxWeight")}</span>
                 </div>
                 <p className="text-xl font-bold text-foreground">
-                  {stats.maxWeight > 0 ? `${stats.maxWeight} кг` : "—"}
+                  {stats.maxWeight > 0 ? `${stats.maxWeight} ${t("units.kg")}` : "—"}
                 </p>
               </CardContent>
             </Card>
@@ -785,7 +796,7 @@ export default function Progress() {
             <CardContent className="p-3">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <Zap className="h-3.5 w-3.5" />
-                <span className="text-xs">{pluralize(stats.workoutCount, "Тренировка", "Тренировки", "Тренировок")}</span>
+                <span className="text-xs">{t("progress.workoutsCount")}</span>
               </div>
               <p className="text-xl font-bold text-foreground">{stats.workoutCount}</p>
             </CardContent>
@@ -796,10 +807,10 @@ export default function Progress() {
               <CardContent className="p-3">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <TrendingUp className="h-3.5 w-3.5" />
-                  <span className="text-xs">Объём</span>
+                  <span className="text-xs">{t("progress.volume")}</span>
                 </div>
                 <p className="text-xl font-bold text-foreground">
-                  {stats.totalVolume.toLocaleString()} кг
+                  {stats.totalVolume.toLocaleString()} {t("units.kg")}
                 </p>
               </CardContent>
             </Card>
@@ -810,10 +821,10 @@ export default function Progress() {
               <CardContent className="p-3">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <Activity className="h-3.5 w-3.5" />
-                  <span className="text-xs">Пробежал</span>
+                  <span className="text-xs">{t("progress.ranDistance")}</span>
                 </div>
                 <p className="text-xl font-bold text-foreground">
-                  {stats.totalDistance.toFixed(1)} км
+                  {stats.totalDistance.toFixed(1)} {t("units.km")}
                 </p>
               </CardContent>
             </Card>
@@ -824,12 +835,12 @@ export default function Progress() {
               <CardContent className="p-3">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <Clock className="h-3.5 w-3.5" />
-                  <span className="text-xs">Бегал</span>
+                  <span className="text-xs">{t("progress.timeRunning")}</span>
                 </div>
                 <p className="text-xl font-bold text-foreground">
                   {stats.totalDurationMinutes >= 60
-                    ? `${stats.totalDurationHours.toFixed(2)} ч`
-                    : `${stats.totalDurationMinutes.toFixed(0)} мин`}
+                    ? `${stats.totalDurationHours.toFixed(2)} ${t("units.h")}`
+                    : `${stats.totalDurationMinutes.toFixed(0)} ${t("units.min")}`}
                 </p>
               </CardContent>
             </Card>
@@ -840,12 +851,12 @@ export default function Progress() {
               <CardContent className="p-3">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <Clock className="h-3.5 w-3.5" />
-                  <span className="text-xs">В планке</span>
+                  <span className="text-xs">{t("progress.inPlank")}</span>
                 </div>
                 <p className="text-xl font-bold text-foreground">
                   {stats.totalPlankSeconds >= 3600
-                    ? `${(stats.totalPlankSeconds / 3600).toFixed(2)} ч`
-                    : `${(stats.totalPlankSeconds / 60).toFixed(2)} мин`}
+                    ? `${(stats.totalPlankSeconds / 3600).toFixed(2)} ${t("units.h")}`
+                    : `${(stats.totalPlankSeconds / 60).toFixed(2)} ${t("units.min")}`}
                 </p>
               </CardContent>
             </Card>
@@ -863,7 +874,7 @@ export default function Progress() {
                   <div className="p-1.5 rounded-md bg-primary/10">
                     <Repeat className="h-4 w-4 text-primary" />
                   </div>
-                  <span className="font-medium text-foreground">История подходов</span>
+                  <span className="font-medium text-foreground">{t("progress.setHistory")}</span>
                   <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                     {exerciseHistory.length}
                   </span>
@@ -929,13 +940,13 @@ export default function Progress() {
               <CardTitle className="text-sm font-semibold">
                 {selectedExerciseData?.type === "cardio"
                   ? cardioMetric === "distance"
-                    ? "Дистанция (км)"
-                    : "Время (мин)"
+                    ? t("progress.distanceKm")
+                    : t("progress.timeMin")
                   : selectedExerciseData?.type === "timed"
-                    ? "Время (сек)"
+                    ? t("progress.timeSec")
                     : metric === "reps"
-                      ? "Повторения"
-                      : "Максимальный вес"} {getFilterText()}
+                      ? t("progress.repetitions")
+                      : t("progress.maxWeight")} {getFilterText()}
                 {selectedExercise !== "all" && selectedExerciseData && (
                   <span className="text-muted-foreground font-normal ml-2">
                     · {selectedExerciseData.name}
@@ -949,8 +960,8 @@ export default function Progress() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="distance">Дистанция</SelectItem>
-                    <SelectItem value="duration">Время</SelectItem>
+                    <SelectItem value="distance">{t("progress.distance")}</SelectItem>
+                    <SelectItem value="duration">{t("progress.time")}</SelectItem>
                   </SelectContent>
                 </Select>
               ) : selectedExerciseData?.type === "weighted" && (
@@ -959,8 +970,8 @@ export default function Progress() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="reps">Повторения</SelectItem>
-                    <SelectItem value="weight">Вес</SelectItem>
+                    <SelectItem value="reps">{t("progress.repetitions")}</SelectItem>
+                    <SelectItem value="weight">{t("progress.weightTotal")}</SelectItem>
                   </SelectContent>
                 </Select>
               )}
@@ -989,7 +1000,7 @@ export default function Progress() {
                       dataKey={cardioMetric === "distance" ? "distance" : "duration"}
                       fill="hsl(var(--primary))"
                       radius={[4, 4, 0, 0]}
-                      name={cardioMetric === "distance" ? "Дистанция (км)" : "Время (мин)"}
+                      name={cardioMetric === "distance" ? t("progress.distanceKm") : t("progress.timeMin")}
                       cursor="pointer"
                       onClick={(data) => {
                         if (data?.fullDate) handleSelectDay(data.fullDate);
@@ -1016,7 +1027,7 @@ export default function Progress() {
                       dataKey="plankTime"
                       fill="hsl(var(--primary))"
                       radius={[4, 4, 0, 0]}
-                      name="Время (сек)"
+                      name={t("progress.timeSec")}
                       cursor="pointer"
                       onClick={(data) => {
                         if (data?.fullDate) handleSelectDay(data.fullDate);
@@ -1043,7 +1054,7 @@ export default function Progress() {
                       dataKey="reps"
                       fill="hsl(var(--primary))"
                       radius={[4, 4, 0, 0]}
-                      name="Повторения"
+                      name={t("progress.repetitions")}
                       cursor="pointer"
                       onClick={(data) => {
                         if (data?.fullDate) handleSelectDay(data.fullDate);
@@ -1080,7 +1091,7 @@ export default function Progress() {
                           if (data?.fullDate) handleSelectDay(data.fullDate);
                         }
                       }}
-                      name="Вес (кг)"
+                      name={`${t("progress.weightTotal")} (${t("units.kg")})`}
                     />
                   </LineChart>
                 )}
@@ -1095,7 +1106,7 @@ export default function Progress() {
         <CardHeader className="pb-2 pt-4 px-4">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <Trophy className="h-4 w-4 text-primary" />
-            ТОП-10 · {leaderboardExercise}
+            {t("progress.top10")} · {leaderboardExercise}
           </CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-4 space-y-3">
@@ -1119,9 +1130,9 @@ export default function Progress() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Всё время</SelectItem>
-                <SelectItem value="month">Этот месяц</SelectItem>
-                <SelectItem value="today">Сегодня</SelectItem>
+                <SelectItem value="all">{t("progress.allTime")}</SelectItem>
+                <SelectItem value="month">{t("workouts.filter.thisMonth")}</SelectItem>
+                <SelectItem value="today">{t("workouts.today")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1139,7 +1150,7 @@ export default function Progress() {
                 )}
               >
                 <Trophy className="h-3.5 w-3.5" />
-                Все
+                {t("progress.everyone")}
               </button>
               <button
                 onClick={() => setLeaderboardFriendsOnly(true)}
@@ -1151,7 +1162,7 @@ export default function Progress() {
                 )}
               >
                 <Users className="h-3.5 w-3.5" />
-                Друзья
+                {t("progress.friendsOnly")}
               </button>
             </div>
           )}
@@ -1214,26 +1225,26 @@ export default function Progress() {
                   {/* User info */}
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-foreground truncate">
-                      {entry.display_name || "Аноним"}
+                      {entry.display_name || t("common.anonymous")}
                     </div>
                     <div className="text-xs text-muted-foreground flex flex-wrap gap-x-2 gap-y-0.5">
-                      {entry.current_weight && <span className="whitespace-nowrap">Вес: {entry.current_weight} кг</span>}
-                      {entry.height && <span className="whitespace-nowrap">Рост: {entry.height} см</span>}
+                      {entry.current_weight && <span className="whitespace-nowrap">{t("progress.weightTotal")}: {entry.current_weight} {t("units.kg")}</span>}
+                      {entry.height && <span className="whitespace-nowrap">{t("progress.heightLabel")}: {entry.height} {t("units.cm")}</span>}
                     </div>
                   </div>
 
                   {/* Stats */}
                   <div className="text-right shrink-0 ml-2">
                     <div className="font-bold text-base sm:text-lg text-foreground whitespace-nowrap">
-                      {entry.max_plank_seconds > 0 ? `${(entry.max_plank_seconds / 60).toFixed(2)} мин` :
-                       entry.max_distance > 0 ? `${entry.max_distance} км` :
-                       entry.max_weight > 0 ? `${entry.max_weight} кг` :
-                       `${entry.max_reps} раз.`}
+                      {entry.max_plank_seconds > 0 ? `${(entry.max_plank_seconds / 60).toFixed(2)} ${t("units.min")}` :
+                       entry.max_distance > 0 ? `${entry.max_distance} ${t("units.km")}` :
+                       entry.max_weight > 0 ? `${entry.max_weight} ${t("units.kg")}` :
+                       `${entry.max_reps} ${t("units.times")}`}
                     </div>
                     <div className="text-xs text-muted-foreground whitespace-nowrap">
-                      {entry.max_plank_seconds > 0 ? `Всего: ${(entry.total_plank_seconds / 60).toFixed(2)} мин` :
-                       entry.max_distance > 0 ? `Всего: ${entry.total_distance.toFixed(1)} км` :
-                       `Всего: ${entry.total_reps} ${pluralize(entry.total_reps, "раз", "раза", "раз")}`}
+                      {entry.max_plank_seconds > 0 ? `${t("progress.totalLabel")}: ${(entry.total_plank_seconds / 60).toFixed(2)} ${t("units.min")}` :
+                       entry.max_distance > 0 ? `${t("progress.totalLabel")}: ${entry.total_distance.toFixed(1)} ${t("units.km")}` :
+                       `${t("progress.totalLabel")}: ${entry.total_reps} ${t("units.times")}`}
                     </div>
                   </div>
                 </div>
@@ -1245,9 +1256,9 @@ export default function Progress() {
               <div className="p-4 bg-muted rounded-full mb-4">
                 <Trophy className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="font-semibold text-foreground mb-1">Нет данных</h3>
+              <h3 className="font-semibold text-foreground mb-1">{t("common.noData")}</h3>
               <p className="text-muted-foreground text-sm">
-                Пока никто не выполнял это упражнение
+                {t("progress.noOneDidExercise")}
               </p>
             </div>
           )}
@@ -1261,9 +1272,9 @@ export default function Progress() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Activity className="h-4 w-4 text-primary" />
-                Вес Тела
+                {t("progress.bodyWeight")}
               </CardTitle>
-              <span className="text-xl font-bold text-primary">{currentWeight} кг</span>
+              <span className="text-xl font-bold text-primary">{currentWeight} {t("units.kg")}</span>
             </div>
           </CardHeader>
           <CardContent className="px-4 pb-4">
@@ -1305,9 +1316,9 @@ export default function Progress() {
                 <div className="p-4 bg-muted rounded-full mb-4">
                   <Activity className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-1">Нет данных</h3>
+                <h3 className="font-semibold text-foreground mb-1">{t("common.noData")}</h3>
                 <p className="text-muted-foreground text-sm">
-                  Добавьте свой вес, чтобы отслеживать прогресс
+                  {t("progress.addWeightToTrack")}
                 </p>
               </div>
             )}
@@ -1320,27 +1331,27 @@ export default function Progress() {
         <DialogTrigger asChild>
           <Button className="w-full gap-2">
             <Plus className="h-4 w-4" />
-            Вес Тела
+            {t("progress.bodyWeight")}
           </Button>
         </DialogTrigger>
         <DialogContent aria-describedby="weight-dialog-description">
           <DialogHeader>
-            <DialogTitle>Добавить вес тела</DialogTitle>
+            <DialogTitle>{t("progress.addBodyWeight")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4" id="weight-dialog-description">
             <div className="space-y-2">
-              <Label htmlFor="weight">Вес (кг)</Label>
+              <Label htmlFor="weight">{t("progress.weightKg")}</Label>
               <Input
                 id="weight"
                 type="number"
                 step="0.1"
                 value={newWeight}
                 onChange={(e) => setNewWeight(e.target.value)}
-                placeholder="Введите вес"
+                placeholder={t("progress.enterWeight")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="date">Дата</Label>
+              <Label htmlFor="date">{t("progress.date")}</Label>
               <Input
                 id="date"
                 type="date"
@@ -1349,7 +1360,7 @@ export default function Progress() {
               />
             </div>
             <Button onClick={handleSaveWeight} className="w-full">
-              Сохранить
+              {t("common.save")}
             </Button>
           </div>
         </DialogContent>

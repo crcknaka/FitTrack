@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus, User, Dumbbell, Trash2, Search, Activity, Timer, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,6 +25,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export default function Exercises() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: exercises, isLoading } = useExercises();
   const { data: workouts } = useWorkouts();
@@ -40,18 +42,18 @@ export default function Exercises() {
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      toast.error("Введи название упражнения");
+      toast.error(t("exercises.enterExerciseName"));
       return;
     }
 
     try {
       await createExercise.mutateAsync({ name: name.trim(), type });
-      toast.success("Упражнение добавлено!");
+      toast.success(t("exercises.exerciseAdded"));
       setName("");
       setType("weighted");
       setDialogOpen(false);
     } catch (error) {
-      toast.error("Ошибка добавления упражнения");
+      toast.error(t("exercises.addError"));
     }
   };
 
@@ -63,10 +65,10 @@ export default function Exercises() {
     if (!exerciseToDelete) return;
     try {
       await deleteExercise.mutateAsync(exerciseToDelete);
-      toast.success("Упражнение удалено");
+      toast.success(t("exercises.exerciseDeleted"));
       setExerciseToDelete(null);
     } catch (error) {
-      toast.error("Ошибка удаления");
+      toast.error(t("exercises.deleteError"));
     }
   };
 
@@ -76,13 +78,13 @@ export default function Exercises() {
     // Найти тренировку на сегодня
     let todayWorkout = workouts?.find((w) => w.date === today);
 
-    // Если тренировки на сегодня нет, создать её
+    // If no workout for today, create one
     if (!todayWorkout) {
       try {
         todayWorkout = await createWorkout.mutateAsync(today);
-        toast.success("Тренировка создана!");
+        toast.success(t("workouts.workoutCreated"));
       } catch (error) {
-        toast.error("Ошибка создания тренировки");
+        toast.error(t("workouts.createError"));
         return;
       }
     }
@@ -106,35 +108,35 @@ export default function Exercises() {
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-            Упражнения
+            {t("exercises.title")}
           </h1>
-          <p className="text-muted-foreground text-sm">Библиотека упражнений</p>
+          <p className="text-muted-foreground text-sm">{t("exercises.subtitle")}</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2 shadow-lg">
               <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Добавить</span>
+              <span className="hidden sm:inline">{t("common.add")}</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="border-border/50 shadow-2xl" aria-describedby="exercise-form-description">
             <DialogHeader>
-              <DialogTitle className="text-lg font-bold">Новое упражнение</DialogTitle>
+              <DialogTitle className="text-lg font-bold">{t("exercises.newExercise")}</DialogTitle>
               <p id="exercise-form-description" className="sr-only">
-                Форма для создания нового упражнения
+                {t("exercises.newExercise")}
               </p>
             </DialogHeader>
             <div className="space-y-4 mt-4">
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Название</Label>
+                <Label className="text-sm font-medium">{t("exercises.exerciseName")}</Label>
                 <Input
-                  placeholder="Например: Французский жим"
+                  placeholder={t("exercises.exerciseNamePlaceholder")}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Тип</Label>
+                <Label className="text-sm font-medium">{t("exercises.exerciseType")}</Label>
                 <Select
                   value={type}
                   onValueChange={(v) => setType(v as "bodyweight" | "weighted" | "cardio")}
@@ -146,25 +148,25 @@ export default function Exercises() {
                     <SelectItem value="weighted">
                       <div className="flex items-center gap-2">
                         <Dumbbell className="h-4 w-4" />
-                        С отягощением (вес + повторения)
+                        {t("exercises.weighted")}
                       </div>
                     </SelectItem>
                     <SelectItem value="bodyweight">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4" />
-                        Собственный вес (только повторения)
+                        {t("exercises.bodyweight")}
                       </div>
                     </SelectItem>
                     <SelectItem value="cardio">
                       <div className="flex items-center gap-2">
                         <Activity className="h-4 w-4" />
-                        Кардио (дистанция + время)
+                        {t("exercises.cardio")}
                       </div>
                     </SelectItem>
                     <SelectItem value="timed">
                       <div className="flex items-center gap-2">
                         <Timer className="h-4 w-4" />
-                        На время (секунды)
+                        {t("exercises.timed")}
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -175,7 +177,7 @@ export default function Exercises() {
                 onClick={handleCreate}
                 disabled={createExercise.isPending}
               >
-                Добавить упражнение
+                {t("exercises.addExercise")}
               </Button>
             </div>
           </DialogContent>
@@ -187,7 +189,7 @@ export default function Exercises() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
-            placeholder="Поиск..."
+            placeholder={t("common.search")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 h-9 text-xs"
@@ -201,31 +203,31 @@ export default function Exercises() {
             <SelectItem value="all">
               <div className="flex items-center gap-2">
                 <LayoutGrid className="h-3.5 w-3.5" />
-                Все типы
+                {t("progress.allTypes")}
               </div>
             </SelectItem>
             <SelectItem value="bodyweight">
               <div className="flex items-center gap-2">
                 <User className="h-3.5 w-3.5" />
-                Собственный вес
+                {t("progress.bodyweight")}
               </div>
             </SelectItem>
             <SelectItem value="weighted">
               <div className="flex items-center gap-2">
                 <Dumbbell className="h-3.5 w-3.5" />
-                С отягощением
+                {t("progress.weighted")}
               </div>
             </SelectItem>
             <SelectItem value="cardio">
               <div className="flex items-center gap-2">
                 <Activity className="h-3.5 w-3.5" />
-                Кардио
+                {t("progress.cardio")}
               </div>
             </SelectItem>
             <SelectItem value="timed">
               <div className="flex items-center gap-2">
                 <Timer className="h-3.5 w-3.5" />
-                На время
+                {t("progress.timed")}
               </div>
             </SelectItem>
           </SelectContent>
@@ -250,7 +252,7 @@ export default function Exercises() {
             <div className="space-y-3">
               <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                 <div className="h-4 w-0.5 bg-primary rounded-full"></div>
-                Мои упражнения
+                {t("exercises.customExercises")}
               </h3>
               <div className="grid grid-cols-2 gap-3">
                 {customExercises.map((exercise, index) => (
@@ -285,7 +287,7 @@ export default function Exercises() {
                       <div className="text-center">
                         <p className="text-sm font-semibold text-foreground">{exercise.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {exercise.type === "weighted" ? "С отягощением" : exercise.type === "cardio" ? "Кардио" : exercise.type === "timed" ? "На время" : "Собственный вес"}
+                          {exercise.type === "weighted" ? t("progress.weighted") : exercise.type === "cardio" ? t("progress.cardio") : exercise.type === "timed" ? t("progress.timed") : t("progress.bodyweight")}
                         </p>
                       </div>
                       <Button
@@ -311,7 +313,7 @@ export default function Exercises() {
             <div className="space-y-3">
               <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                 <div className="h-4 w-0.5 bg-primary rounded-full"></div>
-                Базовые упражнения
+                {t("exercises.baseExercises")}
               </h3>
               <div className="grid grid-cols-2 gap-3">
                 {presetExercises.map((exercise, index) => (
@@ -350,7 +352,7 @@ export default function Exercises() {
                       <div className="text-center">
                         <p className="text-sm font-semibold text-foreground">{exercise.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {exercise.type === "weighted" ? "С отягощением" : exercise.type === "cardio" ? "Кардио" : exercise.type === "timed" ? "На время" : "Собственный вес"}
+                          {exercise.type === "weighted" ? t("progress.weighted") : exercise.type === "cardio" ? t("progress.cardio") : exercise.type === "timed" ? t("progress.timed") : t("progress.bodyweight")}
                         </p>
                       </div>
                     </CardContent>
@@ -367,7 +369,7 @@ export default function Exercises() {
                   <Dumbbell className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {searchQuery ? "Ничего не найдено" : "Нет упражнений"}
+                  {searchQuery ? t("exercises.noExercisesFound") : t("exercises.noExercises")}
                 </p>
               </CardContent>
             </Card>
@@ -379,15 +381,15 @@ export default function Exercises() {
       <AlertDialog open={!!exerciseToDelete} onOpenChange={(open) => !open && setExerciseToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Удалить упражнение?</AlertDialogTitle>
+            <AlertDialogTitle>{t("exercises.deleteExerciseTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Вы уверены, что хотите удалить это упражнение? Это действие нельзя будет отменить.
+              {t("exercises.deleteExerciseDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Удалить
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
