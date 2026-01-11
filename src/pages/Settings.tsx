@@ -17,6 +17,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { useAccentColor, ACCENT_COLORS } from "@/hooks/useAccentColor";
+import { useUnits, UNIT_SYSTEMS } from "@/hooks/useUnits";
 import { LANGUAGES } from "@/lib/i18n";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -77,6 +78,7 @@ export default function Settings() {
   const { signOut, updatePassword } = useAuth();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { accentColor, setAccentColor } = useAccentColor();
+  const { unitSystem, setUnitSystem, units, convertWeight, convertHeight, toMetricWeight, toMetricHeight } = useUnits();
   const logoSrc = resolvedTheme === "dark" ? "/logo-white.png" : "/logo-black.png";
   const [exportLoading, setExportLoading] = useState(false);
 
@@ -106,22 +108,37 @@ export default function Settings() {
       setDisplayName(profile.display_name || "");
       setGender(profile.gender || "none");
       setDateOfBirth(profile.date_of_birth || "");
-      setHeight(profile.height?.toString() || "");
-      setCurrentWeight(profile.current_weight?.toString() || "");
+      // Convert from metric (stored) to user's unit system for display
+      if (profile.height) {
+        const converted = convertHeight(profile.height);
+        if (typeof converted === "object") {
+          // Imperial: show as feet (will handle inches separately if needed)
+          setHeight(converted.feet.toString());
+        } else {
+          setHeight(converted.toString());
+        }
+      } else {
+        setHeight("");
+      }
+      setCurrentWeight(profile.current_weight ? convertWeight(profile.current_weight).toString() : "");
       setAvatar(profile.avatar || "");
       // Загружаем уровень скуфа напрямую (0-4), если null - устанавливаем 0 (Нормис)
       setSkufLevel(profile.is_skuf !== null && profile.is_skuf !== undefined ? profile.is_skuf : 0);
     }
-  }, [profile]);
+  }, [profile, convertHeight, convertWeight]);
 
   const handleSave = async () => {
     try {
+      // Convert from user's unit system to metric for storage
+      const heightInCm = height ? toMetricHeight(parseFloat(height)) : null;
+      const weightInKg = currentWeight ? toMetricWeight(parseFloat(currentWeight)) : null;
+
       await updateProfile.mutateAsync({
         display_name: displayName.trim() || null,
         gender: gender === "none" ? null : gender,
         date_of_birth: dateOfBirth || null,
-        height: height ? parseFloat(height) : null,
-        current_weight: currentWeight ? parseFloat(currentWeight) : null,
+        height: heightInCm,
+        current_weight: weightInKg,
         avatar: avatar || null,
         // Сохраняем уровень скуфа напрямую (0-4)
         is_skuf: skufLevel,
@@ -567,7 +584,7 @@ export default function Settings() {
                 {/* Height and Weight */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="height" className="text-xs">{t("settings.height")}</Label>
+                    <Label htmlFor="height" className="text-xs">{t("settings.height")} ({units.height})</Label>
                     <Input
                       id="height"
                       type="number"
@@ -580,7 +597,7 @@ export default function Settings() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="currentWeight" className="text-xs">{t("settings.weight")}</Label>
+                    <Label htmlFor="currentWeight" className="text-xs">{t("settings.weight")} ({units.weight})</Label>
                     <Input
                       id="currentWeight"
                       type="number"
@@ -767,6 +784,33 @@ export default function Settings() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Единицы измерения / Units */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">{t("settings.units.title")}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {UNIT_SYSTEMS.map((system) => (
+                    <button
+                      key={system.value}
+                      onClick={() => setUnitSystem(system.value)}
+                      className={cn(
+                        "flex items-center justify-center gap-2 p-3 rounded-lg transition-all",
+                        unitSystem === system.value
+                          ? "bg-primary text-primary-foreground shadow-md"
+                          : "bg-muted hover:bg-muted/70"
+                      )}
+                    >
+                      <span className="text-lg">{system.value === "metric" ? "🌍" : "🇺🇸"}</span>
+                      <span className="text-sm font-medium">{t(system.labelKey)}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {unitSystem === "metric"
+                    ? t("settings.units.metricDesc")
+                    : t("settings.units.imperialDesc")}
+                </p>
               </div>
             </CardContent>
           </CollapsibleContent>

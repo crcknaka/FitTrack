@@ -35,6 +35,7 @@ import { useUserProfile } from "@/hooks/useProfile";
 import { uploadWorkoutPhoto, deleteWorkoutPhoto, validateImageFile } from "@/lib/photoUpload";
 import { ViewingUserBanner } from "@/components/ViewingUserBanner";
 import { ExerciseTimer } from "@/components/ExerciseTimer";
+import { useUnits } from "@/hooks/useUnits";
 
 const DATE_LOCALES: Record<string, Locale> = {
   en: enUS,
@@ -102,6 +103,9 @@ export default function WorkoutDetail() {
   const lockWorkout = useLockWorkout();
   const unlockWorkout = useUnlockWorkout();
   const [unlockDialogOpen, setUnlockDialogOpen] = useState(false);
+
+  // Unit system for conversion
+  const { units, convertWeight, convertDistance, toMetricWeight, toMetricDistance } = useUnits();
 
   // Load workout notes when workout changes
   useEffect(() => {
@@ -313,13 +317,17 @@ export default function WorkoutDetail() {
     const existingSets = setsByExercise[selectedExercise.id]?.sets.length || 0;
 
     try {
+      // Convert from user's unit system to metric for storage
+      const weightInKg = weight ? toMetricWeight(parseFloat(weight)) : undefined;
+      const distanceInKm = distance ? toMetricDistance(parseFloat(distance)) : undefined;
+
       await addSet.mutateAsync({
         workoutId: workout.id,
         exerciseId: selectedExercise.id,
         setNumber: existingSets + 1,
         reps: reps ? parseInt(reps) : undefined,
-        weight: weight ? parseFloat(weight) : undefined,
-        distance_km: distance ? parseFloat(distance) : undefined,
+        weight: weightInKg,
+        distance_km: distanceInKm,
         duration_minutes: selectedExercise.type === "cardio" && duration ? parseInt(duration) : undefined,
         plank_seconds: selectedExercise.type === "timed" && duration ? parseInt(duration) : undefined,
       });
@@ -367,8 +375,9 @@ export default function WorkoutDetail() {
   const handleEditSet = (set: any) => {
     setEditingSetId(set.id);
     setEditReps(set.reps?.toString() || "");
-    setEditWeight(set.weight ? set.weight.toString() : "");
-    setEditDistance(set.distance_km ? set.distance_km.toString() : "");
+    // Convert from metric to user's unit system for display
+    setEditWeight(set.weight ? convertWeight(set.weight).toString() : "");
+    setEditDistance(set.distance_km ? convertDistance(set.distance_km).toString() : "");
     // Для cardio используем duration_minutes, для timed - plank_seconds
     const durationValue = set.exercise?.type === "timed"
       ? set.plank_seconds
@@ -383,12 +392,16 @@ export default function WorkoutDetail() {
     const currentSet = workout?.workout_sets?.find(s => s.id === editingSetId);
     const exerciseType = currentSet?.exercise?.type;
 
+    // Convert from user's unit system to metric for storage
+    const weightInKg = editWeight ? toMetricWeight(parseFloat(editWeight)) : null;
+    const distanceInKm = editDistance ? toMetricDistance(parseFloat(editDistance)) : null;
+
     try {
       await updateSet.mutateAsync({
         setId: editingSetId,
         reps: editReps ? parseInt(editReps) : null,
-        weight: editWeight ? parseFloat(editWeight) : null,
-        distance_km: editDistance ? parseFloat(editDistance) : null,
+        weight: weightInKg,
+        distance_km: distanceInKm,
         duration_minutes: exerciseType === "cardio" && editDuration ? parseInt(editDuration) : null,
         plank_seconds: exerciseType === "timed" && editDuration ? parseInt(editDuration) : null,
       });
@@ -858,7 +871,7 @@ export default function WorkoutDetail() {
                 {selectedExercise.type === "cardio" ? (
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>{t("workout.distanceKm")}</Label>
+                      <Label>{t("workout.distance")} ({units.distance})</Label>
                       <Input
                         id="add-distance"
                         type="number"
@@ -937,7 +950,7 @@ export default function WorkoutDetail() {
                     </div>
                     {selectedExercise.type === "weighted" && (
                       <div className="space-y-2">
-                        <Label>{t("workout.weightKg")}</Label>
+                        <Label>{t("workout.weight")} ({units.weight})</Label>
                         <Input
                           id="add-weight"
                           type="number"
@@ -1047,7 +1060,7 @@ export default function WorkoutDetail() {
                   </div>
                   {exercise?.type !== "bodyweight" && exercise?.type !== "timed" && (
                     <div className="text-center">
-                      {exercise?.type === "cardio" ? t("progress.time") : t("workout.weightKg")}
+                      {exercise?.type === "cardio" ? t("progress.time") : `${t("workout.weight")} (${units.weight})`}
                     </div>
                   )}
                   <div></div>
@@ -1191,7 +1204,7 @@ export default function WorkoutDetail() {
                         {exercise?.type === "cardio" ? (
                           <>
                             <div className="text-center text-sm font-semibold text-foreground">
-                              {set.distance_km ? `${set.distance_km} ${t("units.km")}` : '—'}
+                              {set.distance_km ? `${convertDistance(set.distance_km)} ${units.distance}` : '—'}
                             </div>
                             <div className="text-center text-sm font-medium text-primary">
                               {set.duration_minutes ? `${set.duration_minutes} ${t("units.min")}` : '—'}
@@ -1215,7 +1228,7 @@ export default function WorkoutDetail() {
                               {set.reps || '—'}
                             </div>
                             <div className="text-center text-sm font-medium text-primary">
-                              {set.weight ? `${set.weight} ${t("units.kg")}` : '—'}
+                              {set.weight ? `${convertWeight(set.weight)} ${units.weight}` : '—'}
                             </div>
                           </>
                         )}

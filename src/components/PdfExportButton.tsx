@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useWorkoutsByMonth, useWorkouts } from "@/hooks/useWorkouts";
 import { useProfile } from "@/hooks/useProfile";
 import { useAccentColor } from "@/hooks/useAccentColor";
+import { useUnits } from "@/hooks/useUnits";
 import { calculateMonthlyReportData } from "@/features/pdf-export";
 import { createColors } from "@/features/pdf-export/styles";
 import { toast } from "sonner";
@@ -55,6 +56,7 @@ export function PdfExportButton() {
 
   const { data: profile } = useProfile();
   const { accentColor } = useAccentColor();
+  const { units, convertWeight, convertDistance } = useUnits();
 
   // Get PDF colors based on accent
   const pdfColors = useMemo(() => createColors(accentColor), [accentColor]);
@@ -120,8 +122,32 @@ export function PdfExportButton() {
         import("@/features/pdf-export/MonthlyReportPdf"),
       ]);
 
-      // Calculate report data
-      const reportData = calculateMonthlyReportData(workouts, i18n.language);
+      // Calculate report data (in metric units)
+      const rawReportData = calculateMonthlyReportData(workouts, i18n.language);
+
+      // Convert data to user's unit system for display
+      const reportData = {
+        stats: {
+          ...rawReportData.stats,
+          maxWeight: convertWeight(rawReportData.stats.maxWeight),
+          totalVolume: convertWeight(rawReportData.stats.totalVolume),
+          totalDistance: convertDistance(rawReportData.stats.totalDistance),
+        },
+        exerciseBreakdown: rawReportData.exerciseBreakdown.map(ex => ({
+          ...ex,
+          maxWeight: ex.maxWeight !== null ? convertWeight(ex.maxWeight) : null,
+          volume: convertWeight(ex.volume),
+        })),
+        dailyData: rawReportData.dailyData.map(day => ({
+          ...day,
+          volume: convertWeight(day.volume),
+          exercises: day.exercises.map(ex => ({
+            ...ex,
+            maxWeight: ex.maxWeight !== null ? convertWeight(ex.maxWeight) : null,
+            distance: ex.distance !== null ? convertDistance(ex.distance) : null,
+          })),
+        })),
+      };
 
       // Format period for display
       let periodDisplay: string;
@@ -177,8 +203,8 @@ export function PdfExportButton() {
           time: t("pdfReport.daily.time"),
         },
         units: {
-          kg: t("units.kg"),
-          km: t("units.km"),
+          kg: units.weight,
+          km: units.distance,
           h: t("units.h"),
           min: t("units.min"),
           sec: t("units.sec"),

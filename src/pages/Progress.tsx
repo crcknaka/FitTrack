@@ -27,6 +27,7 @@ import { calculateTotalVolume } from "@/lib/volumeUtils";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { cn } from "@/lib/utils";
 import { useFriends } from "@/hooks/useFriends";
+import { useUnits } from "@/hooks/useUnits";
 
 const DATE_LOCALES: Record<string, Locale> = {
   en: enUS,
@@ -45,6 +46,7 @@ export default function Progress() {
   const { data: exercises } = useExercises();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { units, convertWeight, convertDistance, toMetricWeight } = useUnits();
   const [selectedExercise, setSelectedExercise] = useState<string>("all");
   const [exerciseTypeFilter, setExerciseTypeFilter] = useState<"all" | "weighted" | "bodyweight" | "cardio" | "timed">("all");
   const [metric, setMetric] = useState<"reps" | "weight">("reps");
@@ -307,14 +309,15 @@ export default function Progress() {
   const formatSetData = (set: typeof exerciseHistory[0], exerciseType: string | undefined) => {
     switch (exerciseType) {
       case "weighted":
-        return `${set.reps} ${t("units.times")} × ${set.weight} ${t("units.kg")}`;
+        return `${set.reps} ${t("units.times")} × ${set.weight ? convertWeight(set.weight) : 0} ${units.weight}`;
       case "bodyweight":
         return `${set.reps} ${t("units.times")}`;
       case "cardio": {
-        if (set.distance_km && set.duration_minutes) {
-          return `${set.distance_km} ${t("units.km")} / ${set.duration_minutes} ${t("units.min")}`;
-        } else if (set.distance_km) {
-          return `${set.distance_km} ${t("units.km")}`;
+        const displayDistance = set.distance_km ? convertDistance(set.distance_km) : null;
+        if (displayDistance && set.duration_minutes) {
+          return `${displayDistance} ${units.distance} / ${set.duration_minutes} ${t("units.min")}`;
+        } else if (displayDistance) {
+          return `${displayDistance} ${units.distance}`;
         } else if (set.duration_minutes) {
           return `${set.duration_minutes} ${t("units.min")}`;
         }
@@ -488,15 +491,15 @@ export default function Progress() {
       })
       .map((w) => ({
         date: format(new Date(w.date), "d MMM", { locale: dateLocale }),
-        weight: w.weight,
+        weight: convertWeight(w.weight),
       }));
-  }, [bodyWeightHistory, dateRange]);
+  }, [bodyWeightHistory, dateRange, convertWeight]);
 
   const handleSaveWeight = async () => {
     if (!user || !newWeight) return;
 
-    const weight = parseFloat(newWeight);
-    if (isNaN(weight) || weight <= 0) {
+    const inputWeight = parseFloat(newWeight);
+    if (isNaN(inputWeight) || inputWeight <= 0) {
       toast({
         title: t("common.error"),
         description: t("progress.invalidWeight"),
@@ -504,6 +507,9 @@ export default function Progress() {
       });
       return;
     }
+
+    // Convert from user's unit system to metric for storage
+    const weight = toMetricWeight(inputWeight);
 
     // Save to history
     const { error: historyError } = await supabase
@@ -789,7 +795,7 @@ export default function Progress() {
                   <span className="text-xs">{t("progress.maxWeight")}</span>
                 </div>
                 <p className="text-xl font-bold text-foreground">
-                  {stats.maxWeight > 0 ? `${stats.maxWeight} ${t("units.kg")}` : "—"}
+                  {stats.maxWeight > 0 ? `${convertWeight(stats.maxWeight)} ${units.weight}` : "—"}
                 </p>
               </CardContent>
             </Card>
@@ -813,7 +819,7 @@ export default function Progress() {
                   <span className="text-xs">{t("progress.volume")}</span>
                 </div>
                 <p className="text-xl font-bold text-foreground">
-                  {stats.totalVolume.toLocaleString()} {t("units.kg")}
+                  {convertWeight(stats.totalVolume).toLocaleString()} {units.weight}
                 </p>
               </CardContent>
             </Card>
@@ -827,7 +833,7 @@ export default function Progress() {
                   <span className="text-xs">{t("progress.ranDistance")}</span>
                 </div>
                 <p className="text-xl font-bold text-foreground">
-                  {stats.totalDistance.toFixed(1)} {t("units.km")}
+                  {convertDistance(stats.totalDistance).toFixed(1)} {units.distance}
                 </p>
               </CardContent>
             </Card>
@@ -1094,7 +1100,7 @@ export default function Progress() {
                           if (data?.fullDate) handleSelectDay(data.fullDate);
                         }
                       }}
-                      name={`${t("progress.weightTotal")} (${t("units.kg")})`}
+                      name={`${t("progress.weightTotal")} (${units.weight})`}
                     />
                   </LineChart>
                 )}
@@ -1237,7 +1243,7 @@ export default function Progress() {
                       {entry.display_name || t("common.anonymous")}
                     </div>
                     <div className="text-xs text-muted-foreground flex flex-wrap gap-x-2 gap-y-0.5">
-                      {entry.current_weight && <span className="whitespace-nowrap">{t("progress.weightTotal")}: {entry.current_weight} {t("units.kg")}</span>}
+                      {entry.current_weight && <span className="whitespace-nowrap">{t("progress.weightTotal")}: {convertWeight(entry.current_weight)} {units.weight}</span>}
                       {entry.height && <span className="whitespace-nowrap">{t("progress.heightLabel")}: {entry.height} {t("units.cm")}</span>}
                     </div>
                   </div>
@@ -1246,13 +1252,13 @@ export default function Progress() {
                   <div className="text-right shrink-0 ml-2">
                     <div className="font-bold text-base sm:text-lg text-foreground whitespace-nowrap">
                       {entry.max_plank_seconds > 0 ? `${(entry.max_plank_seconds / 60).toFixed(2)} ${t("units.min")}` :
-                       entry.max_distance > 0 ? `${entry.max_distance} ${t("units.km")}` :
-                       entry.max_weight > 0 ? `${entry.max_weight} ${t("units.kg")}` :
+                       entry.max_distance > 0 ? `${convertDistance(entry.max_distance)} ${units.distance}` :
+                       entry.max_weight > 0 ? `${convertWeight(entry.max_weight)} ${units.weight}` :
                        `${entry.max_reps} ${t("units.times")}`}
                     </div>
                     <div className="text-xs text-muted-foreground whitespace-nowrap">
                       {entry.max_plank_seconds > 0 ? `${t("progress.totalLabel")}: ${(entry.total_plank_seconds / 60).toFixed(2)} ${t("units.min")}` :
-                       entry.max_distance > 0 ? `${t("progress.totalLabel")}: ${entry.total_distance.toFixed(1)} ${t("units.km")}` :
+                       entry.max_distance > 0 ? `${t("progress.totalLabel")}: ${convertDistance(entry.total_distance).toFixed(1)} ${units.distance}` :
                        `${t("progress.totalLabel")}: ${entry.total_reps} ${t("units.times")}`}
                     </div>
                   </div>
@@ -1283,7 +1289,7 @@ export default function Progress() {
                 <Activity className="h-4 w-4 text-primary" />
                 {t("progress.bodyWeight")}
               </CardTitle>
-              <span className="text-xl font-bold text-primary">{currentWeight} {t("units.kg")}</span>
+              <span className="text-xl font-bold text-primary">{convertWeight(currentWeight)} {units.weight}</span>
             </div>
           </CardHeader>
           <CardContent className="px-4 pb-4">
@@ -1349,7 +1355,7 @@ export default function Progress() {
           </DialogHeader>
           <div className="space-y-4" id="weight-dialog-description">
             <div className="space-y-2">
-              <Label htmlFor="weight">{t("progress.weightKg")}</Label>
+              <Label htmlFor="weight">{t("workout.weight")} ({units.weight})</Label>
               <Input
                 id="weight"
                 type="number"
