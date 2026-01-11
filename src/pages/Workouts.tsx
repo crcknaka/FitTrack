@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
-import { format, isWithinInterval, startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, subMonths, parseISO, isToday } from "date-fns";
+import { format, isWithinInterval, startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, subMonths, parseISO, isToday, eachDayOfInterval, isSameDay, addMonths } from "date-fns";
 import { ru } from "date-fns/locale";
-import { Plus, Calendar as CalendarIcon, Trash2, Filter, X, Dumbbell, MessageSquare, Lock, Unlock } from "lucide-react";
+import { Plus, Calendar as CalendarIcon, Trash2, Filter, X, Dumbbell, MessageSquare, Lock, Unlock, List, ChevronLeft, ChevronRight, Activity, Timer, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
@@ -52,6 +52,9 @@ export default function Workouts() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [workoutToDelete, setWorkoutToDelete] = useState<string | null>(null);
   const [workoutToUnlock, setWorkoutToUnlock] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
 
   const handleUserChange = (userId: string) => {
     if (userId === user?.id) {
@@ -151,6 +154,29 @@ export default function Workouts() {
     return day === 0 || day === 6;
   };
 
+  // Calendar helpers
+  const getWorkoutForDate = (date: Date) => {
+    return workouts?.find((w) => isSameDay(new Date(w.date), date));
+  };
+
+  const getIntensity = (workout: typeof workouts extends (infer T)[] | undefined ? T : never) => {
+    const sets = workout?.workout_sets?.length || 0;
+    if (sets === 0) return 0;
+    if (sets <= 5) return 1;
+    if (sets <= 10) return 2;
+    if (sets <= 15) return 3;
+    return 4;
+  };
+
+  const calendarMonthStart = startOfMonth(calendarMonth);
+  const calendarMonthEnd = endOfMonth(calendarMonth);
+  const calendarDays = eachDayOfInterval({ start: calendarMonthStart, end: calendarMonthEnd });
+  const calendarStartDayOfWeek = calendarMonthStart.getDay();
+  const adjustedStartDay = calendarStartDayOfWeek === 0 ? 6 : calendarStartDayOfWeek - 1;
+  const weekDays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+
+  const selectedWorkout = selectedCalendarDate ? getWorkoutForDate(selectedCalendarDate) : null;
+
   // Filter workouts by date range
   const filteredWorkouts = useMemo(() => {
     if (!workouts) return [];
@@ -204,34 +230,61 @@ export default function Workouts() {
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">Тренировки</h1>
-          {!isViewingOther && (
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button className="gap-2 shadow-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold transition-all hover:shadow-xl hover:scale-105 active:scale-95">
-                  <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
-                  <span className="hidden sm:inline">Новая</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  locale={ru}
-                  className="rounded-md border-0"
-                />
-                <div className="p-3 border-t border-border">
-                  <Button
-                    className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-semibold"
-                    onClick={handleCreateWorkout}
-                    disabled={createWorkout.isPending}
-                  >
-                    Создать на {date && format(date, "d MMM", { locale: ru })}
+          <div className="flex items-center gap-2">
+            {/* View toggle */}
+            <div className="flex items-center bg-muted rounded-lg p-0.5">
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "h-8 w-8 rounded-md",
+                  viewMode === "list" && "bg-background shadow-sm"
+                )}
+                onClick={() => setViewMode("list")}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "h-8 w-8 rounded-md",
+                  viewMode === "calendar" && "bg-background shadow-sm"
+                )}
+                onClick={() => setViewMode("calendar")}
+              >
+                <CalendarIcon className="h-4 w-4" />
+              </Button>
+            </div>
+            {!isViewingOther && (
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button className="gap-2 shadow-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold transition-all hover:shadow-xl hover:scale-105 active:scale-95">
+                    <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Новая</span>
                   </Button>
-                </div>
-              </PopoverContent>
-            </Popover>
-          )}
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    locale={ru}
+                    className="rounded-md border-0"
+                  />
+                  <div className="p-3 border-t border-border">
+                    <Button
+                      className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-semibold"
+                      onClick={handleCreateWorkout}
+                      disabled={createWorkout.isPending}
+                    >
+                      Создать на {date && format(date, "d MMM", { locale: ru })}
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )}
+          </div>
         </div>
         {/* User selector - only visible to admins */}
         {currentUserProfile?.is_admin && (
@@ -269,41 +322,44 @@ export default function Workouts() {
         />
       )}
 
-      {/* Date Filter */}
-      <div className="flex items-center gap-2">
-        <Popover open={filterOpen} onOpenChange={setFilterOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2 text-xs"
-            >
-              <Filter className="h-3.5 w-3.5" />
-              {dateRange?.from ? (
-                dateRange.to ? (
-                  <>
-                    {format(dateRange.from, "d MMM", { locale: ru })} – {format(dateRange.to, "d MMM", { locale: ru })}
-                  </>
-                ) : (
-                  <>С {format(dateRange.from, "d MMM", { locale: ru })}</>
-                )
-              ) : (
-                "Все"
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-2" align="start">
-            <div className="space-y-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start text-xs h-8"
-                onClick={() => {
-                  setDateRange(undefined);
-                  setFilterOpen(false);
-                }}
-              >
-                Все тренировки
+      {/* List View */}
+      {viewMode === "list" && (
+        <>
+          {/* Date Filter */}
+          <div className="flex items-center gap-2">
+            <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 text-xs"
+                >
+                  <Filter className="h-3.5 w-3.5" />
+                  {dateRange?.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "d MMM", { locale: ru })} – {format(dateRange.to, "d MMM", { locale: ru })}
+                      </>
+                    ) : (
+                      <>С {format(dateRange.from, "d MMM", { locale: ru })}</>
+                    )
+                  ) : (
+                    "Все"
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-2" align="start">
+                <div className="space-y-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-xs h-8"
+                    onClick={() => {
+                      setDateRange(undefined);
+                      setFilterOpen(false);
+                    }}
+                  >
+                    Все тренировки
               </Button>
               <Button
                 variant="ghost"
@@ -506,7 +562,219 @@ export default function Workouts() {
               </CardContent>
             </Card>
           ))}
-        </div>
+          </div>
+        )}
+        </>
+      )}
+
+      {/* Calendar View */}
+      {viewMode === "calendar" && (
+        <>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))}
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <span className="text-sm font-semibold capitalize">
+                  {format(calendarMonth, "LLLL yyyy", { locale: ru })}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </div>
+
+              {/* Week days header */}
+              <div className="grid grid-cols-7 gap-1 mb-2">
+                {weekDays.map((day) => (
+                  <div
+                    key={day}
+                    className="text-center text-xs font-medium text-muted-foreground py-2"
+                  >
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              {/* Calendar grid */}
+              <div className="grid grid-cols-7 gap-1">
+                {/* Empty cells for days before month start */}
+                {Array.from({ length: adjustedStartDay }).map((_, i) => (
+                  <div key={`empty-${i}`} className="aspect-square" />
+                ))}
+
+                {/* Days of the month */}
+                {calendarDays.map((day) => {
+                  const workout = getWorkoutForDate(day);
+                  const intensity = getIntensity(workout);
+                  const isTodayDate = isToday(day);
+                  const isSelected = selectedCalendarDate && isSameDay(day, selectedCalendarDate);
+
+                  return (
+                    <button
+                      key={day.toISOString()}
+                      onClick={() => {
+                        if (workout) {
+                          setSelectedCalendarDate(day);
+                        }
+                      }}
+                      className={cn(
+                        "aspect-square rounded-lg flex flex-col items-center justify-center gap-0.5 transition-all duration-200",
+                        isTodayDate && "ring-2 ring-primary ring-offset-2 ring-offset-background",
+                        isSelected && "bg-primary/20",
+                        workout && "cursor-pointer hover:bg-muted",
+                        !workout && "cursor-default"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "text-sm",
+                          isTodayDate ? "font-bold text-primary" : "text-foreground"
+                        )}
+                      >
+                        {format(day, "d")}
+                      </span>
+                      {workout && (
+                        <div
+                          className={cn(
+                            "w-2 h-2 rounded-full",
+                            intensity === 1 && "bg-primary/30",
+                            intensity === 2 && "bg-primary/50",
+                            intensity === 3 && "bg-primary/75",
+                            intensity >= 4 && "bg-primary"
+                          )}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Intensity legend */}
+              <div className="flex items-center justify-center gap-2 mt-4 text-xs text-muted-foreground">
+                <span>Меньше</span>
+                <div className="flex gap-1">
+                  <div className="w-3 h-3 rounded bg-primary/30" />
+                  <div className="w-3 h-3 rounded bg-primary/50" />
+                  <div className="w-3 h-3 rounded bg-primary/75" />
+                  <div className="w-3 h-3 rounded bg-primary" />
+                </div>
+                <span>Больше</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Selected workout details */}
+          {selectedWorkout && (
+            <Card className="animate-scale-in">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-semibold">{format(new Date(selectedWorkout.date), "d MMMM", { locale: ru })}</span>
+                  <Button size="sm" onClick={() => navigate(`/workout/${selectedWorkout.id}`)}>
+                    Открыть
+                  </Button>
+                </div>
+                {selectedWorkout.workout_sets && selectedWorkout.workout_sets.length > 0 ? (
+                  <div className="space-y-2">
+                    {Object.values(
+                      selectedWorkout.workout_sets.reduce((acc, set) => {
+                        const exerciseId = set.exercise_id;
+                        if (!acc[exerciseId]) {
+                          acc[exerciseId] = {
+                            name: set.exercise?.name || "Упражнение",
+                            type: set.exercise?.type || "weighted",
+                            sets: 0,
+                            totalReps: 0,
+                            maxWeight: 0,
+                            totalDistance: 0,
+                            totalDuration: 0,
+                            totalPlankSeconds: 0,
+                          };
+                        }
+                        acc[exerciseId].sets++;
+                        acc[exerciseId].totalReps += set.reps || 0;
+                        if (set.weight && set.weight > acc[exerciseId].maxWeight) {
+                          acc[exerciseId].maxWeight = set.weight;
+                        }
+                        acc[exerciseId].totalDistance += set.distance_km || 0;
+                        acc[exerciseId].totalDuration += set.duration_minutes || 0;
+                        acc[exerciseId].totalPlankSeconds += set.plank_seconds || 0;
+                        return acc;
+                      }, {} as Record<string, {
+                        name: string;
+                        type: string;
+                        sets: number;
+                        totalReps: number;
+                        maxWeight: number;
+                        totalDistance: number;
+                        totalDuration: number;
+                        totalPlankSeconds: number;
+                      }>)
+                    ).map((exercise, i) => (
+                      <div key={i} className="p-2.5 bg-muted/50 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          {exercise.type === "cardio" ? (
+                            <Activity className="h-4 w-4 text-primary flex-shrink-0" />
+                          ) : exercise.type === "weighted" ? (
+                            <Dumbbell className="h-4 w-4 text-primary flex-shrink-0" />
+                          ) : exercise.type === "timed" ? (
+                            <Timer className="h-4 w-4 text-primary flex-shrink-0" />
+                          ) : (
+                            <User className="h-4 w-4 text-primary flex-shrink-0" />
+                          )}
+                          <span className="font-medium text-sm truncate">{exercise.name}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1 ml-6">
+                          {exercise.type === "cardio" ? (
+                            <>{exercise.sets} подх · {exercise.totalDistance.toFixed(1)} км · {exercise.totalDuration} мин</>
+                          ) : exercise.type === "timed" ? (
+                            <>{exercise.sets} подх · {exercise.totalPlankSeconds} сек</>
+                          ) : exercise.type === "bodyweight" ? (
+                            <>{exercise.sets} подх · {exercise.totalReps} повт</>
+                          ) : (
+                            <>{exercise.sets} подх · {exercise.totalReps} повт{exercise.maxWeight > 0 && ` · ${exercise.maxWeight} кг`}</>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Workout notes */}
+                    {selectedWorkout.notes && (
+                      <div className="flex items-start gap-2 p-2.5 bg-muted/30 rounded-lg mt-2">
+                        <MessageSquare className="h-3.5 w-3.5 text-primary flex-shrink-0 mt-0.5" />
+                        <p className="text-xs text-muted-foreground line-clamp-2">{selectedWorkout.notes}</p>
+                      </div>
+                    )}
+
+                    {/* Photo */}
+                    {selectedWorkout.photo_url && (
+                      <div className="mt-3">
+                        <img
+                          src={selectedWorkout.photo_url}
+                          alt=""
+                          className="w-full h-32 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => navigate(`/workout/${selectedWorkout.id}`)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm text-center py-4">
+                    Нет записей
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
 
       {/* Delete Confirmation Dialog */}

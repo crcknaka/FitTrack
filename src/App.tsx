@@ -13,7 +13,6 @@ import { useEffect, lazy, Suspense } from "react";
 const Auth = lazy(() => import("@/pages/Auth"));
 const Workouts = lazy(() => import("@/pages/Workouts"));
 const WorkoutDetail = lazy(() => import("@/pages/WorkoutDetail"));
-const CalendarPage = lazy(() => import("@/pages/CalendarPage"));
 const Progress = lazy(() => import("@/pages/Progress"));
 const Exercises = lazy(() => import("@/pages/Exercises"));
 const Settings = lazy(() => import("@/pages/Settings"));
@@ -84,14 +83,6 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <WorkoutDetail />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/calendar"
-          element={
-            <ProtectedRoute>
-              <CalendarPage />
             </ProtectedRoute>
           }
         />

@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Calendar, TrendingUp, ListPlus, LogOut, Activity, Settings } from "lucide-react";
+import { TrendingUp, ListPlus, LogOut, Activity, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
@@ -11,7 +11,6 @@ interface LayoutProps {
 
 const navItems = [
   { to: "/", icon: Activity, label: "Тренировки" },
-  { to: "/calendar", icon: Calendar, label: "Календарь" },
   { to: "/progress", icon: TrendingUp, label: "Прогресс" },
   { to: "/exercises", icon: ListPlus, label: "Упражнения" },
   { to: "/settings", icon: Settings, label: "Настройки" },
