@@ -796,10 +796,13 @@ export default function WorkoutDetail() {
                 filteredExercises.map((exercise) => {
                   const isFavorite = favoriteExercises?.has(exercise.id) || false;
                   return (
-                    <button
+                    <div
                       key={exercise.id}
                       onClick={() => setSelectedExercise(exercise)}
-                      className="text-left group hover:scale-[1.02] transition-transform"
+                      className="text-left group hover:scale-[1.02] transition-transform cursor-pointer"
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => e.key === 'Enter' && setSelectedExercise(exercise)}
                     >
                       <div className="border rounded-lg overflow-hidden hover:border-primary transition-colors relative">
                         {/* Favorite Star Button */}
@@ -848,7 +851,7 @@ export default function WorkoutDetail() {
                           </p>
                         </div>
                       </div>
-                    </button>
+                    </div>
                   );
                 })
               )}
