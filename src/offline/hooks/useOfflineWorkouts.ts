@@ -488,7 +488,8 @@ export function useOfflineDeleteWorkout() {
 
 // Offline-first useSingleWorkout hook
 export function useOfflineSingleWorkout(workoutId: string | undefined) {
-  const { isOnline } = useOffline();
+  const { isOnline, isInitialized } = useOffline();
+  const queryClient = useQueryClient();
 
   return useQuery({
     queryKey: ["workout", workoutId],
@@ -550,7 +551,16 @@ export function useOfflineSingleWorkout(workoutId: string | undefined) {
         }
       }
 
-      // Use offline data
+      // Use offline data - first try to get from React Query cache (from workouts list)
+      const cachedWorkouts = queryClient.getQueryData<Workout[]>(["workouts"]);
+      if (cachedWorkouts) {
+        const cachedWorkout = cachedWorkouts.find((w) => w.id === workoutId);
+        if (cachedWorkout) {
+          return cachedWorkout;
+        }
+      }
+
+      // Fallback to IndexedDB
       const workout = await offlineDb.workouts.get(workoutId!);
       if (!workout) {
         throw new Error("Workout not found");
@@ -602,9 +612,15 @@ export function useOfflineSingleWorkout(workoutId: string | undefined) {
         workout_sets: setsWithExercises,
       } as Workout;
     },
-    enabled: !!workoutId,
+    enabled: !!workoutId && isInitialized,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
+    // Retry a few times when offline - IndexedDB may need time
+    retry: (failureCount) => {
+      if (!navigator.onLine && failureCount < 3) return true;
+      return false;
+    },
+    retryDelay: 500,
   });
 }
 
