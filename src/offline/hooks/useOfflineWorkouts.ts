@@ -560,8 +560,18 @@ export function useOfflineSingleWorkout(workoutId: string | undefined) {
         }
       }
 
-      // Fallback to IndexedDB
-      const workout = await offlineDb.workouts.get(workoutId!);
+      // Fallback to IndexedDB - wait a bit if DB is still initializing
+      let workout = await offlineDb.workouts.get(workoutId!);
+
+      // If not found, retry a few times with delay (DB may still be syncing)
+      if (!workout) {
+        for (let i = 0; i < 3; i++) {
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          workout = await offlineDb.workouts.get(workoutId!);
+          if (workout) break;
+        }
+      }
+
       if (!workout) {
         throw new Error("Workout not found");
       }
