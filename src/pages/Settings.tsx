@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
-import { User, Save, LogOut, Lock, Eye, EyeOff, ChevronDown, Sun, Moon, Monitor, Download, FileJson, FileSpreadsheet } from "lucide-react";
+import { User, LogOut, Lock, Eye, EyeOff, ChevronDown, Sun, Moon, Monitor, Download, FileJson, FileSpreadsheet, Check, Loader2, CloudOff } from "lucide-react";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useOfflineProfile, useOfflineUpdateProfile, useOfflineWorkouts } from "@/offline";
 import { format } from "date-fns";
 import * as XLSX from "xlsx-js-style";
@@ -100,8 +101,15 @@ export default function Settings() {
   const [dataOpen, setDataOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
 
+  // Auto-save status: 'idle' | 'saving' | 'saved' | 'offline'
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'offline'>('idle');
+  const saveStatusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Track if form has been initialized to prevent overwriting user edits
   const formInitializedRef = useRef(false);
+
+  // Track if user has made changes (to trigger auto-save)
+  const hasUserChangesRef = useRef(false);
 
   // Load profile data only on initial load (not on every profile update)
   useEffect(() => {
@@ -129,26 +137,98 @@ export default function Settings() {
     }
   }, [profile, convertHeight, convertWeight]);
 
-  const handleSave = async () => {
-    try {
-      // Convert from user's unit system to metric for storage
-      const heightInCm = height ? toMetricHeight(parseFloat(height)) : null;
-      const weightInKg = currentWeight ? toMetricWeight(parseFloat(currentWeight)) : null;
+  // Create a stable string representation of profile data for debouncing
+  const profileDataString = useMemo(() =>
+    JSON.stringify({ displayName, gender, dateOfBirth, height, currentWeight, avatar, skufLevel }),
+    [displayName, gender, dateOfBirth, height, currentWeight, avatar, skufLevel]
+  );
 
-      await updateProfile.mutateAsync({
-        display_name: displayName.trim() || null,
-        gender: gender === "none" ? null : gender,
-        date_of_birth: dateOfBirth || null,
-        height: heightInCm,
-        current_weight: weightInKg,
-        avatar: avatar || null,
-        // Сохраняем уровень скуфа напрямую (0-4)
-        is_skuf: skufLevel,
-      });
-      toast.success(t("settings.profileUpdated"));
-    } catch (error) {
-      toast.error(t("settings.profileError"));
-    }
+  // Debounce the string with 1.5 second delay
+  const debouncedProfileDataString = useDebounce(profileDataString, 1500);
+
+  // Track last saved data to prevent duplicate saves
+  const lastSavedDataRef = useRef<string>("");
+
+  // Store refs to avoid dependency issues
+  const updateProfileRef = useRef(updateProfile);
+  const toMetricHeightRef = useRef(toMetricHeight);
+  const toMetricWeightRef = useRef(toMetricWeight);
+
+  // Keep refs updated
+  useEffect(() => {
+    updateProfileRef.current = updateProfile;
+    toMetricHeightRef.current = toMetricHeight;
+    toMetricWeightRef.current = toMetricWeight;
+  });
+
+  // Auto-save when debounced profile data changes
+  useEffect(() => {
+    // Skip if form not initialized or no user changes
+    if (!formInitializedRef.current || !hasUserChangesRef.current) return;
+
+    // Skip if data hasn't actually changed
+    if (debouncedProfileDataString === lastSavedDataRef.current) return;
+
+    // Mark as saved immediately to prevent re-runs
+    lastSavedDataRef.current = debouncedProfileDataString;
+
+    const saveProfile = async () => {
+      // Clear any existing timeout
+      if (saveStatusTimeoutRef.current) {
+        clearTimeout(saveStatusTimeoutRef.current);
+      }
+
+      setSaveStatus('saving');
+
+      try {
+        const data = JSON.parse(debouncedProfileDataString);
+
+        // Convert from user's unit system to metric for storage
+        const heightInCm = data.height ? toMetricHeightRef.current(parseFloat(data.height)) : null;
+        const weightInKg = data.currentWeight ? toMetricWeightRef.current(parseFloat(data.currentWeight)) : null;
+
+        await updateProfileRef.current.mutateAsync({
+          display_name: data.displayName.trim() || null,
+          gender: data.gender === "none" ? null : data.gender,
+          date_of_birth: data.dateOfBirth || null,
+          height: heightInCm,
+          current_weight: weightInKg,
+          avatar: data.avatar || null,
+          is_skuf: data.skufLevel,
+        });
+
+        // Check if we're online or offline
+        setSaveStatus(navigator.onLine ? 'saved' : 'offline');
+
+        // Reset to idle after 2 seconds
+        saveStatusTimeoutRef.current = setTimeout(() => {
+          setSaveStatus('idle');
+        }, 2000);
+
+      } catch {
+        // On error, show offline status (data is saved locally)
+        setSaveStatus('offline');
+        saveStatusTimeoutRef.current = setTimeout(() => {
+          setSaveStatus('idle');
+        }, 2000);
+      }
+    };
+
+    saveProfile();
+  }, [debouncedProfileDataString]); // Only depend on the debounced string
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveStatusTimeoutRef.current) {
+        clearTimeout(saveStatusTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Helper to mark that user has made changes
+  const markChanged = () => {
+    hasUserChangesRef.current = true;
   };
 
   const handleChangePassword = async () => {
@@ -405,6 +485,34 @@ export default function Settings() {
                   {t("settings.profile")}
                 </div>
                 <div className="flex items-center gap-3">
+                  {/* Auto-save status indicator */}
+                  {saveStatus !== 'idle' && (
+                    <div className={cn(
+                      "flex items-center gap-1 text-xs px-2 py-0.5 rounded-full transition-all",
+                      saveStatus === 'saving' && "bg-muted text-muted-foreground",
+                      saveStatus === 'saved' && "bg-green-500/10 text-green-600 dark:text-green-400",
+                      saveStatus === 'offline' && "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                    )}>
+                      {saveStatus === 'saving' && (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          <span>{t("settings.saving")}</span>
+                        </>
+                      )}
+                      {saveStatus === 'saved' && (
+                        <>
+                          <Check className="h-3 w-3" />
+                          <span>{t("settings.saved")}</span>
+                        </>
+                      )}
+                      {saveStatus === 'offline' && (
+                        <>
+                          <CloudOff className="h-3 w-3" />
+                          <span>{t("settings.savedOffline")}</span>
+                        </>
+                      )}
+                    </div>
+                  )}
                   <span className="text-2xl">{avatar || "👤"}</span>
                   <ChevronDown className={cn(
                     "h-4 w-4 text-muted-foreground transition-transform duration-200",
@@ -439,7 +547,7 @@ export default function Settings() {
                                 <button
                                   key={emoji}
                                   type="button"
-                                  onClick={() => setAvatar(emoji)}
+                                  onClick={() => { setAvatar(emoji); markChanged(); }}
                                   className={cn(
                                     "text-2xl p-2.5 rounded-lg transition-all active:scale-95",
                                     avatar === emoji
@@ -499,7 +607,7 @@ export default function Settings() {
                       id="displayName"
                       type="text"
                       value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
+                      onChange={(e) => { setDisplayName(e.target.value); markChanged(); }}
                       placeholder={t("settings.enterName")}
                       className="h-9 text-xs"
                     />
@@ -507,7 +615,7 @@ export default function Settings() {
 
                   <div className="space-y-1.5">
                     <Label htmlFor="gender" className="text-xs">{t("settings.gender")}</Label>
-                    <Select value={gender} onValueChange={(v) => setGender(v as "male" | "female" | "other" | "none")}>
+                    <Select value={gender} onValueChange={(v) => { setGender(v as "male" | "female" | "other" | "none"); markChanged(); }}>
                       <SelectTrigger id="gender" className="h-9 text-xs">
                         <SelectValue placeholder={t("settings.selectGender")} />
                       </SelectTrigger>
@@ -529,7 +637,7 @@ export default function Settings() {
                       id="dateOfBirth"
                       type="date"
                       value={dateOfBirth}
-                      onChange={(e) => setDateOfBirth(e.target.value)}
+                      onChange={(e) => { setDateOfBirth(e.target.value); markChanged(); }}
                       className="h-9 text-xs"
                     />
                   </div>
@@ -593,7 +701,7 @@ export default function Settings() {
                       type="number"
                       step="0.1"
                       value={height}
-                      onChange={(e) => setHeight(e.target.value)}
+                      onChange={(e) => { setHeight(e.target.value); markChanged(); }}
                       placeholder={t("settings.enterHeight")}
                       className="h-9 text-xs"
                     />
@@ -606,7 +714,7 @@ export default function Settings() {
                       type="number"
                       step="0.1"
                       value={currentWeight}
-                      onChange={(e) => setCurrentWeight(e.target.value)}
+                      onChange={(e) => { setCurrentWeight(e.target.value); markChanged(); }}
                       placeholder={t("settings.enterWeight")}
                       className="h-9 text-xs"
                     />
@@ -631,7 +739,7 @@ export default function Settings() {
                     ].map((item) => (
                       <button
                         key={item.level}
-                        onClick={() => setSkufLevel(item.level)}
+                        onClick={() => { setSkufLevel(item.level); markChanged(); }}
                         className={cn(
                           "flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200",
                           skufLevel === item.level
@@ -659,16 +767,6 @@ export default function Settings() {
                   </div>
                 </div>
 
-                {/* Save Button */}
-                <Button
-                  onClick={handleSave}
-                  disabled={updateProfile.isPending}
-                  size="sm"
-                  className="w-full gap-2 text-xs"
-                >
-                  <Save className="h-3.5 w-3.5" />
-                  {t("common.save")}
-                </Button>
               </div>
             </CardContent>
           </CollapsibleContent>

@@ -104,6 +104,8 @@
     "repeatPassword": "Repetir senha",
     "changePasswordButton": "Alterar senha",
     "saving": "Salvando...",
+    "saved": "Salvo",
+    "savedOffline": "Salvo localmente",
     "profileUpdated": "Perfil atualizado",
     "profileError": "Erro ao salvar perfil",
     "fillBothFields": "Preencha ambos os campos",

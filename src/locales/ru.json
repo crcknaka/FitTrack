@@ -104,6 +104,8 @@
     "repeatPassword": "Повторите пароль",
     "changePasswordButton": "Изменить пароль",
     "saving": "Сохранение...",
+    "saved": "Сохранено",
+    "savedOffline": "Сохранено локально",
     "profileUpdated": "Профиль обновлен",
     "profileError": "Ошибка сохранения профиля",
     "fillBothFields": "Заполните оба поля",
