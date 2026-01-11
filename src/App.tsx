@@ -29,6 +29,9 @@ const SCHEMA_VERSION = "2"; // Updated for cardio exercise type
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      // CRITICAL: Always run queryFn even when offline
+      // This allows our offline-first hooks to return cached IndexedDB data
+      networkMode: "always",
       // Don't retry when offline
       retry: (failureCount) => {
         // Don't retry network errors when offline
@@ -44,6 +47,9 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // 5 minutes
     },
     mutations: {
+      // CRITICAL: Always run mutationFn even when offline
+      // This allows offline mutations to work with IndexedDB + sync queue
+      networkMode: "always",
       // Don't retry mutations when offline
       retry: false,
     },

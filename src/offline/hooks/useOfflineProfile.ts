@@ -17,7 +17,10 @@ export function useOfflineProfile() {
     queryFn: async () => {
       if (!user) return null;
 
-      // Try online first if available
+      // Always try cache first for instant display
+      const cachedProfile = await offlineDb.profiles.get(user.id);
+
+      // If online and cache is stale or empty, refresh from server
       if (isOnline) {
         try {
           const { data, error } = await supabase
@@ -27,7 +30,7 @@ export function useOfflineProfile() {
             .single();
 
           if (!error && data) {
-            // Cache to IndexedDB
+            // Update cache
             const offlineProfile: OfflineProfile = {
               ...data,
               _synced: true,
@@ -37,14 +40,12 @@ export function useOfflineProfile() {
             return data as Profile;
           }
         } catch {
-          // Fall through to offline data
+          // Network error - fall through to cached data
         }
       }
 
-      // Fallback to IndexedDB
-      const cachedProfile = await offlineDb.profiles.get(user.id);
+      // Return cached data
       if (cachedProfile) {
-        // Convert OfflineProfile to Profile (remove offline metadata)
         const { _synced, _lastModified, ...profile } = cachedProfile;
         return profile as Profile;
       }

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useWorkoutsByMonth, useWorkouts } from "@/hooks/useWorkouts";
-import { useProfile } from "@/hooks/useProfile";
+import { useOfflineProfile } from "@/offline/hooks/useOfflineProfile";
 import { useAccentColor } from "@/hooks/useAccentColor";
 import { useUnits } from "@/hooks/useUnits";
 import { calculateMonthlyReportData } from "@/features/pdf-export";
@@ -54,7 +54,7 @@ export function PdfExportButton() {
   // Fetch all workouts for "all time" and "week" options
   const { data: allWorkouts, isLoading: allTimeLoading } = useWorkouts();
 
-  const { data: profile } = useProfile();
+  const { data: profile } = useOfflineProfile();
   const { accentColor } = useAccentColor();
   const { units, convertWeight, convertDistance } = useUnits();
 
@@ -214,7 +214,7 @@ export function PdfExportButton() {
       // Generate PDF
       const blob = await pdf(
         <MonthlyReportPdf
-          userName={profile?.name || t("common.user")}
+          userName={profile?.display_name || t("common.user")}
           monthYear={periodDisplay}
           data={reportData}
           colors={pdfColors}

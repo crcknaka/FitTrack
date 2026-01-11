@@ -27,7 +27,8 @@ import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOffline } from "@/contexts/OfflineContext";
-import { useProfile, useUserProfile } from "@/hooks/useProfile";
+import { useUserProfile } from "@/hooks/useProfile";
+import { useOfflineProfile } from "@/offline/hooks/useOfflineProfile";
 import { useAllProfiles } from "@/hooks/useAllProfiles";
 import { useFriends } from "@/hooks/useFriends";
 import { ViewingUserBanner } from "@/components/ViewingUserBanner";
@@ -53,7 +54,7 @@ export default function Workouts() {
   const isViewingOther = viewingUserId && viewingUserId !== user?.id;
   const targetUserId = viewingUserId || user?.id;
 
-  const { data: currentUserProfile } = useProfile();
+  const { data: currentUserProfile } = useOfflineProfile();
   const { data: viewingUserProfile } = useUserProfile(isViewingOther ? viewingUserId : null);
   const { data: allProfiles } = useAllProfiles();
   const { data: friends } = useFriends();
