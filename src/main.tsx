@@ -3,7 +3,6 @@ import { registerSW } from "virtual:pwa-register";
 import App from "./App.tsx";
 import "./index.css";
 import "./lib/i18n";
-import { ACCENT_THEME_COLORS, AccentColor } from "./hooks/useAccentColor";
 
 // Register service worker for PWA
 const updateSW = registerSW({
@@ -35,13 +34,7 @@ const ACCENT_STORAGE_KEY = "fittrack-accent-color";
 const VALID_ACCENTS = ["coral", "blue", "green", "purple", "pink", "teal", "amber", "indigo", "cyan", "lime", "orange", "slate"];
 const storedAccent = localStorage.getItem(ACCENT_STORAGE_KEY);
 
-const accentToApply = (storedAccent && VALID_ACCENTS.includes(storedAccent) ? storedAccent : "coral") as AccentColor;
+const accentToApply = storedAccent && VALID_ACCENTS.includes(storedAccent) ? storedAccent : "coral";
 document.documentElement.setAttribute("data-accent", accentToApply);
-
-// Update theme-color meta tag to match accent color (for mobile status bar)
-const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-if (themeColorMeta) {
-  themeColorMeta.setAttribute("content", ACCENT_THEME_COLORS[accentToApply]);
-}
 
 createRoot(document.getElementById("root")!).render(<App />);
