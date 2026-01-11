@@ -477,5 +477,16 @@
       "one": "friend",
       "other": "friends"
     }
+  },
+  "offline": {
+    "youAreOffline": "You're offline",
+    "changesWillSync": "Changes will sync when connected",
+    "syncing": "Syncing",
+    "changes": "changes",
+    "syncComplete": "Sync complete",
+    "syncError": "Sync failed. Will retry.",
+    "offlineReady": "App ready for offline use",
+    "updateAvailable": "Update available",
+    "notSynced": "Not synced yet"
   }
 }

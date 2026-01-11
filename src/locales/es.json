@@ -477,5 +477,16 @@
       "one": "amigo",
       "other": "amigos"
     }
+  },
+  "offline": {
+    "youAreOffline": "Estás sin conexión",
+    "changesWillSync": "Los cambios se sincronizarán al conectarse",
+    "syncing": "Sincronizando",
+    "changes": "cambios",
+    "syncComplete": "Sincronización completa",
+    "syncError": "Error de sincronización. Reintentando.",
+    "offlineReady": "App lista para uso sin conexión",
+    "updateAvailable": "Actualización disponible",
+    "notSynced": "Aún no sincronizado"
   }
 }

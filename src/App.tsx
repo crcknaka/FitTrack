@@ -4,7 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { OfflineProvider } from "@/contexts/OfflineContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { OfflineIndicator } from "@/offline/components/OfflineIndicator";
 import Layout from "@/components/Layout";
 import { Loader2 } from "lucide-react";
 import { useEffect, lazy, Suspense } from "react";
@@ -138,7 +140,10 @@ const App = () => (
           }}
         >
           <AuthProvider>
-            <AppRoutes />
+            <OfflineProvider>
+              <OfflineIndicator />
+              <AppRoutes />
+            </OfflineProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

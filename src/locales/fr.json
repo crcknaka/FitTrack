@@ -477,5 +477,16 @@
       "one": "ami",
       "other": "amis"
     }
+  },
+  "offline": {
+    "youAreOffline": "Vous êtes hors ligne",
+    "changesWillSync": "Les modifications seront synchronisées à la connexion",
+    "syncing": "Synchronisation",
+    "changes": "modifications",
+    "syncComplete": "Synchronisation terminée",
+    "syncError": "Erreur de synchronisation. Nouvelle tentative.",
+    "offlineReady": "Application prête pour une utilisation hors ligne",
+    "updateAvailable": "Mise à jour disponible",
+    "notSynced": "Pas encore synchronisé"
   }
 }

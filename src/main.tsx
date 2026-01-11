@@ -1,7 +1,25 @@
 import { createRoot } from "react-dom/client";
+import { registerSW } from "virtual:pwa-register";
 import App from "./App.tsx";
 import "./index.css";
 import "./lib/i18n";
+
+// Register service worker for PWA
+const updateSW = registerSW({
+  onNeedRefresh() {
+    // Could show a toast here asking user to refresh
+    console.log("New content available, please refresh.");
+  },
+  onOfflineReady() {
+    console.log("App ready for offline use.");
+  },
+  onRegistered(registration) {
+    console.log("Service worker registered:", registration);
+  },
+  onRegisterError(error) {
+    console.error("Service worker registration error:", error);
+  },
+});
 
 // Initialize accent color from localStorage before React renders
 const ACCENT_STORAGE_KEY = "fittrack-accent-color";
