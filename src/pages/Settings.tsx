@@ -807,7 +807,8 @@ export default function Settings() {
                     {t(`settings.skufStatus.${skufLevel}`)}
                   </p>
                 </div>
-                <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+                {/* Desktop: inline skuf picker */}
+                <div className="hidden sm:flex items-center gap-1 bg-muted rounded-lg p-1">
                   {[
                     { level: 0, emoji: "😊", color: "text-blue-500" },
                     { level: 1, emoji: "😏", color: "text-green-500" },
@@ -830,6 +831,45 @@ export default function Settings() {
                     </button>
                   ))}
                 </div>
+                {/* Mobile: popover skuf picker */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="sm:hidden flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-muted hover:bg-muted/70 transition-colors">
+                      <span className="text-base">
+                        {["😊", "😏", "😤", "🔥", "🗿"][skufLevel]}
+                      </span>
+                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-2" align="end">
+                    <p className="text-xs font-medium text-muted-foreground mb-2 px-2">{t("settings.skufLevels.skuf")}</p>
+                    <div className="space-y-1">
+                      {[
+                        { level: 0, emoji: "😊", key: "normie", color: "text-blue-500" },
+                        { level: 1, emoji: "😏", key: "bold", color: "text-green-500" },
+                        { level: 2, emoji: "😤", key: "jock", color: "text-yellow-500" },
+                        { level: 3, emoji: "🔥", key: "skuf", color: "text-orange-500" },
+                        { level: 4, emoji: "🗿", key: "alpha", color: "text-red-500" },
+                      ].map((item) => (
+                        <button
+                          key={item.level}
+                          onClick={() => { setSkufLevel(item.level); markChanged(); }}
+                          className={cn(
+                            "w-full flex items-center gap-2 px-2 py-2 rounded-md transition-all text-sm",
+                            skufLevel === item.level
+                              ? "bg-primary/10 text-primary font-medium"
+                              : "hover:bg-muted"
+                          )}
+                        >
+                          <span className="text-base">{item.emoji}</span>
+                          <span className={skufLevel === item.level ? "" : item.color}>
+                            {t(`settings.skufLevels.${item.key}`)}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </CardContent>
           </CollapsibleContent>
@@ -922,7 +962,8 @@ export default function Settings() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">{t("settings.accentColor")}</p>
                 </div>
-                <div className="flex items-center gap-1.5">
+                {/* Desktop: inline color picker */}
+                <div className="hidden sm:flex items-center gap-1.5">
                   {ACCENT_COLORS.map((color) => (
                     <button
                       key={color.value}
@@ -938,6 +979,37 @@ export default function Settings() {
                     />
                   ))}
                 </div>
+                {/* Mobile: popover color picker */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="sm:hidden flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-muted hover:bg-muted/70 transition-colors">
+                      <div
+                        className="w-5 h-5 rounded-full ring-2 ring-offset-1 ring-offset-background ring-foreground/20"
+                        style={{ backgroundColor: ACCENT_COLORS.find(c => c.value === accentColor)?.color }}
+                      />
+                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-3" align="end">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">{t("settings.accentColor")}</p>
+                    <div className="flex items-center gap-2">
+                      {ACCENT_COLORS.map((color) => (
+                        <button
+                          key={color.value}
+                          onClick={() => { setAccentColor(color.value); showAppSaved(); }}
+                          className={cn(
+                            "w-8 h-8 rounded-full transition-all",
+                            accentColor === color.value
+                              ? "ring-2 ring-offset-2 ring-offset-background ring-foreground scale-110"
+                              : "hover:scale-110"
+                          )}
+                          style={{ backgroundColor: color.color }}
+                          title={color.label}
+                        />
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {/* Язык / Language */}
@@ -948,7 +1020,8 @@ export default function Settings() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">{t("settings.language")}</p>
                 </div>
-                <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+                {/* Desktop: inline language picker */}
+                <div className="hidden sm:flex items-center gap-1 bg-muted rounded-lg p-1">
                   {LANGUAGES.map((lang) => (
                     <button
                       key={lang.code}
@@ -965,6 +1038,37 @@ export default function Settings() {
                     </button>
                   ))}
                 </div>
+                {/* Mobile: popover language picker */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="sm:hidden flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-muted hover:bg-muted/70 transition-colors">
+                      <span className="text-base">
+                        {LANGUAGES.find(l => l.code === i18n.language || i18n.language.startsWith(l.code.split('-')[0]))?.flag || "🌐"}
+                      </span>
+                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-48 p-2" align="end">
+                    <p className="text-xs font-medium text-muted-foreground mb-2 px-2">{t("settings.language")}</p>
+                    <div className="space-y-1">
+                      {LANGUAGES.map((lang) => (
+                        <button
+                          key={lang.code}
+                          onClick={() => { i18n.changeLanguage(lang.code); showAppSaved(); }}
+                          className={cn(
+                            "w-full flex items-center gap-2 px-2 py-2 rounded-md transition-all text-sm",
+                            i18n.language === lang.code || (i18n.language.startsWith(lang.code.split('-')[0]) && lang.code.includes('-'))
+                              ? "bg-primary/10 text-primary font-medium"
+                              : "hover:bg-muted"
+                          )}
+                        >
+                          <span className="text-base">{lang.flag}</span>
+                          <span>{lang.native}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {/* Единицы измерения / Units */}
@@ -999,9 +1103,23 @@ export default function Settings() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">{t("settings.autoFill.title")}</p>
-                  <p className="text-xs text-muted-foreground line-clamp-1">
+                  {/* Desktop: full description */}
+                  <p className="hidden sm:block text-xs text-muted-foreground">
                     {t("settings.autoFill.description")}
                   </p>
+                  {/* Mobile: expandable description */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <p className="sm:hidden text-xs text-muted-foreground line-clamp-1 cursor-pointer hover:text-foreground transition-colors">
+                        {t("settings.autoFill.description")}
+                      </p>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64 p-3" align="start">
+                      <p className="text-xs text-muted-foreground">
+                        {t("settings.autoFill.description")}
+                      </p>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <Switch
                   checked={autoFillEnabled}
@@ -1046,9 +1164,23 @@ export default function Settings() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">{t("settings.export")}</p>
-                  <p className="text-xs text-muted-foreground line-clamp-1">
+                  {/* Desktop: full description */}
+                  <p className="hidden sm:block text-xs text-muted-foreground">
                     {t("settings.exportDescription")}
                   </p>
+                  {/* Mobile: expandable description */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <p className="sm:hidden text-xs text-muted-foreground line-clamp-1 cursor-pointer hover:text-foreground transition-colors">
+                        {t("settings.exportDescription")}
+                      </p>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64 p-3" align="start">
+                      <p className="text-xs text-muted-foreground">
+                        {t("settings.exportDescription")}
+                      </p>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <button
