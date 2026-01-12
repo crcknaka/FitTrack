@@ -105,6 +105,12 @@ export default function Settings() {
   const [dataOpen, setDataOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
 
+  // Popover states (for auto-close on select)
+  const [colorPopoverOpen, setColorPopoverOpen] = useState(false);
+  const [langPopoverOpen, setLangPopoverOpen] = useState(false);
+  const [unitsPopoverOpen, setUnitsPopoverOpen] = useState(false);
+  const [skufPopoverOpen, setSkufPopoverOpen] = useState(false);
+
   // Auto-save status: 'idle' | 'saving' | 'saved' | 'offline'
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'offline'>('idle');
   const saveStatusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -832,7 +838,7 @@ export default function Settings() {
                   ))}
                 </div>
                 {/* Mobile: popover skuf picker */}
-                <Popover>
+                <Popover open={skufPopoverOpen} onOpenChange={setSkufPopoverOpen}>
                   <PopoverTrigger asChild>
                     <button className="sm:hidden flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-muted hover:bg-muted/70 transition-colors">
                       <span className="text-base">
@@ -853,7 +859,7 @@ export default function Settings() {
                       ].map((item) => (
                         <button
                           key={item.level}
-                          onClick={() => { setSkufLevel(item.level); markChanged(); }}
+                          onClick={() => { setSkufLevel(item.level); markChanged(); setSkufPopoverOpen(false); }}
                           className={cn(
                             "w-full flex items-center gap-2 px-2 py-2 rounded-md transition-all text-sm",
                             skufLevel === item.level
@@ -977,7 +983,7 @@ export default function Settings() {
                   ))}
                 </div>
                 {/* Mobile: popover color picker */}
-                <Popover>
+                <Popover open={colorPopoverOpen} onOpenChange={setColorPopoverOpen}>
                   <PopoverTrigger asChild>
                     <button className="sm:hidden flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-muted hover:bg-muted/70 transition-colors">
                       <div
@@ -993,7 +999,7 @@ export default function Settings() {
                       {ACCENT_COLORS.map((color) => (
                         <button
                           key={color.value}
-                          onClick={() => { setAccentColor(color.value); showAppSaved(); }}
+                          onClick={() => { setAccentColor(color.value); showAppSaved(); setColorPopoverOpen(false); }}
                           className={cn(
                             "w-8 h-8 rounded-full transition-all",
                             accentColor === color.value
@@ -1036,7 +1042,7 @@ export default function Settings() {
                   ))}
                 </div>
                 {/* Mobile: popover language picker */}
-                <Popover>
+                <Popover open={langPopoverOpen} onOpenChange={setLangPopoverOpen}>
                   <PopoverTrigger asChild>
                     <button className="sm:hidden flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-muted hover:bg-muted/70 transition-colors">
                       <span className="text-base">
@@ -1051,7 +1057,7 @@ export default function Settings() {
                       {LANGUAGES.map((lang) => (
                         <button
                           key={lang.code}
-                          onClick={() => { i18n.changeLanguage(lang.code); showAppSaved(); }}
+                          onClick={() => { i18n.changeLanguage(lang.code); showAppSaved(); setLangPopoverOpen(false); }}
                           className={cn(
                             "w-full flex items-center gap-2 px-2 py-2 rounded-md transition-all text-sm",
                             i18n.language === lang.code || (i18n.language.startsWith(lang.code.split('-')[0]) && lang.code.includes('-'))
@@ -1079,7 +1085,7 @@ export default function Settings() {
                     {unitSystem === "metric" ? t("settings.units.metricDesc") : t("settings.units.imperialDesc")}
                   </p>
                 </div>
-                <Popover>
+                <Popover open={unitsPopoverOpen} onOpenChange={setUnitsPopoverOpen}>
                   <PopoverTrigger asChild>
                     <button className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-muted hover:bg-muted/70 transition-colors">
                       <span className="text-xs font-medium">
@@ -1092,7 +1098,7 @@ export default function Settings() {
                     <p className="text-xs font-medium text-muted-foreground mb-2 px-2">{t("settings.units.title")}</p>
                     <div className="space-y-1">
                       <button
-                        onClick={() => { setUnitSystem("metric"); showAppSaved(); }}
+                        onClick={() => { setUnitSystem("metric"); showAppSaved(); setUnitsPopoverOpen(false); }}
                         className={cn(
                           "w-full flex items-center justify-between px-2 py-2 rounded-md transition-all text-sm",
                           unitSystem === "metric"
@@ -1107,7 +1113,7 @@ export default function Settings() {
                         {unitSystem === "metric" && <Check className="h-4 w-4" />}
                       </button>
                       <button
-                        onClick={() => { setUnitSystem("imperial"); showAppSaved(); }}
+                        onClick={() => { setUnitSystem("imperial"); showAppSaved(); setUnitsPopoverOpen(false); }}
                         className={cn(
                           "w-full flex items-center justify-between px-2 py-2 rounded-md transition-all text-sm",
                           unitSystem === "imperial"
