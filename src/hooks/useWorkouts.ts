@@ -44,6 +44,8 @@ export function useWorkouts() {
   return useQuery({
     queryKey: ["workouts", user?.id],
     queryFn: async () => {
+      if (!user?.id) throw new Error("User not authenticated");
+
       const { data, error } = await supabase
         .from("workouts")
         .select(`
@@ -62,7 +64,7 @@ export function useWorkouts() {
             exercise:exercises (id, name, type, image_url, is_preset, name_translations)
           )
         `)
-        .eq('user_id', user!.id)
+        .eq('user_id', user.id)
         .order("date", { ascending: false });
 
       if (error) throw error;
@@ -80,6 +82,8 @@ export function useWorkoutsByMonth(year: number, month: number) {
   return useQuery({
     queryKey: ["workouts", user?.id, year, month],
     queryFn: async () => {
+      if (!user?.id) throw new Error("User not authenticated");
+
       const { data, error } = await supabase
         .from("workouts")
         .select(`
@@ -98,7 +102,7 @@ export function useWorkoutsByMonth(year: number, month: number) {
             exercise:exercises (id, name, type, image_url, is_preset, name_translations)
           )
         `)
-        .eq('user_id', user!.id)
+        .eq('user_id', user.id)
         .gte("date", startDate)
         .lte("date", endDate)
         .order("date", { ascending: false });
@@ -116,9 +120,11 @@ export function useCreateWorkout() {
 
   return useMutation({
     mutationFn: async (date: string) => {
+      if (!user?.id) throw new Error("User not authenticated");
+
       const { data, error } = await supabase
         .from("workouts")
-        .insert({ date, user_id: user!.id })
+        .insert({ date, user_id: user.id })
         .select()
         .single();
 
@@ -288,6 +294,7 @@ export function useUserWorkouts(userId: string | null | undefined) {
   return useQuery({
     queryKey: ["workouts", userId],
     queryFn: async () => {
+      if (!userId) throw new Error("User ID is required");
       if (!navigator.onLine) return [];
 
       const { data, error } = await supabase
@@ -308,7 +315,7 @@ export function useUserWorkouts(userId: string | null | undefined) {
             exercise:exercises (id, name, type, image_url, is_preset, name_translations)
           )
         `)
-        .eq('user_id', userId!)
+        .eq('user_id', userId)
         .order("date", { ascending: false });
 
       if (error) throw error;
@@ -322,6 +329,8 @@ export function useSingleWorkout(workoutId: string | undefined) {
   return useQuery({
     queryKey: ["workout", workoutId],
     queryFn: async () => {
+      if (!workoutId) throw new Error("Workout ID is required");
+
       const { data, error } = await supabase
         .from("workouts")
         .select(`
@@ -340,7 +349,7 @@ export function useSingleWorkout(workoutId: string | undefined) {
             exercise:exercises (id, name, type, image_url, is_preset, name_translations)
           )
         `)
-        .eq('id', workoutId!)
+        .eq('id', workoutId)
         .single();
 
       if (error) throw error;
@@ -354,6 +363,7 @@ export function useUserAllTimeBests(userId: string | null | undefined) {
   return useQuery({
     queryKey: ["user-all-time-bests", userId],
     queryFn: async () => {
+      if (!userId) throw new Error("User ID is required");
       if (!navigator.onLine) return {};
 
       const { data, error } = await supabase
@@ -369,7 +379,7 @@ export function useUserAllTimeBests(userId: string | null | undefined) {
           workout:workouts!inner(user_id),
           exercise:exercises(id, name, type, is_preset, name_translations)
         `)
-        .eq('workout.user_id', userId!);
+        .eq('workout.user_id', userId);
 
       if (error) throw error;
 

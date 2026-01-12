@@ -513,5 +513,9 @@
     "updateAvailable": "Доступно обновление",
     "notSynced": "Ещё не синхронизировано",
     "featureRequiresInternet": "Эта функция требует интернет-соединения"
+  },
+  "errors": {
+    "unsupportedImageFormat": "Неподдерживаемый формат. Используйте JPG, PNG или WebP.",
+    "fileTooLarge": "Файл слишком большой. Максимум 20 МБ."
   }
 }

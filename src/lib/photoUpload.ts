@@ -83,14 +83,15 @@ export async function deleteWorkoutPhoto(photoUrl: string): Promise<void> {
 
 /**
  * Validate that a file is an acceptable image
+ * Returns i18n keys for errors to support localization
  */
-export function validateImageFile(file: File): { valid: boolean; error?: string } {
+export function validateImageFile(file: File): { valid: boolean; errorKey?: string } {
   const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
   if (!validTypes.includes(file.type)) {
     return {
       valid: false,
-      error: 'Неподдерживаемый формат. Используйте JPG, PNG или WebP.'
+      errorKey: 'errors.unsupportedImageFormat'
     };
   }
 
@@ -99,7 +100,7 @@ export function validateImageFile(file: File): { valid: boolean; error?: string 
   if (file.size > maxSize) {
     return {
       valid: false,
-      error: 'Файл слишком большой. Максимум 20 MB.'
+      errorKey: 'errors.fileTooLarge'
     };
   }
 

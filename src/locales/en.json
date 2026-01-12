@@ -511,5 +511,9 @@
     "updateAvailable": "Update available",
     "notSynced": "Not synced yet",
     "featureRequiresInternet": "This feature requires internet connection"
+  },
+  "errors": {
+    "unsupportedImageFormat": "Unsupported format. Use JPG, PNG or WebP.",
+    "fileTooLarge": "File is too large. Maximum 20 MB."
   }
 }

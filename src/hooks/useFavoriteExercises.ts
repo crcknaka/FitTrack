@@ -8,10 +8,12 @@ export function useFavoriteExercises() {
   return useQuery({
     queryKey: ["favorite-exercises", user?.id],
     queryFn: async () => {
+      if (!user?.id) throw new Error("User not authenticated");
+
       const { data, error } = await supabase
         .from("favorite_exercises")
         .select("exercise_id")
-        .eq("user_id", user!.id);
+        .eq("user_id", user.id);
 
       if (error) throw error;
 
@@ -28,13 +30,15 @@ export function useToggleFavoriteExercise() {
 
   return useMutation({
     mutationFn: async ({ exerciseId, isFavorite }: { exerciseId: string; isFavorite: boolean }) => {
+      if (!user?.id) throw new Error("User not authenticated");
+
       if (isFavorite) {
         // Remove from favorites
         const { error } = await supabase
           .from("favorite_exercises")
           .delete()
           .eq("exercise_id", exerciseId)
-          .eq("user_id", user!.id);
+          .eq("user_id", user.id);
 
         if (error) throw error;
       } else {
@@ -43,7 +47,7 @@ export function useToggleFavoriteExercise() {
           .from("favorite_exercises")
           .insert({
             exercise_id: exerciseId,
-            user_id: user!.id,
+            user_id: user.id,
           });
 
         if (error) throw error;

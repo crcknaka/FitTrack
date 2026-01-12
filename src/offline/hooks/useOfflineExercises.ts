@@ -14,13 +14,15 @@ export function useOfflineExercises() {
   return useQuery({
     queryKey: ["exercises", user?.id],
     queryFn: async () => {
+      if (!user?.id) throw new Error("User not authenticated");
+
       // Try online first if available
       if (isOnline) {
         try {
           const { data, error } = await supabase
             .from("exercises")
             .select("*")
-            .or(`is_preset.eq.true,user_id.eq.${user!.id}`)
+            .or(`is_preset.eq.true,user_id.eq.${user.id}`)
             .order("name");
 
           if (!error && data) {
@@ -45,7 +47,7 @@ export function useOfflineExercises() {
         .filter(
           (e) =>
             e.is_preset ||
-            e.user_id === user!.id ||
+            e.user_id === user.id ||
             e.user_id === null
         )
         .sortBy("name");
@@ -72,6 +74,8 @@ export function useOfflineCreateExercise() {
       name: string;
       type: "bodyweight" | "weighted" | "cardio" | "timed";
     }) => {
+      if (!user?.id) throw new Error("User not authenticated");
+
       const now = new Date().toISOString();
       const offlineId = generateOfflineId();
 
@@ -81,7 +85,7 @@ export function useOfflineCreateExercise() {
         name,
         type,
         is_preset: false,
-        user_id: user!.id,
+        user_id: user.id,
         image_url: null,
         created_at: now,
         name_translations: null,
@@ -99,7 +103,7 @@ export function useOfflineCreateExercise() {
               name,
               type,
               is_preset: false,
-              user_id: user!.id,
+              user_id: user.id,
             })
             .select()
             .single();
@@ -123,7 +127,7 @@ export function useOfflineCreateExercise() {
         name,
         type,
         is_preset: false,
-        user_id: user!.id,
+        user_id: user.id,
         _offlineId: offlineId,
       });
 
@@ -181,20 +185,22 @@ export function useOfflineFavoriteExercises() {
   return useQuery({
     queryKey: ["favoriteExercises", user?.id],
     queryFn: async () => {
+      if (!user?.id) throw new Error("User not authenticated");
+
       // Try online first if available
       if (isOnline) {
         try {
           const { data, error } = await supabase
             .from("favorite_exercises")
             .select("exercise_id")
-            .eq("user_id", user!.id);
+            .eq("user_id", user.id);
 
           if (!error && data) {
             // Update IndexedDB cache
             const favorites = data.map((f) => ({
               id: f.exercise_id,
               exercise_id: f.exercise_id,
-              user_id: user!.id,
+              user_id: user.id,
               created_at: new Date().toISOString(),
               _synced: true,
             }));
@@ -202,7 +208,7 @@ export function useOfflineFavoriteExercises() {
             // Clear and repopulate
             await offlineDb.favoriteExercises
               .where("user_id")
-              .equals(user!.id)
+              .equals(user.id)
               .delete();
             await offlineDb.favoriteExercises.bulkPut(favorites);
 
@@ -216,7 +222,7 @@ export function useOfflineFavoriteExercises() {
       // Use offline data
       const favorites = await offlineDb.favoriteExercises
         .where("user_id")
-        .equals(user!.id)
+        .equals(user.id)
         .toArray();
 
       return new Set(favorites.map((f) => f.exercise_id));
@@ -241,6 +247,8 @@ export function useOfflineToggleFavoriteExercise() {
       exerciseId: string;
       isFavorite: boolean;
     }) => {
+      if (!user?.id) throw new Error("User not authenticated");
+
       if (isFavorite) {
         // Remove from favorites
         const existing = await offlineDb.favoriteExercises
@@ -257,7 +265,7 @@ export function useOfflineToggleFavoriteExercise() {
                 .from("favorite_exercises")
                 .delete()
                 .eq("exercise_id", exerciseId)
-                .eq("user_id", user!.id);
+                .eq("user_id", user.id);
 
               await syncQueue.removeByEntity(existing.id);
               return;
@@ -278,7 +286,7 @@ export function useOfflineToggleFavoriteExercise() {
         await offlineDb.favoriteExercises.add({
           id: offlineId,
           exercise_id: exerciseId,
-          user_id: user!.id,
+          user_id: user.id,
           created_at: now,
           _synced: false,
         });
@@ -289,7 +297,7 @@ export function useOfflineToggleFavoriteExercise() {
               .from("favorite_exercises")
               .insert({
                 exercise_id: exerciseId,
-                user_id: user!.id,
+                user_id: user.id,
               })
               .select()
               .single();
@@ -309,7 +317,7 @@ export function useOfflineToggleFavoriteExercise() {
 
         await syncQueue.enqueue("favorite_exercises", "create", offlineId, {
           exercise_id: exerciseId,
-          user_id: user!.id,
+          user_id: user.id,
           _offlineId: offlineId,
         });
       }

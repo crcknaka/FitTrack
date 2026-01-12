@@ -81,6 +81,7 @@ export default function Settings() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { accentColor, setAccentColor } = useAccentColor();
   const { unitSystem, setUnitSystem, units, convertWeight, convertHeight, toMetricWeight, toMetricHeight } = useUnits();
+  const isMetric = unitSystem === "metric";
   const { autoFillEnabled, setAutoFillEnabled } = useAutoFillLastSet();
   const logoSrc = resolvedTheme === "dark" ? "/logo-white.png" : "/logo-black.png";
   const [exportLoading, setExportLoading] = useState(false);
@@ -769,8 +770,16 @@ export default function Settings() {
                 <Input
                   type="number"
                   step="0.1"
+                  min={isMetric ? 50 : 20}
+                  max={isMetric ? 300 : 120}
                   value={height}
-                  onChange={(e) => { setHeight(e.target.value); markChanged(); }}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '' || (parseFloat(val) >= 0 && parseFloat(val) <= (isMetric ? 300 : 120))) {
+                      setHeight(val);
+                      markChanged();
+                    }
+                  }}
                   placeholder="—"
                   className="h-8 w-20 text-xs text-right"
                 />
@@ -788,8 +797,16 @@ export default function Settings() {
                 <Input
                   type="number"
                   step="0.1"
+                  min={isMetric ? 20 : 44}
+                  max={isMetric ? 500 : 1100}
                   value={currentWeight}
-                  onChange={(e) => { setCurrentWeight(e.target.value); markChanged(); }}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '' || (parseFloat(val) >= 0 && parseFloat(val) <= (isMetric ? 500 : 1100))) {
+                      setCurrentWeight(val);
+                      markChanged();
+                    }
+                  }}
                   placeholder="—"
                   className="h-8 w-20 text-xs text-right"
                 />

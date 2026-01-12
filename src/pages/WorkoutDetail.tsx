@@ -541,7 +541,7 @@ export default function WorkoutDetail() {
     // Validate file
     const validation = validateImageFile(file);
     if (!validation.valid) {
-      toast.error(validation.error);
+      toast.error(t(validation.errorKey || "common.error"));
       return;
     }
 

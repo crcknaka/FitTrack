@@ -52,13 +52,15 @@ export function useCreateExercise() {
       name: string;
       type: "bodyweight" | "weighted" | "cardio" | "timed";
     }) => {
+      if (!user?.id) throw new Error("User not authenticated");
+
       const { data, error } = await supabase
         .from("exercises")
         .insert({
           name,
           type,
           is_preset: false,
-          user_id: user!.id,
+          user_id: user.id,
         })
         .select()
         .single();

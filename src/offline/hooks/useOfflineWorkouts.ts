@@ -14,11 +14,13 @@ export function useOfflineWorkouts() {
   return useQuery({
     queryKey: ["workouts", user?.id],
     queryFn: async () => {
+      if (!user?.id) throw new Error("User not authenticated");
+
       // Helper to get workouts from IndexedDB
       const getFromCache = async (): Promise<Workout[] | null> => {
         const workouts = await offlineDb.workouts
           .where("user_id")
-          .equals(user!.id)
+          .equals(user.id)
           .reverse()
           .sortBy("date");
 
@@ -93,7 +95,7 @@ export function useOfflineWorkouts() {
                 exercise:exercises (id, name, type, image_url, is_preset, name_translations)
               )
             `)
-            .eq("user_id", user!.id)
+            .eq("user_id", user.id)
             .order("date", { ascending: false })
             .then(async ({ data, error }) => {
               if (!error && data) {
@@ -149,7 +151,7 @@ export function useOfflineWorkouts() {
                 exercise:exercises (id, name, type, image_url, is_preset, name_translations)
               )
             `)
-            .eq("user_id", user!.id)
+            .eq("user_id", user.id)
             .order("date", { ascending: false });
 
           if (!error && data) {
@@ -213,13 +215,15 @@ export function useOfflineCreateWorkout() {
 
   return useMutation({
     mutationFn: async (date: string) => {
+      if (!user?.id) throw new Error("User not authenticated");
+
       const now = new Date().toISOString();
       const offlineId = generateOfflineId();
 
       // Create local workout first
       const workout = {
         id: offlineId,
-        user_id: user!.id,
+        user_id: user.id,
         date,
         notes: null,
         photo_url: null,
@@ -238,7 +242,7 @@ export function useOfflineCreateWorkout() {
         try {
           const { data, error } = await supabase
             .from("workouts")
-            .insert({ date, user_id: user!.id })
+            .insert({ date, user_id: user.id })
             .select()
             .single();
 
@@ -260,13 +264,13 @@ export function useOfflineCreateWorkout() {
       // Queue for later sync
       await syncQueue.enqueue("workouts", "create", offlineId, {
         date,
-        user_id: user!.id,
+        user_id: user.id,
         _offlineId: offlineId,
       });
 
       return {
         id: offlineId,
-        user_id: user!.id,
+        user_id: user.id,
         date,
         notes: null,
         photo_url: null,
@@ -573,13 +577,13 @@ export function useOfflineSingleWorkout(workoutId: string | undefined) {
         }
 
         // Then try IndexedDB
-        const workout = await offlineDb.workouts.get(workoutId!);
+        const workout = await offlineDb.workouts.get(workoutId || '');
         if (!workout) return null;
 
         // Load workout sets with exercises
         const sets = await offlineDb.workoutSets
           .where("workout_id")
-          .equals(workoutId!)
+          .equals(workoutId || '')
           .toArray();
 
         const setsWithExercises: WorkoutSet[] = await Promise.all(
@@ -639,7 +643,7 @@ export function useOfflineSingleWorkout(workoutId: string | undefined) {
                 exercise:exercises (id, name, type, image_url, is_preset, name_translations)
               )
             `)
-            .eq("id", workoutId!)
+            .eq("id", workoutId)
             .single()
             .then(async ({ data, error }) => {
               if (!error && data) {
@@ -693,7 +697,7 @@ export function useOfflineSingleWorkout(workoutId: string | undefined) {
                 exercise:exercises (id, name, type, image_url, is_preset, name_translations)
               )
             `)
-            .eq("id", workoutId!)
+            .eq("id", workoutId)
             .single();
 
           if (!error && data) {
