@@ -546,57 +546,56 @@ export default function Settings() {
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════
-          СЕКЦИЯ: ПРОФИЛЬ
+          ЕДИНЫЙ БЛОК НАСТРОЕК
       ═══════════════════════════════════════════════════════════════ */}
-      <Collapsible open={profileOpen} onOpenChange={setProfileOpen}>
-        <Card>
+      <Card className="overflow-hidden">
+        {/* ─────────────────── СЕКЦИЯ: ПРОФИЛЬ ─────────────────── */}
+        <Collapsible open={profileOpen} onOpenChange={setProfileOpen}>
           <CollapsibleTrigger asChild>
-            <CardHeader className="pb-2 pt-4 px-4 cursor-pointer hover:bg-muted/50 transition-colors rounded-t-lg">
-              <CardTitle className="text-sm font-semibold flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-primary" />
-                  {t("settings.profile")}
-                </div>
-                <div className="flex items-center gap-3">
-                  {/* Auto-save status indicator */}
-                  {saveStatus !== 'idle' && (
-                    <div className={cn(
-                      "flex items-center gap-1 text-xs px-2 py-0.5 rounded-full transition-all",
-                      saveStatus === 'saving' && "bg-muted text-muted-foreground",
-                      saveStatus === 'saved' && "bg-green-500/10 text-green-600 dark:text-green-400",
-                      saveStatus === 'offline' && "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                    )}>
-                      {saveStatus === 'saving' && (
-                        <>
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                          <span>{t("settings.saving")}</span>
-                        </>
-                      )}
-                      {saveStatus === 'saved' && (
-                        <>
-                          <Check className="h-3 w-3" />
-                          <span>{t("settings.saved")}</span>
-                        </>
-                      )}
-                      {saveStatus === 'offline' && (
-                        <>
-                          <CloudOff className="h-3 w-3" />
-                          <span>{t("settings.savedOffline")}</span>
-                        </>
-                      )}
-                    </div>
-                  )}
-                  <span className="text-2xl">{avatar || "👤"}</span>
-                  <ChevronDown className={cn(
-                    "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                    profileOpen && "rotate-180"
-                  )} />
-                </div>
-              </CardTitle>
-            </CardHeader>
+            <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold">{t("settings.profile")}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                {/* Auto-save status indicator */}
+                {saveStatus !== 'idle' && (
+                  <div className={cn(
+                    "flex items-center gap-1 text-xs px-2 py-0.5 rounded-full transition-all",
+                    saveStatus === 'saving' && "bg-muted text-muted-foreground",
+                    saveStatus === 'saved' && "bg-green-500/10 text-green-600 dark:text-green-400",
+                    saveStatus === 'offline' && "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                  )}>
+                    {saveStatus === 'saving' && (
+                      <>
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        <span>{t("settings.saving")}</span>
+                      </>
+                    )}
+                    {saveStatus === 'saved' && (
+                      <>
+                        <Check className="h-3 w-3" />
+                        <span>{t("settings.saved")}</span>
+                      </>
+                    )}
+                    {saveStatus === 'offline' && (
+                      <>
+                        <CloudOff className="h-3 w-3" />
+                        <span>{t("settings.savedOffline")}</span>
+                      </>
+                    )}
+                  </div>
+                )}
+                <span className="text-2xl">{avatar || "👤"}</span>
+                <ChevronDown className={cn(
+                  "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                  profileOpen && "rotate-180"
+                )} />
+              </div>
+            </div>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="px-4 pb-4 space-y-1">
+            <div className="px-4 pb-4 space-y-1">
               {/* Avatar Row */}
               <div className="flex items-center gap-3 py-3 border-b border-border/50">
                 <Dialog>
@@ -872,41 +871,38 @@ export default function Settings() {
                   </PopoverContent>
                 </Popover>
               </div>
-            </CardContent>
+            </div>
           </CollapsibleContent>
-        </Card>
-      </Collapsible>
+        </Collapsible>
 
-      {/* ═══════════════════════════════════════════════════════════════
-          СЕКЦИЯ: ПРИЛОЖЕНИЕ
-      ═══════════════════════════════════════════════════════════════ */}
-      <Collapsible open={appOpen} onOpenChange={setAppOpen}>
-        <Card>
+        {/* Разделитель между секциями */}
+        <div className="border-t border-border" />
+
+        {/* ─────────────────── СЕКЦИЯ: ПРИЛОЖЕНИЕ ─────────────────── */}
+        <Collapsible open={appOpen} onOpenChange={setAppOpen}>
           <CollapsibleTrigger asChild>
-            <CardHeader className="pb-2 pt-4 px-4 cursor-pointer hover:bg-muted/50 transition-colors rounded-t-lg">
-              <CardTitle className="text-sm font-semibold flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <SettingsIcon className="h-4 w-4 text-primary" />
-                  {t("settings.application")}
-                </div>
-                <div className="flex items-center gap-3">
-                  {/* App settings save status indicator */}
-                  {appSaveStatus === 'saved' && (
-                    <div className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 transition-all">
-                      <Check className="h-3 w-3" />
-                      <span>{t("settings.saved")}</span>
-                    </div>
-                  )}
-                  <ChevronDown className={cn(
-                    "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                    appOpen && "rotate-180"
-                  )} />
-                </div>
-              </CardTitle>
-            </CardHeader>
+            <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-2">
+                <SettingsIcon className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold">{t("settings.application")}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                {/* App settings save status indicator */}
+                {appSaveStatus === 'saved' && (
+                  <div className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 transition-all">
+                    <Check className="h-3 w-3" />
+                    <span>{t("settings.saved")}</span>
+                  </div>
+                )}
+                <ChevronDown className={cn(
+                  "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                  appOpen && "rotate-180"
+                )} />
+              </div>
+            </div>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="px-4 pb-4 space-y-1">
+            <div className="px-4 pb-4 space-y-1">
               {/* Тема / Theme */}
               <div className="flex items-center gap-3 py-3 border-b border-border/50">
                 <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-amber-500/10">
@@ -1161,37 +1157,34 @@ export default function Settings() {
                   className="h-5 w-5"
                 />
               </div>
-            </CardContent>
+            </div>
           </CollapsibleContent>
-        </Card>
-      </Collapsible>
+        </Collapsible>
 
-      {/* ═══════════════════════════════════════════════════════════════
-          СЕКЦИЯ: ДАННЫЕ
-      ═══════════════════════════════════════════════════════════════ */}
-      <Collapsible open={dataOpen} onOpenChange={setDataOpen}>
-        <Card>
+        {/* Разделитель между секциями */}
+        <div className="border-t border-border" />
+
+        {/* ─────────────────── СЕКЦИЯ: ДАННЫЕ ─────────────────── */}
+        <Collapsible open={dataOpen} onOpenChange={setDataOpen}>
           <CollapsibleTrigger asChild>
-            <CardHeader className="pb-2 pt-4 px-4 cursor-pointer hover:bg-muted/50 transition-colors rounded-t-lg">
-              <CardTitle className="text-sm font-semibold flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Database className="h-4 w-4 text-primary" />
-                  {t("settings.data")}
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground">
-                    {workouts?.length || 0} {t("plurals.workout", { count: workouts?.length || 0 })}
-                  </span>
-                  <ChevronDown className={cn(
-                    "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                    dataOpen && "rotate-180"
-                  )} />
-                </div>
-              </CardTitle>
-            </CardHeader>
+            <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-2">
+                <Database className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold">{t("settings.data")}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground">
+                  {workouts?.length || 0} {t("plurals.workout", { count: workouts?.length || 0 })}
+                </span>
+                <ChevronDown className={cn(
+                  "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                  dataOpen && "rotate-180"
+                )} />
+              </div>
+            </div>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="px-4 pb-4 space-y-3">
+            <div className="px-4 pb-4 space-y-3">
               {/* Export Row - Desktop */}
               <div className="hidden sm:flex items-center gap-3 py-3">
                 <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-500/10">
@@ -1301,32 +1294,29 @@ export default function Settings() {
                   </button>
                 </div>
               </div>
-            </CardContent>
+            </div>
           </CollapsibleContent>
-        </Card>
-      </Collapsible>
+        </Collapsible>
 
-      {/* ═══════════════════════════════════════════════════════════════
-          СЕКЦИЯ: БЕЗОПАСНОСТЬ
-      ═══════════════════════════════════════════════════════════════ */}
-      <Collapsible open={securityOpen} onOpenChange={setSecurityOpen}>
-        <Card>
+        {/* Разделитель между секциями */}
+        <div className="border-t border-border" />
+
+        {/* ─────────────────── СЕКЦИЯ: БЕЗОПАСНОСТЬ ─────────────────── */}
+        <Collapsible open={securityOpen} onOpenChange={setSecurityOpen}>
           <CollapsibleTrigger asChild>
-            <CardHeader className="pb-2 pt-4 px-4 cursor-pointer hover:bg-muted/50 transition-colors rounded-t-lg">
-              <CardTitle className="text-sm font-semibold flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-primary" />
-                  {t("settings.security")}
-                </div>
-                <ChevronDown className={cn(
-                  "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                  securityOpen && "rotate-180"
-                )} />
-              </CardTitle>
-            </CardHeader>
+            <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold">{t("settings.security")}</span>
+              </div>
+              <ChevronDown className={cn(
+                "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                securityOpen && "rotate-180"
+              )} />
+            </div>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="px-4 pb-4 space-y-1">
+            <div className="px-4 pb-4 space-y-1">
               {/* New Password Row */}
               <div className="flex items-center gap-3 py-3 border-b border-border/50">
                 <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-500/10">
@@ -1405,10 +1395,10 @@ export default function Settings() {
                   )}
                 </button>
               </div>
-            </CardContent>
+            </div>
           </CollapsibleContent>
-        </Card>
-      </Collapsible>
+        </Collapsible>
+      </Card>
 
       {/* ═══════════════════════════════════════════════════════════════
           ВЫХОД ИЗ АККАУНТА
