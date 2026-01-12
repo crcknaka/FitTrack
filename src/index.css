@@ -8,13 +8,27 @@
   All colors in HSL format
 */
 
-/* Disable text selection globally */
+/* Disable text selection and context menu globally for PWA */
 * {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Disable image long-press context menu */
+img {
+  -webkit-touch-callout: none;
+  pointer-events: none;
+}
+
+/* Re-enable pointer events for clickable images */
+img.clickable,
+button img,
+a img {
+  pointer-events: auto;
 }
 
 /* Allow selection only in input fields */
