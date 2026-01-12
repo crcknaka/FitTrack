@@ -98,6 +98,12 @@
       "metricDesc": "kg, km, cm",
       "imperialDesc": "lb, mi, ft/in"
     },
+    "autoFill": {
+      "title": "Auto-rellenar",
+      "on": "Activado",
+      "off": "Desactivado",
+      "description": "Rellenar automáticamente los datos de la última serie al seleccionar un ejercicio"
+    },
     "exportDescription": "Descarga todos tus entrenamientos para respaldo o análisis",
     "newPassword": "Nueva contraseña",
     "confirmPassword": "Confirmar contraseña",

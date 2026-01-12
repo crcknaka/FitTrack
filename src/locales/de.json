@@ -98,6 +98,12 @@
       "metricDesc": "kg, km, cm",
       "imperialDesc": "lb, mi, ft/in"
     },
+    "autoFill": {
+      "title": "Auto-Ausfüllen",
+      "on": "An",
+      "off": "Aus",
+      "description": "Automatisch Daten vom letzten Satz einfügen bei Übungsauswahl"
+    },
     "exportDescription": "Lade alle deine Trainings zur Sicherung oder Analyse herunter",
     "newPassword": "Neues Passwort",
     "confirmPassword": "Passwort bestätigen",

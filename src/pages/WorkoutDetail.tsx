@@ -47,6 +47,7 @@ import { uploadWorkoutPhoto, deleteWorkoutPhoto, validateImageFile } from "@/lib
 import { ViewingUserBanner } from "@/components/ViewingUserBanner";
 import { ExerciseTimer } from "@/components/ExerciseTimer";
 import { useUnits } from "@/hooks/useUnits";
+import { useAutoFillLastSet } from "@/hooks/useAutoFillLastSet";
 
 const DATE_LOCALES: Record<string, Locale> = {
   en: enUS,
@@ -120,6 +121,7 @@ export default function WorkoutDetail() {
 
   // Unit system for conversion
   const { units, convertWeight, convertDistance, toMetricWeight, toMetricDistance } = useUnits();
+  const { autoFillEnabled } = useAutoFillLastSet();
 
   // Load workout notes when workout changes
   useEffect(() => {
@@ -150,8 +152,8 @@ export default function WorkoutDetail() {
       if (exercise) {
         setSelectedExercise(exercise);
         setDialogOpen(true);
-        // Auto-fill last set data for all exercise types
-        if (user?.id) {
+        // Auto-fill last set data for all exercise types (if enabled)
+        if (autoFillEnabled && user?.id) {
           getLastSetForExercise(exercise.id, user.id).then((lastData) => {
             if (!lastData) return;
             switch (exercise.type) {
@@ -176,7 +178,7 @@ export default function WorkoutDetail() {
         navigate(location.pathname, { replace: true, state: {} });
       }
     }
-  }, [location.state, exercises, navigate, location.pathname, user?.id, convertWeight, convertDistance]);
+  }, [location.state, exercises, navigate, location.pathname, user?.id, convertWeight, convertDistance, autoFillEnabled]);
 
   // Group sets by exercise - must be before early returns to follow hooks rules
   const setsByExercise = useMemo(() => {
@@ -318,7 +320,8 @@ export default function WorkoutDetail() {
   const handleSelectExercise = async (exercise: Exercise) => {
     setSelectedExercise(exercise);
 
-    if (!user?.id) return;
+    // Skip auto-fill if disabled or no user
+    if (!autoFillEnabled || !user?.id) return;
 
     try {
       const lastData = await getLastSetForExercise(exercise.id, user.id);

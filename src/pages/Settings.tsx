@@ -18,6 +18,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useAccentColor, ACCENT_COLORS } from "@/hooks/useAccentColor";
 import { useUnits, UNIT_SYSTEMS } from "@/hooks/useUnits";
+import { useAutoFillLastSet } from "@/hooks/useAutoFillLastSet";
 import { LANGUAGES } from "@/lib/i18n";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -78,6 +79,7 @@ export default function Settings() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { accentColor, setAccentColor } = useAccentColor();
   const { unitSystem, setUnitSystem, units, convertWeight, convertHeight, toMetricWeight, toMetricHeight } = useUnits();
+  const { autoFillEnabled, setAutoFillEnabled } = useAutoFillLastSet();
   const logoSrc = resolvedTheme === "dark" ? "/logo-white.png" : "/logo-black.png";
   const [exportLoading, setExportLoading] = useState(false);
 
@@ -963,6 +965,40 @@ export default function Settings() {
                   {unitSystem === "metric"
                     ? t("settings.units.metricDesc")
                     : t("settings.units.imperialDesc")}
+                </p>
+              </div>
+
+              {/* Автозаполнение последнего подхода / Auto-fill last set */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">{t("settings.autoFill.title")}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setAutoFillEnabled(true)}
+                    className={cn(
+                      "flex items-center justify-center gap-2 p-3 rounded-lg transition-all",
+                      autoFillEnabled
+                        ? "bg-primary text-primary-foreground shadow-md"
+                        : "bg-muted hover:bg-muted/70"
+                    )}
+                  >
+                    <span className="text-lg">✨</span>
+                    <span className="text-sm font-medium">{t("settings.autoFill.on")}</span>
+                  </button>
+                  <button
+                    onClick={() => setAutoFillEnabled(false)}
+                    className={cn(
+                      "flex items-center justify-center gap-2 p-3 rounded-lg transition-all",
+                      !autoFillEnabled
+                        ? "bg-primary text-primary-foreground shadow-md"
+                        : "bg-muted hover:bg-muted/70"
+                    )}
+                  >
+                    <span className="text-lg">✏️</span>
+                    <span className="text-sm font-medium">{t("settings.autoFill.off")}</span>
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t("settings.autoFill.description")}
                 </p>
               </div>
             </CardContent>

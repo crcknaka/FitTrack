@@ -98,6 +98,12 @@
       "metricDesc": "kg, km, cm",
       "imperialDesc": "lb, mi, ft/in"
     },
+    "autoFill": {
+      "title": "Auto-fill",
+      "on": "On",
+      "off": "Off",
+      "description": "Automatically fill in data from the last set when selecting an exercise"
+    },
     "exportDescription": "Download all your workouts for backup or analysis",
     "newPassword": "New password",
     "confirmPassword": "Confirm password",
