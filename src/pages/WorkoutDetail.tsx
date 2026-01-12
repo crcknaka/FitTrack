@@ -36,6 +36,7 @@ import {
   useOfflineExercises,
   useOfflineFavoriteExercises,
   useOfflineToggleFavoriteExercise,
+  getLastSetForExercise,
 } from "@/offline";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -149,11 +150,33 @@ export default function WorkoutDetail() {
       if (exercise) {
         setSelectedExercise(exercise);
         setDialogOpen(true);
+        // Auto-fill last set data for all exercise types
+        if (user?.id) {
+          getLastSetForExercise(exercise.id, user.id).then((lastData) => {
+            if (!lastData) return;
+            switch (exercise.type) {
+              case "weighted":
+                if (lastData.weight) setWeight(convertWeight(lastData.weight).toString());
+                if (lastData.reps) setReps(lastData.reps.toString());
+                break;
+              case "bodyweight":
+                if (lastData.reps) setReps(lastData.reps.toString());
+                break;
+              case "cardio":
+                if (lastData.distance_km) setDistance(convertDistance(lastData.distance_km).toString());
+                if (lastData.duration_minutes) setDuration(lastData.duration_minutes.toString());
+                break;
+              case "timed":
+                if (lastData.plank_seconds) setDuration(lastData.plank_seconds.toString());
+                break;
+            }
+          });
+        }
         // Clear the state to prevent reopening on re-render
         navigate(location.pathname, { replace: true, state: {} });
       }
     }
-  }, [location.state, exercises, navigate, location.pathname]);
+  }, [location.state, exercises, navigate, location.pathname, user?.id, convertWeight, convertDistance]);
 
   // Group sets by exercise - must be before early returns to follow hooks rules
   const setsByExercise = useMemo(() => {
@@ -288,6 +311,53 @@ export default function WorkoutDetail() {
       toast.success(isFavorite ? t("workout.removedFromFavorites") : t("workout.addedToFavorites"));
     } catch (error) {
       toast.error(t("workout.favoriteError"));
+    }
+  };
+
+  // Handle exercise selection with auto-fill of last set data
+  const handleSelectExercise = async (exercise: Exercise) => {
+    setSelectedExercise(exercise);
+
+    if (!user?.id) return;
+
+    try {
+      const lastData = await getLastSetForExercise(exercise.id, user.id);
+      if (!lastData) return;
+
+      switch (exercise.type) {
+        case "weighted":
+          if (lastData.weight) {
+            setWeight(convertWeight(lastData.weight).toString());
+          }
+          if (lastData.reps) {
+            setReps(lastData.reps.toString());
+          }
+          break;
+
+        case "bodyweight":
+          if (lastData.reps) {
+            setReps(lastData.reps.toString());
+          }
+          break;
+
+        case "cardio":
+          if (lastData.distance_km) {
+            setDistance(convertDistance(lastData.distance_km).toString());
+          }
+          if (lastData.duration_minutes) {
+            setDuration(lastData.duration_minutes.toString());
+          }
+          break;
+
+        case "timed":
+          if (lastData.plank_seconds) {
+            setDuration(lastData.plank_seconds.toString());
+          }
+          break;
+      }
+    } catch (error) {
+      // Silently fail - not critical for UX
+      console.error("Failed to get last set data:", error);
     }
   };
 
@@ -828,11 +898,11 @@ export default function WorkoutDetail() {
                   return (
                     <div
                       key={exercise.id}
-                      onClick={() => setSelectedExercise(exercise)}
+                      onClick={() => handleSelectExercise(exercise)}
                       className="text-left group hover:scale-[1.02] transition-transform cursor-pointer"
                       role="button"
                       tabIndex={0}
-                      onKeyDown={(e) => e.key === 'Enter' && setSelectedExercise(exercise)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSelectExercise(exercise)}
                     >
                       <div className="border rounded-lg overflow-hidden hover:border-primary transition-colors relative">
                         {/* Favorite Star Button */}
@@ -1306,11 +1376,11 @@ export default function WorkoutDetail() {
                     variant="outline"
                     size="sm"
                     className="w-full mt-2 gap-1.5 h-8"
-                    onClick={() => {
+                    onClick={async () => {
                       // Найти полное упражнение из списка exercises
                       const fullExercise = exercises?.find(e => e.id === exerciseId);
                       if (fullExercise) {
-                        setSelectedExercise(fullExercise);
+                        await handleSelectExercise(fullExercise);
                         setDialogOpen(true);
                       }
                     }}

@@ -87,6 +87,71 @@ export async function setLastSyncTime(
   });
 }
 
+// Last set data for auto-fill (supports all exercise types)
+export interface LastSetData {
+  weight?: number;
+  reps?: number;
+  distance_km?: number;
+  duration_minutes?: number;
+  plank_seconds?: number;
+}
+
+// Get the last used set data for a specific exercise (for auto-fill)
+export async function getLastSetForExercise(
+  exerciseId: string,
+  userId: string
+): Promise<LastSetData | null> {
+  try {
+    // Get all sets for this exercise
+    const sets = await offlineDb.workoutSets
+      .where("exercise_id")
+      .equals(exerciseId)
+      .toArray();
+
+    if (sets.length === 0) return null;
+
+    // Filter sets that belong to user's workouts
+    const userWorkouts = await offlineDb.workouts
+      .where("user_id")
+      .equals(userId)
+      .toArray();
+    const userWorkoutIds = new Set(userWorkouts.map((w) => w.id));
+
+    const userSets = sets
+      .filter((s) => userWorkoutIds.has(s.workout_id))
+      .sort((a, b) => {
+        // Sort by created_at descending (newest first)
+        const dateA = new Date(a.created_at || 0).getTime();
+        const dateB = new Date(b.created_at || 0).getTime();
+        return dateB - dateA;
+      });
+
+    if (userSets.length === 0) return null;
+
+    const lastSet = userSets[0];
+    return {
+      weight: lastSet.weight || undefined,
+      reps: lastSet.reps || undefined,
+      distance_km: lastSet.distance_km || undefined,
+      duration_minutes: lastSet.duration_minutes || undefined,
+      plank_seconds: lastSet.plank_seconds || undefined,
+    };
+  } catch (error) {
+    console.error("[getLastSetForExercise] Error:", error);
+    return null;
+  }
+}
+
+// Legacy alias for backward compatibility
+export async function getLastWeightForExercise(
+  exerciseId: string,
+  userId: string
+): Promise<{ weight: number; reps: number } | null> {
+  const data = await getLastSetForExercise(exerciseId, userId);
+  if (!data || !data.weight) return null;
+  return { weight: data.weight, reps: data.reps || 0 };
+}
+
 // Debug function to check IndexedDB contents
 export async function debugOfflineDb(): Promise<void> {
   try {
