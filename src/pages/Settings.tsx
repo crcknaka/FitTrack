@@ -995,7 +995,7 @@ export default function Settings() {
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-3" align="end">
                     <p className="text-xs font-medium text-muted-foreground mb-2">{t("settings.accentColor")}</p>
-                    <div className="flex items-center gap-2">
+                    <div className="grid grid-cols-4 gap-2">
                       {ACCENT_COLORS.map((color) => (
                         <button
                           key={color.value}
