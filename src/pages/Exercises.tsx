@@ -98,7 +98,9 @@ export default function Exercises() {
   };
 
   const filteredExercises = exercises?.filter((e) => {
-    const matchesSearch = e.name.toLowerCase().includes(searchQuery.toLowerCase());
+    // Search by translated name (respects current language)
+    const translatedName = getExerciseName(e.name, e.name_translations);
+    const matchesSearch = translatedName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = typeFilter === "all" || e.type === typeFilter;
     return matchesSearch && matchesType;
   });

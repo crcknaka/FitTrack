@@ -267,11 +267,12 @@ export default function WorkoutDetail() {
       filtered = filtered.filter(e => e.type === exerciseTypeFilter);
     }
 
-    // Filter by search query
+    // Filter by search query (uses translated name)
     if (exerciseSearchQuery) {
-      filtered = filtered.filter(e =>
-        e.name.toLowerCase().includes(exerciseSearchQuery.toLowerCase())
-      );
+      filtered = filtered.filter(e => {
+        const translatedName = getExerciseName(e.name, e.name_translations);
+        return translatedName.toLowerCase().includes(exerciseSearchQuery.toLowerCase());
+      });
     }
 
     return filtered;
