@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { UserMinus, Check, X, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -15,7 +16,7 @@ interface FriendCardProps {
   isLoading?: boolean;
 }
 
-export function FriendCard({
+export const FriendCard = memo(function FriendCard({
   avatar,
   displayName,
   status = "friend",
@@ -107,4 +108,4 @@ export function FriendCard({
       </div>
     </div>
   );
-}
+});

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { format, isWithinInterval, startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, subMonths, parseISO, isToday, eachDayOfInterval, isSameDay, addMonths } from "date-fns";
+import { format, isWithinInterval, startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, subMonths, parseISO, isToday, eachDayOfInterval, addMonths } from "date-fns";
 import { ru, enUS, es, ptBR, de, fr, Locale } from "date-fns/locale";
 import { Plus, Calendar as CalendarIcon, Trash2, Filter, X, Dumbbell, MessageSquare, List, ChevronLeft, ChevronRight, Activity, Timer, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -147,11 +147,6 @@ export default function Workouts() {
     return day === 0 || day === 6;
   };
 
-  // Calendar helpers
-  const getWorkoutForDate = (date: Date) => {
-    return workouts?.find((w) => isSameDay(new Date(w.date), date));
-  };
-
   const getIntensity = (workout: typeof workouts extends (infer T)[] | undefined ? T : never) => {
     const sets = workout?.workout_sets?.length || 0;
     if (sets === 0) return 0;
@@ -161,12 +156,17 @@ export default function Workouts() {
     return 4;
   };
 
-  const calendarMonthStart = startOfMonth(calendarMonth);
-  const calendarMonthEnd = endOfMonth(calendarMonth);
-  const calendarDays = eachDayOfInterval({ start: calendarMonthStart, end: calendarMonthEnd });
-  const calendarStartDayOfWeek = calendarMonthStart.getDay();
-  const adjustedStartDay = calendarStartDayOfWeek === 0 ? 6 : calendarStartDayOfWeek - 1;
-  const weekDays = [
+  // Memoize calendar computations to avoid recalculating on every render
+  const { calendarDays, adjustedStartDay } = useMemo(() => {
+    const monthStart = startOfMonth(calendarMonth);
+    const monthEnd = endOfMonth(calendarMonth);
+    const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+    const startDayOfWeek = monthStart.getDay();
+    const adjusted = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+    return { calendarDays: days, adjustedStartDay: adjusted };
+  }, [calendarMonth]);
+
+  const weekDays = useMemo(() => [
     t("workouts.weekDays.mon"),
     t("workouts.weekDays.tue"),
     t("workouts.weekDays.wed"),
@@ -174,7 +174,22 @@ export default function Workouts() {
     t("workouts.weekDays.fri"),
     t("workouts.weekDays.sat"),
     t("workouts.weekDays.sun")
-  ];
+  ], [t]);
+
+  // Memoize workout lookup map for O(1) access instead of O(n) per day
+  const workoutsByDate = useMemo(() => {
+    if (!workouts) return new Map<string, typeof workouts[0]>();
+    const map = new Map<string, typeof workouts[0]>();
+    workouts.forEach((w) => {
+      map.set(w.date, w);
+    });
+    return map;
+  }, [workouts]);
+
+  const getWorkoutForDate = (date: Date) => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    return workoutsByDate.get(dateStr);
+  };
 
   const selectedWorkout = selectedCalendarDate ? getWorkoutForDate(selectedCalendarDate) : null;
 

@@ -29,17 +29,37 @@ export default defineConfig(() => ({
         enabled: false, // PWA disabled in dev mode - use npm run build && npm run preview to test
       },
       workbox: {
-        // Precache all assets including lazy-loaded chunks
+        // Precache core assets - exclude heavy dynamic chunks
         globPatterns: [
-          "**/*.{js,css,html,ico,png,svg,woff2,json,jpg,jpeg,webp}",
+          "**/*.{css,html,ico,png,svg,woff2}",
+          // Include core JS but exclude heavy optional chunks
+          "assets/*.js",
         ],
-        // Increase precache size limit for all chunks
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
+        // Exclude heavy dynamic chunks from precache (will be cached on-demand)
+        globIgnores: [
+          "**/xlsx*.js",           // ~870KB - only needed for Excel export
+          "**/react-pdf*.js",      // ~1.6MB - only needed for PDF export
+          "**/MonthlyReportPdf*.js", // PDF component
+        ],
+        // Increase precache size limit for remaining chunks
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB
         navigateFallback: "index.html",
         navigateFallbackDenylist: [/^\/api/, /^\/auth/],
         runtimeCaching: [
           {
-            // Cache app JS/CSS chunks (for lazy loading)
+            // Cache heavy dynamic chunks on-demand (xlsx, react-pdf)
+            urlPattern: /\/assets\/(xlsx|react-pdf|MonthlyReportPdf).*\.js$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "heavy-chunks",
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+            },
+          },
+          {
+            // Cache other JS/CSS chunks (for lazy loading)
             urlPattern: /\/assets\/.*\.(js|css)$/i,
             handler: "CacheFirst",
             options: {
