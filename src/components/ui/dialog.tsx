@@ -35,6 +35,7 @@ const DialogContent = React.forwardRef<
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
+      aria-describedby={undefined}
       onCloseAutoFocus={(e) => {
         // Prevent auto-focus on close which causes scroll jump
         e.preventDefault();
