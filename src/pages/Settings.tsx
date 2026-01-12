@@ -17,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useAccentColor, ACCENT_COLORS } from "@/hooks/useAccentColor";
 import { useUnits, UNIT_SYSTEMS } from "@/hooks/useUnits";
 import { useAutoFillLastSet } from "@/hooks/useAutoFillLastSet";
@@ -1082,18 +1083,51 @@ export default function Settings() {
                     {unitSystem === "metric" ? t("settings.units.metricDesc") : t("settings.units.imperialDesc")}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className={cn("text-xs transition-colors", unitSystem === "metric" ? "text-foreground font-medium" : "text-muted-foreground")}>
-                    {t("settings.units.metric")}
-                  </span>
-                  <Switch
-                    checked={unitSystem === "imperial"}
-                    onCheckedChange={(checked) => { setUnitSystem(checked ? "imperial" : "metric"); showAppSaved(); }}
-                  />
-                  <span className={cn("text-xs transition-colors", unitSystem === "imperial" ? "text-foreground font-medium" : "text-muted-foreground")}>
-                    {t("settings.units.imperial")}
-                  </span>
-                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-muted hover:bg-muted/70 transition-colors">
+                      <span className="text-xs font-medium">
+                        {unitSystem === "metric" ? t("settings.units.metric") : t("settings.units.imperial")}
+                      </span>
+                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-48 p-2" align="end">
+                    <p className="text-xs font-medium text-muted-foreground mb-2 px-2">{t("settings.units.title")}</p>
+                    <div className="space-y-1">
+                      <button
+                        onClick={() => { setUnitSystem("metric"); showAppSaved(); }}
+                        className={cn(
+                          "w-full flex items-center justify-between px-2 py-2 rounded-md transition-all text-sm",
+                          unitSystem === "metric"
+                            ? "bg-primary/10 text-primary font-medium"
+                            : "hover:bg-muted"
+                        )}
+                      >
+                        <div>
+                          <p className="font-medium">{t("settings.units.metric")}</p>
+                          <p className="text-xs text-muted-foreground">{t("settings.units.metricDesc")}</p>
+                        </div>
+                        {unitSystem === "metric" && <Check className="h-4 w-4" />}
+                      </button>
+                      <button
+                        onClick={() => { setUnitSystem("imperial"); showAppSaved(); }}
+                        className={cn(
+                          "w-full flex items-center justify-between px-2 py-2 rounded-md transition-all text-sm",
+                          unitSystem === "imperial"
+                            ? "bg-primary/10 text-primary font-medium"
+                            : "hover:bg-muted"
+                        )}
+                      >
+                        <div>
+                          <p className="font-medium">{t("settings.units.imperial")}</p>
+                          <p className="text-xs text-muted-foreground">{t("settings.units.imperialDesc")}</p>
+                        </div>
+                        {unitSystem === "imperial" && <Check className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {/* Автозаполнение / Auto-fill */}
@@ -1121,9 +1155,10 @@ export default function Settings() {
                     </PopoverContent>
                   </Popover>
                 </div>
-                <Switch
+                <Checkbox
                   checked={autoFillEnabled}
-                  onCheckedChange={(checked) => { setAutoFillEnabled(checked); showAppSaved(); }}
+                  onCheckedChange={(checked) => { setAutoFillEnabled(checked === true); showAppSaved(); }}
+                  className="h-5 w-5"
                 />
               </div>
             </CardContent>
@@ -1156,31 +1191,17 @@ export default function Settings() {
             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="px-4 pb-4 space-y-1">
-              {/* Export Row */}
-              <div className="flex items-center gap-3 py-3">
+            <CardContent className="px-4 pb-4 space-y-3">
+              {/* Export Row - Desktop */}
+              <div className="hidden sm:flex items-center gap-3 py-3">
                 <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-500/10">
                   <Download className="h-4 w-4 text-emerald-500" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">{t("settings.export")}</p>
-                  {/* Desktop: full description */}
-                  <p className="hidden sm:block text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {t("settings.exportDescription")}
                   </p>
-                  {/* Mobile: expandable description */}
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <p className="sm:hidden text-xs text-muted-foreground line-clamp-1 cursor-pointer hover:text-foreground transition-colors">
-                        {t("settings.exportDescription")}
-                      </p>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-64 p-3" align="start">
-                      <p className="text-xs text-muted-foreground">
-                        {t("settings.exportDescription")}
-                      </p>
-                    </PopoverContent>
-                  </Popover>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <button
@@ -1220,6 +1241,62 @@ export default function Settings() {
                     )}
                   >
                     <FileJson className="h-3.5 w-3.5" />
+                    JSON
+                  </button>
+                </div>
+              </div>
+
+              {/* Export - Mobile */}
+              <div className="sm:hidden space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-500/10">
+                    <Download className="h-4 w-4 text-emerald-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{t("settings.export")}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("settings.exportDescription")}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 pl-12">
+                  <button
+                    onClick={exportToXLS}
+                    disabled={exportLoading || !workouts?.length}
+                    className={cn(
+                      "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all",
+                      exportLoading || !workouts?.length
+                        ? "opacity-50 cursor-not-allowed bg-muted text-muted-foreground"
+                        : "bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500/20"
+                    )}
+                  >
+                    <FileSpreadsheet className="h-4 w-4" />
+                    Excel
+                  </button>
+                  <button
+                    onClick={exportToCSV}
+                    disabled={exportLoading || !workouts?.length}
+                    className={cn(
+                      "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all",
+                      exportLoading || !workouts?.length
+                        ? "opacity-50 cursor-not-allowed bg-muted text-muted-foreground"
+                        : "bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20"
+                    )}
+                  >
+                    <FileSpreadsheet className="h-4 w-4" />
+                    CSV
+                  </button>
+                  <button
+                    onClick={exportToJSON}
+                    disabled={exportLoading || !workouts?.length}
+                    className={cn(
+                      "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all",
+                      exportLoading || !workouts?.length
+                        ? "opacity-50 cursor-not-allowed bg-muted text-muted-foreground"
+                        : "bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20"
+                    )}
+                  >
+                    <FileJson className="h-4 w-4" />
                     JSON
                   </button>
                 </div>
