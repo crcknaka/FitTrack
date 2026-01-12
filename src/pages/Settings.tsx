@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
-import { User, LogOut, Lock, Eye, EyeOff, ChevronDown, Sun, Moon, Monitor, Download, FileJson, FileSpreadsheet, Check, Loader2, CloudOff, Palette, Globe, Ruler, Sparkles, Settings as SettingsIcon } from "lucide-react";
+import { User, LogOut, Lock, Eye, EyeOff, ChevronDown, Sun, Moon, Monitor, Download, FileJson, FileSpreadsheet, Check, Loader2, CloudOff, Palette, Globe, Ruler, Sparkles, Settings as SettingsIcon, UserCircle, Calendar, Scale, RulerIcon, Smile } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useOfflineProfile, useOfflineUpdateProfile, useOfflineWorkouts } from "@/offline";
 import { format } from "date-fns";
@@ -595,251 +595,241 @@ export default function Settings() {
             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="px-4 pb-4">
-              <div className="space-y-4">
-                {/* Avatar + Age */}
-                <div className="flex items-center gap-4">
-                  {/* Avatar Selection */}
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <button className="flex-shrink-0 flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 text-5xl hover:bg-primary/20 transition-colors cursor-pointer border-2 border-primary/20">
-                        {avatar || "👤"}
-                      </button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-sm max-h-[80vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>{t("settings.selectAvatar")}</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 pt-2">
-                        {AVATAR_CATEGORIES.map((category) => (
-                          <div key={category.key}>
-                            <p className="text-xs font-medium text-muted-foreground mb-2">{t(`settings.avatarCategories.${category.key}`)}</p>
-                            <div className="grid grid-cols-5 gap-2">
-                              {category.emojis.map((emoji) => (
-                                <button
-                                  key={emoji}
-                                  type="button"
-                                  onClick={() => { setAvatar(emoji); markChanged(); }}
-                                  className={cn(
-                                    "text-2xl p-2.5 rounded-lg transition-all active:scale-95",
-                                    avatar === emoji
-                                      ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary ring-offset-2"
-                                      : "bg-muted hover:bg-muted/70"
-                                  )}
-                                >
-                                  {emoji}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-
-                  {/* Age display */}
-                  {dateOfBirth && (() => {
-                    const birthDate = new Date(dateOfBirth);
-                    const today = new Date();
-                    let age = today.getFullYear() - birthDate.getFullYear();
-                    const monthDiff = today.getMonth() - birthDate.getMonth();
-                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                      age--;
-                    }
-                    if (age >= 0 && age < 150) {
-                      return (
-                        <div className="text-center">
-                          <div className="text-3xl font-bold text-primary">{age}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {t("plurals.year", { count: age })}
+            <CardContent className="px-4 pb-4 space-y-1">
+              {/* Avatar Row */}
+              <div className="flex items-center gap-3 py-3 border-b border-border/50">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button className="flex-shrink-0 flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-4xl hover:bg-primary/20 transition-colors cursor-pointer border-2 border-primary/20">
+                      {avatar || "👤"}
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-sm max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>{t("settings.selectAvatar")}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-2">
+                      {AVATAR_CATEGORIES.map((category) => (
+                        <div key={category.key}>
+                          <p className="text-xs font-medium text-muted-foreground mb-2">{t(`settings.avatarCategories.${category.key}`)}</p>
+                          <div className="grid grid-cols-5 gap-2">
+                            {category.emojis.map((emoji) => (
+                              <button
+                                key={emoji}
+                                type="button"
+                                onClick={() => { setAvatar(emoji); markChanged(); }}
+                                className={cn(
+                                  "text-2xl p-2.5 rounded-lg transition-all active:scale-95",
+                                  avatar === emoji
+                                    ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary ring-offset-2"
+                                    : "bg-muted hover:bg-muted/70"
+                                )}
+                              >
+                                {emoji}
+                              </button>
+                            ))}
                           </div>
                         </div>
-                      );
-                    }
-                    return null;
-                  })()}
-
-                  {/* Admin badge - aligned to the right */}
-                  {profile?.is_admin && (
-                    <div className="ml-auto flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20">
-                      <span className="text-2xl">👑</span>
-                      <div className="text-center">
-                        <div className="text-xs font-bold text-amber-600 dark:text-amber-400">ADMIN</div>
-                        <div className="text-[10px] text-muted-foreground">{t("settings.admin")}</div>
-                      </div>
+                      ))}
                     </div>
-                  )}
-                </div>
-
-                {/* Display Name and Gender */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="displayName" className="text-xs">{t("settings.name")}</Label>
-                    <Input
-                      id="displayName"
-                      type="text"
-                      value={displayName}
-                      onChange={(e) => { setDisplayName(e.target.value); markChanged(); }}
-                      placeholder={t("settings.enterName")}
-                      className="h-9 text-xs"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="gender" className="text-xs">{t("settings.gender")}</Label>
-                    <Select value={gender} onValueChange={(v) => { setGender(v as "male" | "female" | "other" | "none"); markChanged(); }}>
-                      <SelectTrigger id="gender" className="h-9 text-xs">
-                        <SelectValue placeholder={t("settings.selectGender")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">{t("settings.genderNone")}</SelectItem>
-                        <SelectItem value="male">{t("settings.genderMale")}</SelectItem>
-                        <SelectItem value="female">{t("settings.genderFemale")}</SelectItem>
-                        <SelectItem value="other">{t("settings.genderOther")}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Date of Birth and Zodiac */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="dateOfBirth" className="text-xs">{t("settings.dateOfBirth")}</Label>
-                    <Input
-                      id="dateOfBirth"
-                      type="date"
-                      value={dateOfBirth}
-                      onChange={(e) => { setDateOfBirth(e.target.value); markChanged(); }}
-                      className="h-9 text-xs"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">{t("settings.zodiacSign")}</Label>
-                    {dateOfBirth ? (() => {
+                  </DialogContent>
+                </Dialog>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">{displayName || t("settings.enterName")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {gender !== "none" ? t(`settings.gender${gender.charAt(0).toUpperCase() + gender.slice(1)}`) : t("settings.selectGender")}
+                    {dateOfBirth && (() => {
                       const birthDate = new Date(dateOfBirth);
-                      const month = birthDate.getMonth() + 1;
-                      const day = birthDate.getDate();
-                      const zodiacSigns = [
-                        { sign: "♑", key: "capricorn", end: [1, 19] },
-                        { sign: "♒", key: "aquarius", end: [2, 18] },
-                        { sign: "♓", key: "pisces", end: [3, 20] },
-                        { sign: "♈", key: "aries", end: [4, 19] },
-                        { sign: "♉", key: "taurus", end: [5, 20] },
-                        { sign: "♊", key: "gemini", end: [6, 20] },
-                        { sign: "♋", key: "cancer", end: [7, 22] },
-                        { sign: "♌", key: "leo", end: [8, 22] },
-                        { sign: "♍", key: "virgo", end: [9, 22] },
-                        { sign: "♎", key: "libra", end: [10, 22] },
-                        { sign: "♏", key: "scorpio", end: [11, 21] },
-                        { sign: "♐", key: "sagittarius", end: [12, 21] },
-                        { sign: "♑", key: "capricorn", end: [12, 31] },
-                      ];
-                      const zodiac = zodiacSigns.find(z =>
-                        month < z.end[0] || (month === z.end[0] && day <= z.end[1])
-                      ) || zodiacSigns[0];
-                      return (
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button className="flex items-center gap-2 h-9 px-3 rounded-md border border-input bg-background hover:bg-muted/50 transition-colors w-full text-xs">
-                              <span className="text-base">{zodiac.sign}</span>
-                              <span>{t(`zodiac.${zodiac.key}`)}</span>
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-72 p-3">
-                            <div className="flex items-start gap-3">
-                              <span className="text-3xl flex-shrink-0">{zodiac.sign}</span>
-                              <div>
-                                <p className="font-medium text-sm mb-1">{t(`zodiac.${zodiac.key}`)}</p>
-                                <p className="text-xs text-muted-foreground leading-relaxed">{t(`zodiac.desc.${zodiac.key}`)}</p>
-                              </div>
+                      const today = new Date();
+                      let age = today.getFullYear() - birthDate.getFullYear();
+                      const monthDiff = today.getMonth() - birthDate.getMonth();
+                      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) age--;
+                      return age >= 0 && age < 150 ? ` • ${age} ${t("plurals.year", { count: age })}` : "";
+                    })()}
+                  </p>
+                </div>
+                {profile?.is_admin && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20">
+                    <span className="text-sm">👑</span>
+                    <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">ADMIN</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Name */}
+              <div className="flex items-center gap-3 py-3 border-b border-border/50">
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-500/10">
+                  <UserCircle className="h-4 w-4 text-blue-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">{t("settings.name")}</p>
+                </div>
+                <Input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => { setDisplayName(e.target.value); markChanged(); }}
+                  placeholder={t("settings.enterName")}
+                  className="h-8 w-32 text-xs text-right"
+                />
+              </div>
+
+              {/* Gender */}
+              <div className="flex items-center gap-3 py-3 border-b border-border/50">
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-pink-500/10">
+                  <User className="h-4 w-4 text-pink-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">{t("settings.gender")}</p>
+                </div>
+                <Select value={gender} onValueChange={(v) => { setGender(v as "male" | "female" | "other" | "none"); markChanged(); }}>
+                  <SelectTrigger className="h-8 w-32 text-xs">
+                    <SelectValue placeholder={t("settings.selectGender")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t("settings.genderNone")}</SelectItem>
+                    <SelectItem value="male">{t("settings.genderMale")}</SelectItem>
+                    <SelectItem value="female">{t("settings.genderFemale")}</SelectItem>
+                    <SelectItem value="other">{t("settings.genderOther")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Date of Birth */}
+              <div className="flex items-center gap-3 py-3 border-b border-border/50">
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-purple-500/10">
+                  <Calendar className="h-4 w-4 text-purple-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">{t("settings.dateOfBirth")}</p>
+                  {dateOfBirth && (() => {
+                    const birthDate = new Date(dateOfBirth);
+                    const month = birthDate.getMonth() + 1;
+                    const day = birthDate.getDate();
+                    const zodiacSigns = [
+                      { sign: "♑", key: "capricorn", end: [1, 19] },
+                      { sign: "♒", key: "aquarius", end: [2, 18] },
+                      { sign: "♓", key: "pisces", end: [3, 20] },
+                      { sign: "♈", key: "aries", end: [4, 19] },
+                      { sign: "♉", key: "taurus", end: [5, 20] },
+                      { sign: "♊", key: "gemini", end: [6, 20] },
+                      { sign: "♋", key: "cancer", end: [7, 22] },
+                      { sign: "♌", key: "leo", end: [8, 22] },
+                      { sign: "♍", key: "virgo", end: [9, 22] },
+                      { sign: "♎", key: "libra", end: [10, 22] },
+                      { sign: "♏", key: "scorpio", end: [11, 21] },
+                      { sign: "♐", key: "sagittarius", end: [12, 21] },
+                      { sign: "♑", key: "capricorn", end: [12, 31] },
+                    ];
+                    const zodiac = zodiacSigns.find(z =>
+                      month < z.end[0] || (month === z.end[0] && day <= z.end[1])
+                    ) || zodiacSigns[0];
+                    return (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                            {zodiac.sign} {t(`zodiac.${zodiac.key}`)}
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-72 p-3">
+                          <div className="flex items-start gap-3">
+                            <span className="text-3xl flex-shrink-0">{zodiac.sign}</span>
+                            <div>
+                              <p className="font-medium text-sm mb-1">{t(`zodiac.${zodiac.key}`)}</p>
+                              <p className="text-xs text-muted-foreground leading-relaxed">{t(`zodiac.desc.${zodiac.key}`)}</p>
                             </div>
-                          </PopoverContent>
-                        </Popover>
-                      );
-                    })() : (
-                      <div className="flex items-center h-9 px-3 rounded-md border border-input bg-background text-muted-foreground text-xs">
-                        —
-                      </div>
-                    )}
-                  </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    );
+                  })()}
                 </div>
+                <Input
+                  type="date"
+                  value={dateOfBirth}
+                  onChange={(e) => { setDateOfBirth(e.target.value); markChanged(); }}
+                  className="h-8 w-32 text-xs"
+                />
+              </div>
 
-                {/* Height and Weight */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="height" className="text-xs">{t("settings.height")} ({units.height})</Label>
-                    <Input
-                      id="height"
-                      type="number"
-                      step="0.1"
-                      value={height}
-                      onChange={(e) => { setHeight(e.target.value); markChanged(); }}
-                      placeholder={t("settings.enterHeight")}
-                      className="h-9 text-xs"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="currentWeight" className="text-xs">{t("settings.weight")} ({units.weight})</Label>
-                    <Input
-                      id="currentWeight"
-                      type="number"
-                      step="0.1"
-                      value={currentWeight}
-                      onChange={(e) => { setCurrentWeight(e.target.value); markChanged(); }}
-                      placeholder={t("settings.enterWeight")}
-                      className="h-9 text-xs"
-                    />
-                  </div>
+              {/* Height */}
+              <div className="flex items-center gap-3 py-3 border-b border-border/50">
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-cyan-500/10">
+                  <RulerIcon className="h-4 w-4 text-cyan-500" />
                 </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">{t("settings.height")}</p>
+                  <p className="text-xs text-muted-foreground">{units.height}</p>
+                </div>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={height}
+                  onChange={(e) => { setHeight(e.target.value); markChanged(); }}
+                  placeholder="—"
+                  className="h-8 w-20 text-xs text-right"
+                />
+              </div>
 
-                {/* Skuf Level Slider - Easter Egg */}
-                <div className="space-y-3 pt-2">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{t("settings.skufLevels.normie")}</span>
-                    <span>{t("settings.skufLevels.alpha")}-{t("settings.skufLevels.skuf")}</span>
-                  </div>
+              {/* Weight */}
+              <div className="flex items-center gap-3 py-3 border-b border-border/50">
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-green-500/10">
+                  <Scale className="h-4 w-4 text-green-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">{t("settings.weight")}</p>
+                  <p className="text-xs text-muted-foreground">{units.weight}</p>
+                </div>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={currentWeight}
+                  onChange={(e) => { setCurrentWeight(e.target.value); markChanged(); }}
+                  placeholder="—"
+                  className="h-8 w-20 text-xs text-right"
+                />
+              </div>
 
-                  {/* Level buttons */}
-                  <div className="grid grid-cols-5 gap-1">
-                    {[
-                      { level: 0, emoji: "😊", labelKey: "settings.skufLevels.normie", color: "from-blue-400 to-cyan-500" },
-                      { level: 1, emoji: "😏", labelKey: "settings.skufLevels.bold", color: "from-green-400 to-emerald-500" },
-                      { level: 2, emoji: "😤", labelKey: "settings.skufLevels.jock", color: "from-yellow-400 to-orange-500" },
-                      { level: 3, emoji: "🔥", labelKey: "settings.skufLevels.skuf", color: "from-orange-400 to-red-500" },
-                      { level: 4, emoji: "🗿", labelKey: "settings.skufLevels.alpha", color: "from-red-500 to-rose-600" },
-                    ].map((item) => (
-                      <button
-                        key={item.level}
-                        onClick={() => { setSkufLevel(item.level); markChanged(); }}
-                        className={cn(
-                          "flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200",
-                          skufLevel === item.level
-                            ? `bg-gradient-to-br ${item.color} text-white shadow-lg scale-105`
-                            : "bg-muted hover:bg-muted/70 hover:scale-102"
-                        )}
-                      >
-                        <span className="text-xl">{item.emoji}</span>
-                        <span className="text-[10px] font-medium leading-tight">{t(item.labelKey)}</span>
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Status message */}
-                  <div className={cn(
-                    "text-center text-xs py-1.5 rounded-full transition-all duration-300",
-                    skufLevel === 0 && "bg-blue-500/10 text-blue-500",
-                    skufLevel === 1 && "bg-green-500/10 text-green-500",
-                    skufLevel === 2 && "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
-                    skufLevel === 3 && "bg-orange-500/10 text-orange-500",
-                    skufLevel === 4 && "bg-red-500/10 text-red-500"
+              {/* Skuf Level */}
+              <div className="flex items-center gap-3 py-3">
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-orange-500/10">
+                  <Smile className="h-4 w-4 text-orange-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">{t("settings.skufLevels.skuf")}</p>
+                  <p className={cn(
+                    "text-xs transition-colors",
+                    skufLevel === 0 && "text-blue-500",
+                    skufLevel === 1 && "text-green-500",
+                    skufLevel === 2 && "text-yellow-600 dark:text-yellow-400",
+                    skufLevel === 3 && "text-orange-500",
+                    skufLevel === 4 && "text-red-500"
                   )}>
                     {t(`settings.skufStatus.${skufLevel}`)}
-                    {skufLevel === 4 && " 🗿🗿🗿"}
-                  </div>
+                  </p>
                 </div>
-
+                <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+                  {[
+                    { level: 0, emoji: "😊", color: "text-blue-500" },
+                    { level: 1, emoji: "😏", color: "text-green-500" },
+                    { level: 2, emoji: "😤", color: "text-yellow-500" },
+                    { level: 3, emoji: "🔥", color: "text-orange-500" },
+                    { level: 4, emoji: "🗿", color: "text-red-500" },
+                  ].map((item) => (
+                    <button
+                      key={item.level}
+                      onClick={() => { setSkufLevel(item.level); markChanged(); }}
+                      className={cn(
+                        "p-1.5 rounded-md transition-all text-base",
+                        skufLevel === item.level
+                          ? "bg-background shadow-sm scale-110"
+                          : "hover:bg-background/50 opacity-50 hover:opacity-100"
+                      )}
+                      title={t(`settings.skufLevels.${['normie', 'bold', 'jock', 'skuf', 'alpha'][item.level]}`)}
+                    >
+                      {item.emoji}
+                    </button>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </CollapsibleContent>
