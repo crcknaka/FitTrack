@@ -61,7 +61,7 @@ export default function Progress() {
   const [currentWeight, setCurrentWeight] = useState<number | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [leaderboardExercise, setLeaderboardExercise] = useState<string>("Штанга лёжа");
+  const [leaderboardExercise, setLeaderboardExercise] = useState<string>("");
   const [leaderboardPeriod, setLeaderboardPeriod] = useState<"all" | "month" | "today">("all");
   const [leaderboardFriendsOnly, setLeaderboardFriendsOnly] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -78,20 +78,26 @@ export default function Progress() {
     friendIds
   );
 
-  // Base exercises for leaderboard
-  const baseExercises = [
-    "Штанга лёжа",
-    "Приседания",
-    "Подтягивания",
-    "Отжимания",
-    "Отжимания на брусьях",
-    "Бег",
-    "Гантели Бицепс",
-    "Тяга на себя",
-    "Пресс",
-    "Планка",
-    "Тяга верхнего блока"
-  ];
+  // Get all preset exercises for leaderboard (sorted by translated name)
+  const leaderboardExercises = useMemo(() => {
+    if (!exercises) return [];
+    return exercises
+      .filter(e => e.is_preset)
+      .sort((a, b) => {
+        const nameA = getExerciseName(a.name, a.name_translations);
+        const nameB = getExerciseName(b.name, b.name_translations);
+        return nameA.localeCompare(nameB);
+      });
+  }, [exercises, i18n.language]);
+
+  // Set default leaderboard exercise when exercises load
+  useEffect(() => {
+    if (leaderboardExercises.length > 0 && !leaderboardExercise) {
+      // Try to find "Штанга лёжа" (Bench Press) as default, otherwise use first
+      const benchPress = leaderboardExercises.find(e => e.name === "Штанга лёжа");
+      setLeaderboardExercise(benchPress?.name || leaderboardExercises[0].name);
+    }
+  }, [leaderboardExercises, leaderboardExercise]);
 
   // Load body weight history (only when online, as it's not cached)
   useEffect(() => {
@@ -1154,14 +1160,11 @@ export default function Progress() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {baseExercises.map((exerciseName) => {
-                  const ex = exercises?.find(e => e.name === exerciseName);
-                  return (
-                    <SelectItem key={exerciseName} value={exerciseName}>
-                      {ex ? getExerciseName(ex.name, ex.name_translations) : exerciseName}
-                    </SelectItem>
-                  );
-                })}
+                {leaderboardExercises.map((ex) => (
+                  <SelectItem key={ex.id} value={ex.name}>
+                    {getExerciseName(ex.name, ex.name_translations)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 

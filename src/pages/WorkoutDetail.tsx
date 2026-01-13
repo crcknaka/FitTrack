@@ -196,25 +196,22 @@ export default function WorkoutDetail() {
     }, {} as Record<string, { exercise: typeof workout.workout_sets[0]["exercise"]; sets: typeof workout.workout_sets }>);
   }, [workout?.workout_sets]);
 
-  // Calculate which sets are all-time personal records
+  // Calculate which sets are all-time personal records (new records only, not equal)
   const recordSetIds = useMemo(() => {
     const result: Set<string> = new Set();
-
-    if (!allTimeBests) return result;
 
     Object.entries(setsByExercise).forEach(([exerciseId, { exercise, sets }]) => {
       if (!sets || sets.length === 0) return;
 
       const sortedSets = [...sets].sort((a, b) => a.set_number - b.set_number);
-      const historicalBest = allTimeBests[exerciseId];
-
-      if (!historicalBest) return;
+      const historicalBest = allTimeBests?.[exerciseId];
 
       switch (exercise?.type) {
         case "weighted": {
-          // Check if any set in current workout matches or exceeds all-time best weight
+          // Show trophy only if current weight is STRICTLY GREATER than historical best
           const currentMaxWeight = Math.max(...sortedSets.map(s => s.weight || 0));
-          if (currentMaxWeight > 0 && currentMaxWeight >= (historicalBest.maxWeight || 0)) {
+          // If no historical best (new exercise), first set with value is a record
+          if (currentMaxWeight > 0 && currentMaxWeight > (historicalBest?.maxWeight || 0)) {
             // Mark the first set that achieves this weight
             const firstMaxSet = sortedSets.find(s => s.weight === currentMaxWeight);
             if (firstMaxSet) result.add(firstMaxSet.id);
@@ -223,7 +220,7 @@ export default function WorkoutDetail() {
         }
         case "bodyweight": {
           const currentMaxReps = Math.max(...sortedSets.map(s => s.reps || 0));
-          if (currentMaxReps > 0 && currentMaxReps >= (historicalBest.maxReps || 0)) {
+          if (currentMaxReps > 0 && currentMaxReps > (historicalBest?.maxReps || 0)) {
             const firstMaxSet = sortedSets.find(s => s.reps === currentMaxReps);
             if (firstMaxSet) result.add(firstMaxSet.id);
           }
@@ -231,7 +228,7 @@ export default function WorkoutDetail() {
         }
         case "cardio": {
           const currentMaxDistance = Math.max(...sortedSets.map(s => s.distance_km || 0));
-          if (currentMaxDistance > 0 && currentMaxDistance >= (historicalBest.maxDistance || 0)) {
+          if (currentMaxDistance > 0 && currentMaxDistance > (historicalBest?.maxDistance || 0)) {
             const firstMaxSet = sortedSets.find(s => s.distance_km === currentMaxDistance);
             if (firstMaxSet) result.add(firstMaxSet.id);
           }
@@ -239,7 +236,7 @@ export default function WorkoutDetail() {
         }
         case "timed": {
           const currentMaxSeconds = Math.max(...sortedSets.map(s => s.plank_seconds || 0));
-          if (currentMaxSeconds > 0 && currentMaxSeconds >= (historicalBest.maxSeconds || 0)) {
+          if (currentMaxSeconds > 0 && currentMaxSeconds > (historicalBest?.maxSeconds || 0)) {
             const firstMaxSet = sortedSets.find(s => s.plank_seconds === currentMaxSeconds);
             if (firstMaxSet) result.add(firstMaxSet.id);
           }
