@@ -506,5 +506,62 @@
   "errors": {
     "unsupportedImageFormat": "Formato no soportado. Use JPG, PNG o WebP.",
     "fileTooLarge": "Archivo demasiado grande. Máximo 20 MB."
+  },
+  "admin": {
+    "title": "Panel de Admin",
+    "settingsDesc": "Estadísticas, limpieza, gestión",
+    "backToApp": "Volver a la app",
+    "dashboardDesc": "Resumen de la plataforma",
+    "cleanupDesc": "Herramientas de limpieza",
+    "usersDesc": "Gestión de usuarios",
+    "exercisesDesc": "Gestión de ejercicios",
+    "nav": {
+      "dashboard": "Panel",
+      "cleanup": "Limpieza",
+      "users": "Usuarios",
+      "exercises": "Ejercicios"
+    },
+    "stats": {
+      "totalUsers": "Total de usuarios",
+      "activeUsers7d": "Activos (7 días)",
+      "activeUsers30d": "Activos (30 días)",
+      "totalWorkouts": "Total entrenamientos",
+      "workoutsToday": "Hoy",
+      "avgWorkoutsPerUser": "Promedio por usuario",
+      "topExercises": "Top ejercicios",
+      "uses": "usos",
+      "last7days": "últimos 7 días",
+      "last30days": "últimos 30 días"
+    },
+    "cleanup": {
+      "emptyWorkouts": "Entrenamientos vacíos",
+      "emptyWorkoutsDesc": "Entrenamientos sin ejercicios",
+      "orphanedExercises": "Registros huérfanos",
+      "orphanedExercisesDesc": "Ejercicios sin entrenamiento",
+      "found": "Encontrados",
+      "deleteAll": "Eliminar todo",
+      "confirmTitle": "Confirmar eliminación",
+      "confirmEmptyWorkouts": "¿Eliminar {{count}} entrenamientos vacíos? Esto no se puede deshacer.",
+      "confirmOrphanedExercises": "¿Eliminar {{count}} registros huérfanos? Esto no se puede deshacer.",
+      "deleted": "Eliminados {{count}} registros"
+    },
+    "users": {
+      "list": "Lista de usuarios",
+      "search": "Buscar por nombre...",
+      "workouts": "entrenamientos",
+      "lastActive": "última actividad",
+      "makeAdmin": "Hacer admin",
+      "removeAdmin": "Quitar admin",
+      "madeAdmin": "{{name}} ahora es administrador",
+      "removedAdmin": "Se quitaron los derechos de admin a {{name}}",
+      "confirmMakeAdmin": "¿Hacer administrador?",
+      "confirmMakeAdminDesc": "{{name}} tendrá acceso completo al panel de admin.",
+      "confirmRemoveAdmin": "¿Quitar derechos de admin?",
+      "confirmRemoveAdminDesc": "{{name}} perderá acceso al panel de admin."
+    },
+    "exercises": {
+      "preset": "Ejercicios predefinidos",
+      "comingSoon": "Próximamente"
+    }
   }
 }

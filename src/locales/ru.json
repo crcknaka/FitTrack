@@ -509,5 +509,62 @@
   "errors": {
     "unsupportedImageFormat": "Неподдерживаемый формат. Используйте JPG, PNG или WebP.",
     "fileTooLarge": "Файл слишком большой. Максимум 20 МБ."
+  },
+  "admin": {
+    "title": "Админ-панель",
+    "settingsDesc": "Статистика, очистка данных, управление",
+    "backToApp": "Вернуться в приложение",
+    "dashboardDesc": "Общая статистика платформы",
+    "cleanupDesc": "Инструменты для очистки базы данных",
+    "usersDesc": "Управление пользователями платформы",
+    "exercisesDesc": "Управление базой упражнений",
+    "nav": {
+      "dashboard": "Обзор",
+      "cleanup": "Очистка",
+      "users": "Пользователи",
+      "exercises": "Упражнения"
+    },
+    "stats": {
+      "totalUsers": "Всего пользователей",
+      "activeUsers7d": "Активные (7 дней)",
+      "activeUsers30d": "Активные (30 дней)",
+      "totalWorkouts": "Всего тренировок",
+      "workoutsToday": "Сегодня",
+      "avgWorkoutsPerUser": "Средняя на пользователя",
+      "topExercises": "Топ упражнений",
+      "uses": "использований",
+      "last7days": "за последние 7 дней",
+      "last30days": "за последние 30 дней"
+    },
+    "cleanup": {
+      "emptyWorkouts": "Пустые тренировки",
+      "emptyWorkoutsDesc": "Тренировки без упражнений",
+      "orphanedExercises": "Осиротевшие записи",
+      "orphanedExercisesDesc": "Упражнения без привязки к тренировке",
+      "found": "Найдено",
+      "deleteAll": "Удалить все",
+      "confirmTitle": "Подтверждение удаления",
+      "confirmEmptyWorkouts": "Удалить {{count}} пустых тренировок? Это действие нельзя отменить.",
+      "confirmOrphanedExercises": "Удалить {{count}} осиротевших записей? Это действие нельзя отменить.",
+      "deleted": "Удалено {{count}} записей"
+    },
+    "users": {
+      "list": "Список пользователей",
+      "search": "Поиск по имени...",
+      "workouts": "тренировок",
+      "lastActive": "последняя",
+      "makeAdmin": "Сделать админом",
+      "removeAdmin": "Снять права",
+      "madeAdmin": "{{name}} теперь администратор",
+      "removedAdmin": "Права администратора сняты с {{name}}",
+      "confirmMakeAdmin": "Назначить администратором?",
+      "confirmMakeAdminDesc": "Пользователь {{name}} получит полный доступ к админ-панели.",
+      "confirmRemoveAdmin": "Снять права администратора?",
+      "confirmRemoveAdminDesc": "Пользователь {{name}} потеряет доступ к админ-панели."
+    },
+    "exercises": {
+      "preset": "Базовые упражнения",
+      "comingSoon": "Скоро будет доступно"
+    }
   }
 }

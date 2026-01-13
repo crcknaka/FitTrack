@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { OfflineIndicator } from "@/offline/components/OfflineIndicator";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Layout from "@/components/Layout";
+import { AdminProtectedRoute } from "@/components/admin/AdminProtectedRoute";
 import { Loader2 } from "lucide-react";
 import { useEffect, lazy, Suspense } from "react";
 
@@ -23,6 +24,12 @@ const Settings = lazy(() => import("@/pages/Settings"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const SharedWorkout = lazy(() => import("@/pages/SharedWorkout"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
+
+// Admin pages
+const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
+const AdminCleanup = lazy(() => import("@/pages/admin/AdminCleanup"));
+const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers"));
+const AdminExercises = lazy(() => import("@/pages/admin/AdminExercises"));
 
 // Schema version - increment this when you make breaking database changes
 const SCHEMA_VERSION = "2"; // Updated for cardio exercise type
@@ -173,6 +180,39 @@ function AppRoutes() {
             <ProtectedRoute>
               <Settings />
             </ProtectedRoute>
+          }
+        />
+        {/* Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <AdminProtectedRoute>
+              <AdminDashboard />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/cleanup"
+          element={
+            <AdminProtectedRoute>
+              <AdminCleanup />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <AdminProtectedRoute>
+              <AdminUsers />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/exercises"
+          element={
+            <AdminProtectedRoute>
+              <AdminExercises />
+            </AdminProtectedRoute>
           }
         />
         <Route path="*" element={<NotFound />} />

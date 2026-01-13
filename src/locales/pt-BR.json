@@ -506,5 +506,62 @@
   "errors": {
     "unsupportedImageFormat": "Formato não suportado. Use JPG, PNG ou WebP.",
     "fileTooLarge": "Arquivo muito grande. Máximo 20 MB."
+  },
+  "admin": {
+    "title": "Painel Admin",
+    "settingsDesc": "Estatísticas, limpeza, gerenciamento",
+    "backToApp": "Voltar ao app",
+    "dashboardDesc": "Visão geral da plataforma",
+    "cleanupDesc": "Ferramentas de limpeza do banco de dados",
+    "usersDesc": "Gerenciamento de usuários",
+    "exercisesDesc": "Gerenciamento de exercícios",
+    "nav": {
+      "dashboard": "Painel",
+      "cleanup": "Limpeza",
+      "users": "Usuários",
+      "exercises": "Exercícios"
+    },
+    "stats": {
+      "totalUsers": "Total de usuários",
+      "activeUsers7d": "Ativos (7 dias)",
+      "activeUsers30d": "Ativos (30 dias)",
+      "totalWorkouts": "Total de treinos",
+      "workoutsToday": "Hoje",
+      "avgWorkoutsPerUser": "Média por usuário",
+      "topExercises": "Top exercícios",
+      "uses": "usos",
+      "last7days": "últimos 7 dias",
+      "last30days": "últimos 30 dias"
+    },
+    "cleanup": {
+      "emptyWorkouts": "Treinos vazios",
+      "emptyWorkoutsDesc": "Treinos sem exercícios",
+      "orphanedExercises": "Registros órfãos",
+      "orphanedExercisesDesc": "Exercícios sem treino",
+      "found": "Encontrados",
+      "deleteAll": "Excluir tudo",
+      "confirmTitle": "Confirmar exclusão",
+      "confirmEmptyWorkouts": "Excluir {{count}} treinos vazios? Isso não pode ser desfeito.",
+      "confirmOrphanedExercises": "Excluir {{count}} registros órfãos? Isso não pode ser desfeito.",
+      "deleted": "{{count}} registros excluídos"
+    },
+    "users": {
+      "list": "Lista de usuários",
+      "search": "Buscar por nome...",
+      "workouts": "treinos",
+      "lastActive": "última atividade",
+      "makeAdmin": "Tornar admin",
+      "removeAdmin": "Remover admin",
+      "madeAdmin": "{{name}} agora é administrador",
+      "removedAdmin": "Direitos de admin removidos de {{name}}",
+      "confirmMakeAdmin": "Tornar administrador?",
+      "confirmMakeAdminDesc": "{{name}} terá acesso total ao painel de admin.",
+      "confirmRemoveAdmin": "Remover direitos de admin?",
+      "confirmRemoveAdminDesc": "{{name}} perderá acesso ao painel de admin."
+    },
+    "exercises": {
+      "preset": "Exercícios predefinidos",
+      "comingSoon": "Em breve"
+    }
   }
 }

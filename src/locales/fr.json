@@ -506,5 +506,62 @@
   "errors": {
     "unsupportedImageFormat": "Format non pris en charge. Utilisez JPG, PNG ou WebP.",
     "fileTooLarge": "Fichier trop volumineux. Maximum 20 Mo."
+  },
+  "admin": {
+    "title": "Panneau Admin",
+    "settingsDesc": "Statistiques, nettoyage, gestion",
+    "backToApp": "Retour à l'app",
+    "dashboardDesc": "Aperçu de la plateforme",
+    "cleanupDesc": "Outils de nettoyage de la base de données",
+    "usersDesc": "Gestion des utilisateurs",
+    "exercisesDesc": "Gestion des exercices",
+    "nav": {
+      "dashboard": "Tableau de bord",
+      "cleanup": "Nettoyage",
+      "users": "Utilisateurs",
+      "exercises": "Exercices"
+    },
+    "stats": {
+      "totalUsers": "Total utilisateurs",
+      "activeUsers7d": "Actifs (7 jours)",
+      "activeUsers30d": "Actifs (30 jours)",
+      "totalWorkouts": "Total entraînements",
+      "workoutsToday": "Aujourd'hui",
+      "avgWorkoutsPerUser": "Moyenne par utilisateur",
+      "topExercises": "Top exercices",
+      "uses": "utilisations",
+      "last7days": "7 derniers jours",
+      "last30days": "30 derniers jours"
+    },
+    "cleanup": {
+      "emptyWorkouts": "Entraînements vides",
+      "emptyWorkoutsDesc": "Entraînements sans exercices",
+      "orphanedExercises": "Enregistrements orphelins",
+      "orphanedExercisesDesc": "Exercices sans entraînement",
+      "found": "Trouvés",
+      "deleteAll": "Tout supprimer",
+      "confirmTitle": "Confirmer la suppression",
+      "confirmEmptyWorkouts": "Supprimer {{count}} entraînements vides ? Cette action est irréversible.",
+      "confirmOrphanedExercises": "Supprimer {{count}} enregistrements orphelins ? Cette action est irréversible.",
+      "deleted": "{{count}} enregistrements supprimés"
+    },
+    "users": {
+      "list": "Liste des utilisateurs",
+      "search": "Rechercher par nom...",
+      "workouts": "entraînements",
+      "lastActive": "dernière activité",
+      "makeAdmin": "Rendre admin",
+      "removeAdmin": "Retirer admin",
+      "madeAdmin": "{{name}} est maintenant administrateur",
+      "removedAdmin": "Droits d'admin retirés à {{name}}",
+      "confirmMakeAdmin": "Rendre administrateur ?",
+      "confirmMakeAdminDesc": "{{name}} aura un accès complet au panneau d'administration.",
+      "confirmRemoveAdmin": "Retirer les droits d'admin ?",
+      "confirmRemoveAdminDesc": "{{name}} perdra l'accès au panneau d'administration."
+    },
+    "exercises": {
+      "preset": "Exercices prédéfinis",
+      "comingSoon": "Bientôt disponible"
+    }
   }
 }

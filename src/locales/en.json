@@ -507,5 +507,62 @@
   "errors": {
     "unsupportedImageFormat": "Unsupported format. Use JPG, PNG or WebP.",
     "fileTooLarge": "File is too large. Maximum 20 MB."
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "settingsDesc": "Statistics, cleanup tools, management",
+    "backToApp": "Back to app",
+    "dashboardDesc": "Platform overview and statistics",
+    "cleanupDesc": "Database cleanup tools",
+    "usersDesc": "User management",
+    "exercisesDesc": "Exercise database management",
+    "nav": {
+      "dashboard": "Dashboard",
+      "cleanup": "Cleanup",
+      "users": "Users",
+      "exercises": "Exercises"
+    },
+    "stats": {
+      "totalUsers": "Total Users",
+      "activeUsers7d": "Active (7 days)",
+      "activeUsers30d": "Active (30 days)",
+      "totalWorkouts": "Total Workouts",
+      "workoutsToday": "Today",
+      "avgWorkoutsPerUser": "Avg per User",
+      "topExercises": "Top Exercises",
+      "uses": "uses",
+      "last7days": "last 7 days",
+      "last30days": "last 30 days"
+    },
+    "cleanup": {
+      "emptyWorkouts": "Empty Workouts",
+      "emptyWorkoutsDesc": "Workouts with no exercises",
+      "orphanedExercises": "Orphaned Records",
+      "orphanedExercisesDesc": "Exercises without a workout",
+      "found": "Found",
+      "deleteAll": "Delete All",
+      "confirmTitle": "Confirm Deletion",
+      "confirmEmptyWorkouts": "Delete {{count}} empty workouts? This cannot be undone.",
+      "confirmOrphanedExercises": "Delete {{count}} orphaned records? This cannot be undone.",
+      "deleted": "Deleted {{count}} records"
+    },
+    "users": {
+      "list": "User List",
+      "search": "Search by name...",
+      "workouts": "workouts",
+      "lastActive": "last active",
+      "makeAdmin": "Make Admin",
+      "removeAdmin": "Remove Admin",
+      "madeAdmin": "{{name}} is now an admin",
+      "removedAdmin": "Admin rights removed from {{name}}",
+      "confirmMakeAdmin": "Make Administrator?",
+      "confirmMakeAdminDesc": "{{name}} will have full access to the admin panel.",
+      "confirmRemoveAdmin": "Remove Admin Rights?",
+      "confirmRemoveAdminDesc": "{{name}} will lose access to the admin panel."
+    },
+    "exercises": {
+      "preset": "Preset Exercises",
+      "comingSoon": "Coming soon"
+    }
   }
 }
