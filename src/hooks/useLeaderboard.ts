@@ -7,6 +7,7 @@ import { useFriends } from "@/hooks/useFriends";
 export interface LeaderboardEntry {
   user_id: string;
   display_name: string | null;
+  username: string | null;
   avatar: string | null;
   current_weight: number | null;
   height: number | null;
@@ -154,7 +155,7 @@ export function useLeaderboard(
       // Fetch user profiles
       const { data: profiles, error: profileError } = await supabase
         .from("profiles")
-        .select("user_id, display_name, avatar, current_weight, height")
+        .select("user_id, display_name, username, avatar, current_weight, height")
         .in("user_id", userIds);
 
       if (profileError) throw profileError;
@@ -166,6 +167,7 @@ export function useLeaderboard(
           return {
             user_id: profile.user_id,
             display_name: profile.display_name,
+            username: profile.username,
             avatar: profile.avatar,
             current_weight: profile.current_weight,
             height: profile.height,

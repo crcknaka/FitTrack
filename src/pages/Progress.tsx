@@ -1240,6 +1240,11 @@ export default function Progress() {
                     <div className="font-semibold text-foreground truncate">
                       {entry.display_name || t("common.anonymous")}
                     </div>
+                    {entry.username && (
+                      <div className="text-xs text-muted-foreground truncate">
+                        @{entry.username}
+                      </div>
+                    )}
                     <div className="text-xs text-muted-foreground flex flex-wrap gap-x-2 gap-y-0.5">
                       {entry.current_weight && <span className="whitespace-nowrap">{t("progress.weightTotal")}: {convertWeight(entry.current_weight)} {units.weight}</span>}
                       {entry.height && <span className="whitespace-nowrap">{t("progress.heightLabel")}: {(() => {
