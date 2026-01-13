@@ -161,6 +161,7 @@ export default function Friends() {
                   <FriendCard
                     avatar={friendship.friend.avatar}
                     displayName={friendship.friend.display_name}
+                    username={friendship.friend.username}
                     status="friend"
                     onRemove={() =>
                       setFriendToRemove({
@@ -210,6 +211,7 @@ export default function Friends() {
                   <FriendCard
                     avatar={request.requester.avatar}
                     displayName={request.requester.display_name}
+                    username={request.requester.username}
                     status="incoming"
                     onAccept={() => handleAccept(request.id)}
                     onReject={() => handleReject(request.id)}
@@ -254,6 +256,7 @@ export default function Friends() {
                   <FriendCard
                     avatar={request.addressee.avatar}
                     displayName={request.addressee.display_name}
+                    username={request.addressee.username}
                     status="outgoing"
                     onCancel={() => handleCancelRequest(request.id)}
                     isLoading={cancelRequest.isPending}

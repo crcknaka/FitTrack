@@ -72,6 +72,8 @@
     "logoutConfirmDescription": "¿Estás seguro de que quieres cerrar sesión?",
     "name": "Nombre",
     "enterName": "Ingresa nombre",
+    "username": "Usuario",
+    "usernameHint": "Solo letras, números, _",
     "gender": "Género",
     "selectGender": "Seleccionar género",
     "genderNone": "No especificado",
@@ -354,7 +356,7 @@
   "friends": {
     "title": "Amigos",
     "subtitle": "Conexiones sociales",
-    "searchByName": "Buscar por nombre...",
+    "searchByName": "Buscar por nombre o @usuario...",
     "count_one": "{{count}} amigo",
     "count_other": "{{count}} amigos",
     "tabs": {

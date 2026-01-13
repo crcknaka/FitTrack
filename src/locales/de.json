@@ -72,6 +72,8 @@
     "logoutConfirmDescription": "Bist du sicher, dass du dich abmelden möchtest?",
     "name": "Name",
     "enterName": "Name eingeben",
+    "username": "Benutzername",
+    "usernameHint": "Nur Buchstaben, Zahlen, _",
     "gender": "Geschlecht",
     "selectGender": "Geschlecht wählen",
     "genderNone": "Nicht angegeben",
@@ -355,7 +357,7 @@
   "friends": {
     "title": "Freunde",
     "subtitle": "Soziale Verbindungen",
-    "searchByName": "Nach Name suchen...",
+    "searchByName": "Nach Name oder @benutzername suchen...",
     "count_one": "{{count}} Freund",
     "count_other": "{{count}} Freunde",
     "tabs": {

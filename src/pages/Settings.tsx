@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
-import { User, LogOut, Lock, Eye, EyeOff, ChevronDown, Sun, Moon, Monitor, Download, FileJson, FileSpreadsheet, Check, Loader2, CloudOff, Palette, Globe, Ruler, Sparkles, Settings as SettingsIcon, UserCircle, Calendar, Scale, RulerIcon, Database, KeyRound, ShieldCheck, Crown } from "lucide-react";
+import { User, LogOut, Lock, Eye, EyeOff, ChevronDown, Sun, Moon, Monitor, Download, FileJson, FileSpreadsheet, Check, Loader2, CloudOff, Palette, Globe, Ruler, Sparkles, Settings as SettingsIcon, UserCircle, Calendar, Scale, RulerIcon, Database, KeyRound, ShieldCheck, Crown, AtSign } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useOfflineProfile, useOfflineUpdateProfile, useOfflineWorkouts } from "@/offline";
 import { format } from "date-fns";
@@ -88,6 +88,7 @@ export default function Settings() {
   const [exportLoading, setExportLoading] = useState(false);
 
   const [displayName, setDisplayName] = useState("");
+  const [username, setUsername] = useState("");
   const [gender, setGender] = useState<"male" | "female" | "other" | "none">("none");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [height, setHeight] = useState("");
@@ -133,6 +134,7 @@ export default function Settings() {
     if (profile && !formInitializedRef.current) {
       formInitializedRef.current = true;
       setDisplayName(profile.display_name || "");
+      setUsername(profile.username || "");
       setGender(profile.gender || "none");
       setDateOfBirth(profile.date_of_birth || "");
       // Convert from metric (stored) to user's unit system for display
@@ -205,8 +207,8 @@ export default function Settings() {
 
   // Create a stable string representation of profile data for debouncing
   const profileDataString = useMemo(() =>
-    JSON.stringify({ displayName, gender, dateOfBirth, height, currentWeight, avatar }),
-    [displayName, gender, dateOfBirth, height, currentWeight, avatar]
+    JSON.stringify({ displayName, username, gender, dateOfBirth, height, currentWeight, avatar }),
+    [displayName, username, gender, dateOfBirth, height, currentWeight, avatar]
   );
 
   // Debounce the string with 1.5 second delay
@@ -255,6 +257,7 @@ export default function Settings() {
 
         await updateProfileRef.current.mutateAsync({
           display_name: data.displayName.trim() || null,
+          username: data.username.trim().toLowerCase() || null,
           gender: data.gender === "none" ? null : data.gender,
           date_of_birth: data.dateOfBirth || null,
           height: heightInCm,
@@ -680,6 +683,33 @@ export default function Settings() {
                   placeholder={t("settings.enterName")}
                   className="h-8 w-32 text-xs text-right"
                 />
+              </div>
+
+              {/* Username */}
+              <div className="flex items-center gap-3 py-3 border-b border-border/50">
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-violet-500/10">
+                  <AtSign className="h-4 w-4 text-violet-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">{t("settings.username")}</p>
+                  <p className="text-xs text-muted-foreground">{t("settings.usernameHint")}</p>
+                </div>
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">@</span>
+                  <Input
+                    type="text"
+                    value={username}
+                    onChange={(e) => {
+                      // Only allow lowercase latin letters, numbers, and underscores
+                      const value = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "");
+                      setUsername(value);
+                      markChanged();
+                    }}
+                    placeholder="username"
+                    className="h-8 w-32 text-xs pl-5"
+                    maxLength={20}
+                  />
+                </div>
               </div>
 
               {/* Gender */}

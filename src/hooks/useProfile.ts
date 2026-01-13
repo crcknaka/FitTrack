@@ -6,6 +6,7 @@ export interface Profile {
   id: string;
   user_id: string;
   display_name: string | null;
+  username: string | null;
   current_weight: number | null;
   gender: "male" | "female" | "other" | null;
   date_of_birth: string | null;

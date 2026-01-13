@@ -72,6 +72,8 @@
     "logoutConfirmDescription": "Вы уверены, что хотите выйти из аккаунта?",
     "name": "Имя",
     "enterName": "Введите имя",
+    "username": "Никнейм",
+    "usernameHint": "Только латиница, цифры, _",
     "gender": "Пол",
     "selectGender": "Выберите пол",
     "genderNone": "Не указано",
@@ -353,7 +355,7 @@
   "friends": {
     "title": "Друзья",
     "subtitle": "Социальные связи",
-    "searchByName": "Поиск по имени...",
+    "searchByName": "Поиск по имени или @username...",
     "count_one": "{{count}} друг",
     "count_few": "{{count}} друга",
     "count_many": "{{count}} друзей",

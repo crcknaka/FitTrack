@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export interface FriendProfile {
   user_id: string;
   display_name: string | null;
+  username: string | null;
   avatar: string | null;
 }
 
@@ -56,7 +57,7 @@ export function useFriends() {
       // Fetch profiles of friends
       const { data: profiles, error: profileError } = await supabase
         .from("profiles")
-        .select("user_id, display_name, avatar")
+        .select("user_id, display_name, username, avatar")
         .in("user_id", friendIds);
 
       if (profileError) throw profileError;
@@ -70,7 +71,7 @@ export function useFriends() {
         const profile = profiles?.find((p) => p.user_id === friendId);
         return {
           ...friendship,
-          friend: profile || { user_id: friendId, display_name: null, avatar: null },
+          friend: profile || { user_id: friendId, display_name: null, username: null, avatar: null },
         } as FriendshipWithProfile;
       });
     },
@@ -100,7 +101,7 @@ export function usePendingFriendRequests() {
       const requesterIds = requests.map((r) => r.requester_id);
       const { data: profiles, error: profileError } = await supabase
         .from("profiles")
-        .select("user_id, display_name, avatar")
+        .select("user_id, display_name, username, avatar")
         .in("user_id", requesterIds);
 
       if (profileError) throw profileError;
@@ -112,6 +113,7 @@ export function usePendingFriendRequests() {
           requester: profile || {
             user_id: request.requester_id,
             display_name: null,
+            username: null,
             avatar: null,
           },
         } as FriendRequest;
@@ -143,7 +145,7 @@ export function useSentFriendRequests() {
       const addresseeIds = requests.map((r) => r.addressee_id);
       const { data: profiles, error: profileError } = await supabase
         .from("profiles")
-        .select("user_id, display_name, avatar")
+        .select("user_id, display_name, username, avatar")
         .in("user_id", addresseeIds);
 
       if (profileError) throw profileError;
@@ -155,6 +157,7 @@ export function useSentFriendRequests() {
           addressee: profile || {
             user_id: request.addressee_id,
             display_name: null,
+            username: null,
             avatar: null,
           },
         } as SentRequest;
@@ -164,7 +167,7 @@ export function useSentFriendRequests() {
   });
 }
 
-// Search users by display name
+// Search users by display name or username
 export function useSearchUsers(query: string) {
   const { user } = useAuth();
 
@@ -173,11 +176,13 @@ export function useSearchUsers(query: string) {
     queryFn: async () => {
       if (!user || !query || query.length < 2 || !navigator.onLine) return [];
 
+      // Search by display_name OR username
+      const searchQuery = query.startsWith("@") ? query.slice(1) : query;
       const { data, error } = await supabase
         .from("profiles")
-        .select("user_id, display_name, avatar")
+        .select("user_id, display_name, username, avatar")
         .neq("user_id", user.id)
-        .ilike("display_name", `%${query}%`)
+        .or(`display_name.ilike.%${searchQuery}%,username.ilike.%${searchQuery}%`)
         .limit(10);
 
       if (error) throw error;

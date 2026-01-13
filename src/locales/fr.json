@@ -72,6 +72,8 @@
     "logoutConfirmDescription": "Êtes-vous sûr de vouloir vous déconnecter ?",
     "name": "Nom",
     "enterName": "Entrez le nom",
+    "username": "Pseudo",
+    "usernameHint": "Lettres, chiffres, _ uniquement",
     "gender": "Genre",
     "selectGender": "Sélectionner le genre",
     "genderNone": "Non spécifié",
@@ -354,7 +356,7 @@
   "friends": {
     "title": "Amis",
     "subtitle": "Connexions sociales",
-    "searchByName": "Rechercher par nom...",
+    "searchByName": "Rechercher par nom ou @pseudo...",
     "count_one": "{{count}} ami",
     "count_other": "{{count}} amis",
     "tabs": {

@@ -16,11 +16,12 @@ interface SearchResultItemProps {
   userId: string;
   avatar: string | null;
   displayName: string | null;
+  username: string | null;
   onSendRequest: (userId: string) => void;
   isPending: boolean;
 }
 
-function SearchResultItem({ userId, avatar, displayName, onSendRequest, isPending }: SearchResultItemProps) {
+function SearchResultItem({ userId, avatar, displayName, username, onSendRequest, isPending }: SearchResultItemProps) {
   const { t } = useTranslation();
   const { data: friendshipStatus } = useFriendshipStatus(userId);
 
@@ -82,6 +83,9 @@ function SearchResultItem({ userId, avatar, displayName, onSendRequest, isPendin
         <p className="font-medium text-foreground truncate">
           {displayName || t("common.anonymous")}
         </p>
+        {username && (
+          <p className="text-xs text-muted-foreground truncate">@{username}</p>
+        )}
       </div>
       {getButtonContent()}
     </div>
@@ -171,6 +175,7 @@ export function AddFriendDialog({ trigger }: AddFriendDialogProps) {
                 userId={user.user_id}
                 avatar={user.avatar}
                 displayName={user.display_name}
+                username={user.username}
                 onSendRequest={handleSendRequest}
                 isPending={sendRequest.isPending}
               />

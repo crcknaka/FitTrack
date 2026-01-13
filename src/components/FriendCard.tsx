@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 interface FriendCardProps {
   avatar: string | null;
   displayName: string | null;
+  username?: string | null;
   status?: "friend" | "incoming" | "outgoing";
   onRemove?: () => void;
   onAccept?: () => void;
@@ -19,6 +20,7 @@ interface FriendCardProps {
 export const FriendCard = memo(function FriendCard({
   avatar,
   displayName,
+  username,
   status = "friend",
   onRemove,
   onAccept,
@@ -46,13 +48,18 @@ export const FriendCard = memo(function FriendCard({
         <p className="font-medium text-foreground truncate">
           {displayName || t("common.anonymous")}
         </p>
+        {status === "friend" && username && (
+          <p className="text-xs text-muted-foreground">@{username}</p>
+        )}
         {status === "incoming" && (
-          <p className="text-xs text-muted-foreground">{t("friends.wantsToAdd")}</p>
+          <p className="text-xs text-muted-foreground">
+            {username ? `@${username} • ` : ""}{t("friends.wantsToAdd")}
+          </p>
         )}
         {status === "outgoing" && (
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            {t("friends.waitingForResponse")}
+            {username ? `@${username} • ` : ""}{t("friends.waitingForResponse")}
           </p>
         )}
       </div>

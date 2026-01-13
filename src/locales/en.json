@@ -72,6 +72,8 @@
     "logoutConfirmDescription": "Are you sure you want to log out?",
     "name": "Name",
     "enterName": "Enter name",
+    "username": "Username",
+    "usernameHint": "Only letters, numbers, _",
     "gender": "Gender",
     "selectGender": "Select gender",
     "genderNone": "Not specified",
@@ -355,7 +357,7 @@
   "friends": {
     "title": "Friends",
     "subtitle": "Social connections",
-    "searchByName": "Search by name...",
+    "searchByName": "Search by name or @username...",
     "count_one": "{{count}} friend",
     "count_other": "{{count}} friends",
     "tabs": {
