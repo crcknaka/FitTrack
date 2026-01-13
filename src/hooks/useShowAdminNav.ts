@@ -1,24 +1,42 @@
-import { useEffect, useState } from "react";
+import { useSyncExternalStore, useCallback } from "react";
 
 const STORAGE_KEY = "fittrack-show-admin-nav";
 
-export function useShowAdminNav() {
-  const [showAdminNav, setShowAdminNavState] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      // Default to true (show admin nav)
-      return stored === null ? true : stored === "true";
-    }
-    return true;
+// Get current value from localStorage
+function getSnapshot(): boolean {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  return stored === null ? true : stored === "true";
+}
+
+// Server snapshot (for SSR, though not used here)
+function getServerSnapshot(): boolean {
+  return true;
+}
+
+// Subscribe to storage changes
+function subscribe(callback: () => void): () => void {
+  // Listen to custom event for same-tab updates
+  const handleStorageChange = () => callback();
+  window.addEventListener("showAdminNavChange", handleStorageChange);
+  // Also listen to storage event for cross-tab sync
+  window.addEventListener("storage", (e) => {
+    if (e.key === STORAGE_KEY) callback();
   });
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, showAdminNav.toString());
-  }, [showAdminNav]);
-
-  const setShowAdminNav = (show: boolean) => {
-    setShowAdminNavState(show);
+  return () => {
+    window.removeEventListener("showAdminNavChange", handleStorageChange);
+    window.removeEventListener("storage", handleStorageChange);
   };
+}
+
+export function useShowAdminNav() {
+  const showAdminNav = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  const setShowAdminNav = useCallback((show: boolean) => {
+    localStorage.setItem(STORAGE_KEY, show.toString());
+    // Dispatch custom event for same-tab updates
+    window.dispatchEvent(new Event("showAdminNavChange"));
+  }, []);
 
   return {
     showAdminNav,
