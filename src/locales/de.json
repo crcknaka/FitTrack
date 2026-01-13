@@ -207,6 +207,7 @@
   },
   "workout": {
     "addSet": "Satz hinzufügen",
+    "addExercise": "Übung hinzufügen",
     "selectExercise": "Übung auswählen",
     "addingSetFor": "Sätze hinzufügen für Übung",
     "selectingExercise": "Übung für Training auswählen",
@@ -338,7 +339,7 @@
     "title": "Übungen",
     "subtitle": "Übungsbibliothek",
     "search": "Suchen...",
-    "addExercise": "Übung hinzufügen",
+    "addExercise": "Übung erstellen",
     "newExercise": "Neue Übung",
     "exerciseName": "Name",
     "exerciseNamePlaceholder": "z.B. French Press",

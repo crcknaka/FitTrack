@@ -207,6 +207,7 @@
   },
   "workout": {
     "addSet": "Añadir serie",
+    "addExercise": "Añadir ejercicio",
     "selectExercise": "Seleccionar ejercicio",
     "addingSetFor": "Añadiendo series para ejercicio",
     "selectingExercise": "Seleccionando ejercicio para entrenamiento",
@@ -337,7 +338,7 @@
     "title": "Ejercicios",
     "subtitle": "Biblioteca de ejercicios",
     "search": "Buscar...",
-    "addExercise": "Añadir ejercicio",
+    "addExercise": "Crear ejercicio",
     "newExercise": "Nuevo ejercicio",
     "exerciseName": "Nombre",
     "exerciseNamePlaceholder": "ej. Press francés",

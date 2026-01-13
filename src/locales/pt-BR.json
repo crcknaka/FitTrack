@@ -207,6 +207,7 @@
   },
   "workout": {
     "addSet": "Adicionar série",
+    "addExercise": "Adicionar exercício",
     "selectExercise": "Selecionar exercício",
     "addingSetFor": "Adicionando séries para exercício",
     "selectingExercise": "Selecionando exercício para treino",
@@ -337,7 +338,7 @@
     "title": "Exercícios",
     "subtitle": "Biblioteca de exercícios",
     "search": "Buscar...",
-    "addExercise": "Adicionar exercício",
+    "addExercise": "Criar exercício",
     "newExercise": "Novo exercício",
     "exerciseName": "Nome",
     "exerciseNamePlaceholder": "ex. Tríceps francês",

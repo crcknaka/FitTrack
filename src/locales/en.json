@@ -207,6 +207,7 @@
   },
   "workout": {
     "addSet": "Add set",
+    "addExercise": "Add Exercise",
     "selectExercise": "Select exercise",
     "addingSetFor": "Adding sets for exercise",
     "selectingExercise": "Selecting exercise for workout",
@@ -338,7 +339,7 @@
     "title": "Exercises",
     "subtitle": "Exercise library",
     "search": "Search...",
-    "addExercise": "Add Exercise",
+    "addExercise": "Create Exercise",
     "newExercise": "New exercise",
     "exerciseName": "Name",
     "exerciseNamePlaceholder": "e.g. French press",

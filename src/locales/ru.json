@@ -255,6 +255,7 @@
   },
   "workout": {
     "addSet": "Добавить подход",
+    "addExercise": "Добавить упражнение",
     "selectExercise": "Выбрать упражнение",
     "addingSetFor": "Добавление подходов для упражнения",
     "selectingExercise": "Выбор упражнения для тренировки",
@@ -336,7 +337,7 @@
     "title": "Упражнения",
     "subtitle": "Библиотека упражнений",
     "search": "Поиск...",
-    "addExercise": "Добавить упражнение",
+    "addExercise": "Создать упражнение",
     "newExercise": "Новое упражнение",
     "exerciseName": "Название",
     "exerciseNamePlaceholder": "например, Французский жим",

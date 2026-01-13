@@ -207,6 +207,7 @@
   },
   "workout": {
     "addSet": "Ajouter une série",
+    "addExercise": "Ajouter un exercice",
     "selectExercise": "Sélectionner un exercice",
     "addingSetFor": "Ajout de séries pour l'exercice",
     "selectingExercise": "Sélection d'exercice pour l'entraînement",
@@ -337,7 +338,7 @@
     "title": "Exercices",
     "subtitle": "Bibliothèque d'exercices",
     "search": "Rechercher...",
-    "addExercise": "Ajouter un exercice",
+    "addExercise": "Créer un exercice",
     "newExercise": "Nouvel exercice",
     "exerciseName": "Nom",
     "exerciseNamePlaceholder": "ex. Développé couché",

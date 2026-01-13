@@ -809,7 +809,7 @@ export default function WorkoutDetail() {
           <DialogTrigger asChild>
             <Button className="w-full gap-2 shadow-lg">
               <Plus className="h-4 w-4" />
-              {t("workout.addSet")}
+              {t("workout.addExercise")}
             </Button>
           </DialogTrigger>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" aria-describedby="exercise-dialog-description">
