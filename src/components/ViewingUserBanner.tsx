@@ -6,10 +6,11 @@ import { useTranslation } from "react-i18next";
 interface ViewingUserBannerProps {
   avatar: string | null;
   displayName: string | null;
+  username?: string | null;
   onClose: () => void;
 }
 
-export function ViewingUserBanner({ avatar, displayName, onClose }: ViewingUserBannerProps) {
+export function ViewingUserBanner({ avatar, displayName, username, onClose }: ViewingUserBannerProps) {
   const { t } = useTranslation();
   return (
     <div className={cn(
@@ -26,6 +27,11 @@ export function ViewingUserBanner({ avatar, displayName, onClose }: ViewingUserB
         <p className="font-semibold text-foreground truncate">
           {displayName || t("common.anonymous")}
         </p>
+        {username && (
+          <p className="text-xs text-muted-foreground truncate">
+            @{username}
+          </p>
+        )}
       </div>
 
       <Button

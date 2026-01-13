@@ -288,7 +288,12 @@ export default function Workouts() {
                 <SelectItem key={profile.user_id} value={profile.user_id}>
                   <div className="flex items-center gap-2">
                     <span>{profile.avatar || "👤"}</span>
-                    <span className="truncate">{profile.display_name || t("common.anonymous")}</span>
+                    <div className="flex flex-col items-start">
+                      <span className="truncate">{profile.display_name || t("common.anonymous")}</span>
+                      {profile.username && (
+                        <span className="text-xs text-muted-foreground">@{profile.username}</span>
+                      )}
+                    </div>
                   </div>
                 </SelectItem>
               ))}
@@ -311,7 +316,12 @@ export default function Workouts() {
                 <SelectItem key={friendship.friend.user_id} value={friendship.friend.user_id}>
                   <div className="flex items-center gap-2">
                     <span>{friendship.friend.avatar || "👤"}</span>
-                    <span className="truncate">{friendship.friend.display_name || t("common.anonymous")}</span>
+                    <div className="flex flex-col items-start">
+                      <span className="truncate">{friendship.friend.display_name || t("common.anonymous")}</span>
+                      {friendship.friend.username && (
+                        <span className="text-xs text-muted-foreground">@{friendship.friend.username}</span>
+                      )}
+                    </div>
                   </div>
                 </SelectItem>
               ))}
@@ -324,6 +334,7 @@ export default function Workouts() {
         <ViewingUserBanner
           avatar={viewingUserProfile.avatar}
           displayName={viewingUserProfile.display_name}
+          username={viewingUserProfile.username}
           onClose={handleBackToMyWorkouts}
         />
       )}
