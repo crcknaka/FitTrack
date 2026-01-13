@@ -199,8 +199,10 @@ export function PdfExportButton() {
           sets: t("pdfReport.daily.sets"),
           reps: t("pdfReport.daily.reps"),
           weight: t("pdfReport.daily.weight"),
+          volume: t("pdfReport.daily.volume"),
           distance: t("pdfReport.daily.distance"),
           time: t("pdfReport.daily.time"),
+          plank: t("pdfReport.daily.plank"),
         },
         units: {
           kg: units.weight,

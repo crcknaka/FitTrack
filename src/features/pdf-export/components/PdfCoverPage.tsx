@@ -75,7 +75,10 @@ export function PdfCoverPage({
 
       {/* Stats Grid */}
       <View style={styles.statsGrid}>
-        <PdfStatsCard label={labels.workouts} value={stats.workoutCount} />
+        <PdfStatsCard
+          label={labels.workouts}
+          value={stats.workoutCount}
+        />
         <PdfStatsCard
           label={labels.totalSets}
           value={stats.totalSets.toLocaleString()}
@@ -96,6 +99,7 @@ export function PdfCoverPage({
           <PdfStatsCard
             label={labels.volume}
             value={stats.totalVolume.toLocaleString()}
+            unit={units.kg}
           />
         )}
         {stats.totalDistance > 0 && (

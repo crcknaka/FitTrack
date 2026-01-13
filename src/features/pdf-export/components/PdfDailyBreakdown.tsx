@@ -9,8 +9,10 @@ interface PdfDailyBreakdownProps {
     sets: string;
     reps: string;
     weight: string;
+    volume: string;
     distance: string;
     time: string;
+    plank: string;
   };
   units: {
     kg: string;
@@ -37,8 +39,8 @@ const localStyles = StyleSheet.create({
   dayCard: {
     marginBottom: 12,
     backgroundColor: colors.surface,
-    borderRadius: 6,
-    padding: 10,
+    borderRadius: 8,
+    padding: 12,
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -46,8 +48,8 @@ const localStyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
-    paddingBottom: 6,
+    marginBottom: 10,
+    paddingBottom: 8,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
@@ -55,13 +57,33 @@ const localStyles = StyleSheet.create({
     fontSize: 11,
     fontWeight: 700,
   },
-  daySummary: {
-    fontSize: 9,
+  dayStatsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  dayStat: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: colors.background,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  dayStatValue: {
+    fontSize: 8,
+    fontWeight: 700,
+    color: colors.text,
+  },
+  dayStatLabel: {
+    fontSize: 7,
     color: colors.textMuted,
   },
   exerciseRow: {
     flexDirection: "row",
-    paddingVertical: 4,
+    alignItems: "center",
+    paddingVertical: 5,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     borderBottomStyle: "dotted",
@@ -73,12 +95,13 @@ const localStyles = StyleSheet.create({
     flex: 1,
     fontSize: 9,
     color: colors.text,
+    fontWeight: 500,
   },
   exerciseDetails: {
-    fontSize: 9,
+    fontSize: 8,
     color: colors.textMuted,
     textAlign: "right",
-    width: 120,
+    width: 140,
   },
 });
 
@@ -138,18 +161,86 @@ export function PdfDailyBreakdown({
     return parts.join(" · ");
   };
 
+  // Format duration from minutes
+  const formatDuration = (minutes: number): string => {
+    if (minutes < 60) {
+      return `${Math.round(minutes)} ${units.min}`;
+    }
+    const hours = Math.floor(minutes / 60);
+    const mins = Math.round(minutes % 60);
+    return mins > 0 ? `${hours}h ${mins}${units.min}` : `${hours}h`;
+  };
+
+  // Format plank time from seconds
+  const formatPlankTime = (seconds: number): string => {
+    if (seconds < 60) {
+      return `${seconds}${units.sec}`;
+    }
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return secs > 0 ? `${mins}${units.min} ${secs}${units.sec}` : `${mins}${units.min}`;
+  };
+
   return (
     <View style={localStyles.container}>
       <Text style={[localStyles.title, { borderBottomColor: primaryColor }]}>{labels.title}</Text>
       {dailyData.map((day, dayIndex) => (
         <View key={dayIndex} style={localStyles.dayCard} wrap={false}>
+          {/* Day Header with Date */}
           <View style={localStyles.dayHeader}>
             <Text style={[localStyles.dayDate, { color: primaryColor }]}>{formatDate(day.date)}</Text>
-            <Text style={localStyles.daySummary}>
-              {day.sets} {labels.sets}
-              {day.reps > 0 ? ` · ${day.reps} ${labels.reps}` : ""}
-            </Text>
           </View>
+
+          {/* Day Stats Row */}
+          <View style={[localStyles.dayStatsRow, { marginBottom: 10 }]}>
+            {/* Sets */}
+            <View style={localStyles.dayStat}>
+              <Text style={localStyles.dayStatValue}>{day.sets}</Text>
+              <Text style={localStyles.dayStatLabel}>{labels.sets}</Text>
+            </View>
+
+            {/* Reps (if any) */}
+            {day.reps > 0 && (
+              <View style={localStyles.dayStat}>
+                <Text style={localStyles.dayStatValue}>{day.reps.toLocaleString()}</Text>
+                <Text style={localStyles.dayStatLabel}>{labels.reps}</Text>
+              </View>
+            )}
+
+            {/* Volume (if any) */}
+            {day.volume > 0 && (
+              <View style={localStyles.dayStat}>
+                <Text style={localStyles.dayStatValue}>{day.volume.toLocaleString()}</Text>
+                <Text style={localStyles.dayStatLabel}>{units.kg}</Text>
+              </View>
+            )}
+
+            {/* Distance (if any cardio) */}
+            {day.distance > 0 && (
+              <View style={localStyles.dayStat}>
+                <Text style={localStyles.dayStatValue}>{day.distance.toFixed(1)}</Text>
+                <Text style={localStyles.dayStatLabel}>{units.km}</Text>
+              </View>
+            )}
+
+            {/* Duration (if any cardio) */}
+            {day.durationMinutes > 0 && (
+              <View style={localStyles.dayStat}>
+                <Text style={localStyles.dayStatValue}>{formatDuration(day.durationMinutes)}</Text>
+                <Text style={localStyles.dayStatLabel}>{labels.time}</Text>
+              </View>
+            )}
+
+            {/* Plank time (if any timed) */}
+            {day.plankSeconds > 0 && (
+              <View style={localStyles.dayStat}>
+                <Text style={localStyles.dayStatValue}>{formatPlankTime(day.plankSeconds)}</Text>
+                <Text style={localStyles.dayStatLabel}>{labels.plank}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Exercises List */}
           {day.exercises.map((exercise, exIndex) => (
             <View
               key={exIndex}

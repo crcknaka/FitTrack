@@ -97,7 +97,7 @@ export function PdfWorkoutTable({
           <Text
             style={[
               styles.tableCell,
-              { width: colWidths.sets, textAlign: "center" },
+              { width: colWidths.sets, textAlign: "center", fontWeight: 700 },
             ]}
           >
             {exercise.sets}
@@ -126,7 +126,7 @@ export function PdfWorkoutTable({
               { width: colWidths.volume, textAlign: "right" },
             ]}
           >
-            {exercise.volume > 0 ? exercise.volume.toLocaleString() : "-"}
+            {exercise.volume > 0 ? `${exercise.volume.toLocaleString()} ${units.kg}` : "-"}
           </Text>
         </View>
       ))}

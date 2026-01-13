@@ -35,6 +35,9 @@ lerna-debug.log*
 *.sln
 *.sw?
 
+# Claude Code temp files
+tmpclaude-*
+
 # Supabase
 .branches
 .temp

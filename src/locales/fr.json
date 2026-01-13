@@ -491,8 +491,10 @@
       "sets": "séries",
       "reps": "reps",
       "weight": "poids",
+      "volume": "volume",
       "distance": "dist.",
-      "time": "temps"
+      "time": "temps",
+      "plank": "planche"
     }
   },
   "plurals": {

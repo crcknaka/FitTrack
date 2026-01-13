@@ -491,8 +491,10 @@
       "sets": "series",
       "reps": "reps",
       "weight": "peso",
+      "volume": "volumen",
       "distance": "dist.",
-      "time": "tiempo"
+      "time": "tiempo",
+      "plank": "plancha"
     }
   },
   "plurals": {

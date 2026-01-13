@@ -39,8 +39,10 @@ interface MonthlyReportPdfProps {
       sets: string;
       reps: string;
       weight: string;
+      volume: string;
       distance: string;
       time: string;
+      plank: string;
     };
     units: {
       kg: string;
@@ -147,8 +149,10 @@ export function MonthlyReportPdf({
               sets: translations.daily.sets,
               reps: translations.daily.reps,
               weight: translations.daily.weight,
+              volume: translations.daily.volume,
               distance: translations.daily.distance,
               time: translations.daily.time,
+              plank: translations.daily.plank,
             }}
             units={{
               kg: translations.units.kg,

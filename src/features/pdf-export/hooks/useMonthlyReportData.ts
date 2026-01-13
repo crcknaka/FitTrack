@@ -19,6 +19,9 @@ export interface DailyWorkoutData {
   reps: number;
   sets: number;
   volume: number;
+  distance: number;
+  durationMinutes: number;
+  plankSeconds: number;
   exercises: DailyExerciseData[];
 }
 
@@ -72,6 +75,9 @@ export function calculateMonthlyReportData(
       reps: number;
       sets: number;
       volume: number;
+      distance: number;
+      durationMinutes: number;
+      plankSeconds: number;
       exercises: Map<string, DailyExerciseData>;
     }
   >();
@@ -113,6 +119,9 @@ export function calculateMonthlyReportData(
           reps: 0,
           sets: 0,
           volume: 0,
+          distance: 0,
+          durationMinutes: 0,
+          plankSeconds: 0,
           exercises: new Map(),
         });
       }
@@ -179,11 +188,13 @@ export function calculateMonthlyReportData(
         case "cardio":
           if (set.distance_km) {
             totalDistance += set.distance_km;
+            dailyData.distance += set.distance_km;
             dailyExercise.distance =
               (dailyExercise.distance || 0) + set.distance_km;
           }
           if (set.duration_minutes) {
             totalDurationMinutes += set.duration_minutes;
+            dailyData.durationMinutes += set.duration_minutes;
             dailyExercise.duration =
               (dailyExercise.duration || 0) + set.duration_minutes;
           }
@@ -192,6 +203,7 @@ export function calculateMonthlyReportData(
         case "timed":
           if (set.plank_seconds) {
             totalPlankSeconds += set.plank_seconds;
+            dailyData.plankSeconds += set.plank_seconds;
             dailyExercise.plankSeconds =
               (dailyExercise.plankSeconds || 0) + set.plank_seconds;
           }
@@ -221,6 +233,9 @@ export function calculateMonthlyReportData(
       reps: data.reps,
       sets: data.sets,
       volume: data.volume,
+      distance: data.distance,
+      durationMinutes: data.durationMinutes,
+      plankSeconds: data.plankSeconds,
       exercises: Array.from(data.exercises.values()).sort(
         (a, b) => b.sets - a.sets
       ),

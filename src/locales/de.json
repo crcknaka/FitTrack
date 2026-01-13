@@ -492,8 +492,10 @@
       "sets": "Sätze",
       "reps": "Wdh.",
       "weight": "Gewicht",
+      "volume": "Volumen",
       "distance": "Dist.",
-      "time": "Zeit"
+      "time": "Zeit",
+      "plank": "Plank"
     }
   },
   "plurals": {
