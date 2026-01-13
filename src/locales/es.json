@@ -596,7 +596,17 @@
     },
     "exercises": {
       "preset": "Ejercicios predefinidos",
-      "comingSoon": "Próximamente"
+      "comingSoon": "Próximamente",
+      "userCreated": "Ejercicios de usuarios",
+      "userCreatedDesc": "Ejercicios creados por usuarios",
+      "search": "Buscar por nombre o creador...",
+      "total": "Total de ejercicios",
+      "neverUsed": "nunca usado",
+      "noResults": "No se encontraron ejercicios",
+      "noExercises": "Sin ejercicios de usuarios",
+      "confirmDelete": "¿Eliminar ejercicio?",
+      "confirmDeleteDesc": "El ejercicio \"{{name}}\" se eliminará permanentemente.",
+      "deleted": "Ejercicio eliminado"
     }
   }
 }

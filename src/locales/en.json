@@ -597,7 +597,17 @@
     },
     "exercises": {
       "preset": "Preset Exercises",
-      "comingSoon": "Coming soon"
+      "comingSoon": "Coming soon",
+      "userCreated": "User Exercises",
+      "userCreatedDesc": "Exercises created by users",
+      "search": "Search by name or creator...",
+      "total": "Total exercises",
+      "neverUsed": "never used",
+      "noResults": "No exercises found",
+      "noExercises": "No user exercises",
+      "confirmDelete": "Delete exercise?",
+      "confirmDeleteDesc": "Exercise \"{{name}}\" will be permanently deleted.",
+      "deleted": "Exercise deleted"
     }
   }
 }

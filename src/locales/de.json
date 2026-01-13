@@ -597,7 +597,17 @@
     },
     "exercises": {
       "preset": "Vordefinierte Übungen",
-      "comingSoon": "Demnächst verfügbar"
+      "comingSoon": "Demnächst verfügbar",
+      "userCreated": "Benutzer-Übungen",
+      "userCreatedDesc": "Von Benutzern erstellte Übungen",
+      "search": "Nach Name oder Ersteller suchen...",
+      "total": "Übungen insgesamt",
+      "neverUsed": "nie verwendet",
+      "noResults": "Keine Übungen gefunden",
+      "noExercises": "Keine Benutzer-Übungen",
+      "confirmDelete": "Übung löschen?",
+      "confirmDeleteDesc": "Die Übung \"{{name}}\" wird dauerhaft gelöscht.",
+      "deleted": "Übung gelöscht"
     }
   }
 }

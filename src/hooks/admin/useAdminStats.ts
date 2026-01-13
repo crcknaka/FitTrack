@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface AdminStats {
@@ -178,96 +178,137 @@ export interface UniqueExerciseWithUsers {
   }>;
 }
 
-export function useUniqueExercises() {
+export interface UserCreatedExercise {
+  id: string;
+  name: string;
+  type: string;
+  createdAt: string | null;
+  creator: {
+    userId: string;
+    displayName: string | null;
+    username: string | null;
+    avatar: string | null;
+  };
+  lastUsedDate: string | null;
+  usageCount: number;
+}
+
+export function useUserCreatedExercises() {
   return useQuery({
-    queryKey: ["admin", "uniqueExercises"],
-    queryFn: async (): Promise<UniqueExerciseWithUsers[]> => {
+    queryKey: ["admin", "userCreatedExercises"],
+    queryFn: async (): Promise<UserCreatedExercise[]> => {
       // Get only user-created exercises (not presets)
       const { data: userExercises } = await supabase
         .from("exercises")
-        .select("id, name, user_id")
-        .eq("is_preset", false);
+        .select("id, name, type, user_id, created_at")
+        .eq("is_preset", false)
+        .not("user_id", "is", null);
 
       if (!userExercises || userExercises.length === 0) return [];
 
       const exerciseIds = userExercises.map((e) => e.id);
+      const creatorIds = [...new Set(userExercises.map((e) => e.user_id).filter(Boolean))];
 
-      // Get workout sets for these exercises
-      const { data: setsData } = await supabase
-        .from("workout_sets")
-        .select(`
-          exercise_id,
-          workouts (
-            user_id
-          )
-        `)
-        .in("exercise_id", exerciseIds);
-
-      // Build exercise name map from userExercises
-      const exerciseNameMap = new Map(userExercises.map((e) => [e.id, e.name]));
-      const exerciseCreatorMap = new Map(userExercises.map((e) => [e.id, e.user_id]));
-
-      // Group exercises with unique users who used them
-      const exerciseUsers = new Map<string, { name: string; creatorId: string | null; userIds: Set<string> }>();
-
-      // Initialize all user exercises (even if not used in any workout)
-      userExercises.forEach((exercise) => {
-        exerciseUsers.set(exercise.id, {
-          name: exercise.name,
-          creatorId: exercise.user_id,
-          userIds: new Set(),
-        });
-      });
-
-      // Add users who used each exercise
-      setsData?.forEach((item) => {
-        const exerciseId = item.exercise_id;
-        const userId = (item.workouts as { user_id: string } | null)?.user_id;
-
-        if (!userId) return;
-
-        const existing = exerciseUsers.get(exerciseId);
-        if (existing) {
-          existing.userIds.add(userId);
-        }
-      });
-
-      // Get all unique user IDs (including creators)
-      const allUserIds = new Set<string>();
-      exerciseUsers.forEach((data) => {
-        if (data.creatorId) allUserIds.add(data.creatorId);
-        data.userIds.forEach((id) => allUserIds.add(id));
-      });
-
-      // Fetch user profiles
+      // Get creator profiles
       const { data: profiles } = await supabase
         .from("profiles")
         .select("user_id, display_name, username, avatar")
-        .in("user_id", Array.from(allUserIds));
+        .in("user_id", creatorIds);
 
       const profileMap = new Map(profiles?.map((p) => [p.user_id, p]) || []);
 
-      // Build result
-      const result: UniqueExerciseWithUsers[] = [];
-      exerciseUsers.forEach((data, exerciseId) => {
-        result.push({
-          exerciseId,
-          exerciseName: data.name,
-          users: Array.from(data.userIds).map((userId) => {
-            const profile = profileMap.get(userId);
-            return {
-              userId,
-              displayName: profile?.display_name || null,
-              username: profile?.username || null,
-              avatar: profile?.avatar || null,
-            };
-          }),
+      // Get usage data (workout sets) for these exercises - paginate
+      const exerciseUsageMap = new Map<string, { lastDate: string; count: number }>();
+      let offset = 0;
+      const pageSize = 1000;
+
+      while (true) {
+        const { data: setsData } = await supabase
+          .from("workout_sets")
+          .select("exercise_id, workout_id")
+          .in("exercise_id", exerciseIds)
+          .range(offset, offset + pageSize - 1);
+
+        if (!setsData || setsData.length === 0) break;
+
+        // Get workout dates for these sets
+        const workoutIds = [...new Set(setsData.map((s) => s.workout_id))];
+        const { data: workoutsData } = await supabase
+          .from("workouts")
+          .select("id, date")
+          .in("id", workoutIds);
+
+        const workoutDateMap = new Map(
+          workoutsData?.map((w) => [w.id, w.date]) || []
+        );
+
+        setsData.forEach((s) => {
+          const workoutDate = workoutDateMap.get(s.workout_id);
+          if (workoutDate) {
+            const existing = exerciseUsageMap.get(s.exercise_id);
+            if (existing) {
+              existing.count++;
+              if (workoutDate > existing.lastDate) {
+                existing.lastDate = workoutDate;
+              }
+            } else {
+              exerciseUsageMap.set(s.exercise_id, { lastDate: workoutDate, count: 1 });
+            }
+          }
         });
+
+        if (setsData.length < pageSize) break;
+        offset += pageSize;
+      }
+
+      // Build result
+      const result: UserCreatedExercise[] = userExercises.map((exercise) => {
+        const creatorProfile = profileMap.get(exercise.user_id!);
+        const usage = exerciseUsageMap.get(exercise.id);
+
+        return {
+          id: exercise.id,
+          name: exercise.name,
+          type: exercise.type,
+          createdAt: exercise.created_at,
+          creator: {
+            userId: exercise.user_id!,
+            displayName: creatorProfile?.display_name || null,
+            username: creatorProfile?.username || null,
+            avatar: creatorProfile?.avatar || null,
+          },
+          lastUsedDate: usage?.lastDate || null,
+          usageCount: usage?.count || 0,
+        };
       });
 
-      // Sort by exercise name
-      return result.sort((a, b) => a.exerciseName.localeCompare(b.exerciseName));
+      // Sort by creation date (newest first)
+      return result.sort((a, b) => {
+        if (!a.createdAt && !b.createdAt) return 0;
+        if (!a.createdAt) return 1;
+        if (!b.createdAt) return -1;
+        return b.createdAt.localeCompare(a.createdAt);
+      });
     },
     staleTime: 1000 * 60 * 5,
+  });
+}
+
+export function useDeleteUserExercise() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (exerciseId: string): Promise<void> => {
+      const { error } = await supabase
+        .from("exercises")
+        .delete()
+        .eq("id", exerciseId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin"] });
+      queryClient.invalidateQueries({ queryKey: ["exercises"] });
+    },
   });
 }

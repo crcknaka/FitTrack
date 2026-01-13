@@ -29,6 +29,7 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const AdminCleanup = lazy(() => import("@/pages/admin/AdminCleanup"));
 const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers"));
+const AdminExercises = lazy(() => import("@/pages/admin/AdminExercises"));
 
 // Schema version - increment this when you make breaking database changes
 const SCHEMA_VERSION = "2"; // Updated for cardio exercise type
@@ -203,6 +204,14 @@ function AppRoutes() {
           element={
             <AdminProtectedRoute>
               <AdminUsers />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/exercises"
+          element={
+            <AdminProtectedRoute>
+              <AdminExercises />
             </AdminProtectedRoute>
           }
         />
