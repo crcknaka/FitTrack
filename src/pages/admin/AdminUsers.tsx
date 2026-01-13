@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useAdminUsers, useSetAdminStatus } from "@/hooks/admin/useAdminUsers";
@@ -23,6 +24,7 @@ import { format } from "date-fns";
 
 export default function AdminUsers() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [adminDialog, setAdminDialog] = useState<{
     open: boolean;
@@ -88,7 +90,8 @@ export default function AdminUsers() {
                 {users.map((user) => (
                   <div
                     key={user.user_id}
-                    className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors"
+                    className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/?user=${user.user_id}`)}
                   >
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">
@@ -123,14 +126,15 @@ export default function AdminUsers() {
                     <Button
                       variant={user.is_admin ? "outline" : "secondary"}
                       size="sm"
-                      onClick={() =>
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setAdminDialog({
                           open: true,
                           userId: user.user_id,
                           userName: user.display_name || t("common.anonymous"),
                           makeAdmin: !user.is_admin,
-                        })
-                      }
+                        });
+                      }}
                     >
                       {user.is_admin ? (
                         <>
