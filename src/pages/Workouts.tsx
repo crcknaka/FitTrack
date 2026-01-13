@@ -509,7 +509,7 @@ export default function Workouts() {
             className="flex-1 gap-2 rounded-r-none bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold transition-all hover:shadow-xl active:scale-95"
           >
             <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
-            <span>{t("workouts.today")}</span>
+            <span>{t("workouts.new")}</span>
           </Button>
           <Button
             variant="default"
