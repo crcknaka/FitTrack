@@ -1059,7 +1059,7 @@ export default function WorkoutDetail() {
                     </div>
                     {selectedExercise.type === "weighted" && (
                       <div className="space-y-2">
-                        <Label>{t("workout.weight")} ({units.weight})</Label>
+                        <Label>{t("workout.weight")}</Label>
                         <Input
                           id="add-weight"
                           type="number"
@@ -1169,7 +1169,7 @@ export default function WorkoutDetail() {
                   </div>
                   {exercise?.type !== "bodyweight" && exercise?.type !== "timed" && (
                     <div className="text-center">
-                      {exercise?.type === "cardio" ? t("progress.time") : `${t("workout.weight")} (${units.weight})`}
+                      {exercise?.type === "cardio" ? t("progress.time") : t("workout.weight")}
                     </div>
                   )}
                   <div></div>
