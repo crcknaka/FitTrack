@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 interface ViewingUserBannerProps {
   avatar: string | null;
@@ -12,6 +13,14 @@ interface ViewingUserBannerProps {
 
 export function ViewingUserBanner({ avatar, displayName, username, onClose }: ViewingUserBannerProps) {
   const { t } = useTranslation();
+
+  const copyUsername = () => {
+    if (username) {
+      navigator.clipboard.writeText(`@${username}`);
+      toast.success(t("common.copied"));
+    }
+  };
+
   return (
     <div className={cn(
       "flex items-center gap-3 p-3 rounded-lg mb-4",
@@ -28,7 +37,10 @@ export function ViewingUserBanner({ avatar, displayName, username, onClose }: Vi
           {displayName || t("common.anonymous")}
         </p>
         {username && (
-          <p className="text-xs text-muted-foreground truncate">
+          <p
+            className="text-xs text-muted-foreground truncate hover:text-primary cursor-pointer transition-colors"
+            onClick={copyUsername}
+          >
             @{username}
           </p>
         )}
