@@ -32,83 +32,65 @@ export function useAdminStats() {
         .toISOString()
         .split("T")[0];
 
-      // Get total users
-      const { count: totalUsers } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true });
+      // Run all independent queries in parallel
+      const [
+        totalUsersResult,
+        totalWorkoutsResult,
+        workoutsTodayResult,
+        workoutsThisWeekResult,
+        workoutsThisMonthResult,
+        activeUsers7dResult,
+        activeUsers30dResult,
+        exerciseDataResult,
+        totalSetsResult,
+        newUsersThisWeekResult,
+        newUsersThisMonthResult,
+        topExercisesResult,
+        userWorkoutsResult,
+      ] = await Promise.all([
+        // Total users
+        supabase.from("profiles").select("*", { count: "exact", head: true }),
+        // Total workouts
+        supabase.from("workouts").select("*", { count: "exact", head: true }),
+        // Workouts today
+        supabase.from("workouts").select("*", { count: "exact", head: true }).gte("date", today),
+        // Workouts this week
+        supabase.from("workouts").select("*", { count: "exact", head: true }).gte("date", sevenDaysAgo),
+        // Workouts this month
+        supabase.from("workouts").select("*", { count: "exact", head: true }).gte("date", thirtyDaysAgo),
+        // Active users 7d
+        supabase.from("workouts").select("user_id").gte("date", sevenDaysAgo),
+        // Active users 30d
+        supabase.from("workouts").select("user_id").gte("date", thirtyDaysAgo),
+        // Exercise data for unique count
+        supabase.from("workout_sets").select("exercise_id"),
+        // Total sets
+        supabase.from("workout_sets").select("*", { count: "exact", head: true }),
+        // New users this week
+        supabase.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", sevenDaysAgo),
+        // New users this month
+        supabase.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", thirtyDaysAgo),
+        // Top exercises data
+        supabase.from("workout_sets").select(`exercise_id, exercises ( name )`),
+        // User workouts for top users
+        supabase.from("workouts").select("user_id"),
+      ]);
 
-      // Get total workouts
-      const { count: totalWorkouts } = await supabase
-        .from("workouts")
-        .select("*", { count: "exact", head: true });
+      const totalUsers = totalUsersResult.count;
+      const totalWorkouts = totalWorkoutsResult.count;
+      const workoutsToday = workoutsTodayResult.count;
+      const workoutsThisWeek = workoutsThisWeekResult.count;
+      const workoutsThisMonth = workoutsThisMonthResult.count;
+      const activeUsers7d = new Set(activeUsers7dResult.data?.map((w) => w.user_id)).size;
+      const activeUsers30d = new Set(activeUsers30dResult.data?.map((w) => w.user_id)).size;
+      const totalExercises = new Set(exerciseDataResult.data?.map((e) => e.exercise_id)).size;
+      const totalSets = totalSetsResult.count;
+      const newUsersThisWeek = newUsersThisWeekResult.count;
+      const newUsersThisMonth = newUsersThisMonthResult.count;
 
-      // Get workouts today
-      const { count: workoutsToday } = await supabase
-        .from("workouts")
-        .select("*", { count: "exact", head: true })
-        .gte("date", today);
-
-      // Get workouts this week
-      const { count: workoutsThisWeek } = await supabase
-        .from("workouts")
-        .select("*", { count: "exact", head: true })
-        .gte("date", sevenDaysAgo);
-
-      // Get workouts this month
-      const { count: workoutsThisMonth } = await supabase
-        .from("workouts")
-        .select("*", { count: "exact", head: true })
-        .gte("date", thirtyDaysAgo);
-
-      // Get active users in last 7 days (users with workouts)
-      const { data: activeUsers7dData } = await supabase
-        .from("workouts")
-        .select("user_id")
-        .gte("date", sevenDaysAgo);
-      const activeUsers7d = new Set(activeUsers7dData?.map((w) => w.user_id)).size;
-
-      // Get active users in last 30 days
-      const { data: activeUsers30dData } = await supabase
-        .from("workouts")
-        .select("user_id")
-        .gte("date", thirtyDaysAgo);
-      const activeUsers30d = new Set(activeUsers30dData?.map((w) => w.user_id)).size;
-
-      // Get total unique exercises used (from workout_sets table)
-      const { data: exerciseData } = await supabase
-        .from("workout_sets")
-        .select("exercise_id");
-      const totalExercises = new Set(exerciseData?.map((e) => e.exercise_id)).size;
-
-      // Get total sets count
-      const { count: totalSets } = await supabase
-        .from("workout_sets")
-        .select("*", { count: "exact", head: true });
-
-      // Get new users this week
-      const { count: newUsersThisWeek } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true })
-        .gte("created_at", sevenDaysAgo);
-
-      // Get new users this month
-      const { count: newUsersThisMonth } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true })
-        .gte("created_at", thirtyDaysAgo);
-
-      // Get top exercises by usage (count sets per exercise)
-      const { data: topExercisesData } = await supabase
-        .from("workout_sets")
-        .select(`
-          exercise_id,
-          exercises (
-            name
-          )
-        `);
-
+      // Process top exercises
       const exerciseCounts = new Map<string, { name: string; count: number }>();
-      topExercisesData?.forEach((item) => {
+      topExercisesResult.data?.forEach((item) => {
         const exerciseId = item.exercise_id;
         const name = (item.exercises as { name: string } | null)?.name || "Unknown";
         const existing = exerciseCounts.get(exerciseId);
@@ -123,13 +105,9 @@ export function useAdminStats() {
         .sort((a, b) => b.count - a.count)
         .slice(0, 10);
 
-      // Get top users by workout count
-      const { data: userWorkoutsData } = await supabase
-        .from("workouts")
-        .select("user_id");
-
+      // Process top users
       const userWorkoutCounts = new Map<string, number>();
-      userWorkoutsData?.forEach((w) => {
+      userWorkoutsResult.data?.forEach((w) => {
         const existing = userWorkoutCounts.get(w.user_id) || 0;
         userWorkoutCounts.set(w.user_id, existing + 1);
       });
@@ -139,6 +117,7 @@ export function useAdminStats() {
         .slice(0, 10)
         .map(([userId]) => userId);
 
+      // This query depends on topUserIds, so it runs after Promise.all
       const { data: topUserProfiles } = await supabase
         .from("profiles")
         .select("user_id, display_name, username, avatar")
@@ -155,13 +134,12 @@ export function useAdminStats() {
         workoutCount: userWorkoutCounts.get(userId) || 0,
       }));
 
-      // Calculate average workouts per user
+      // Calculate averages
       const avgWorkoutsPerUser =
         totalUsers && totalUsers > 0
           ? Math.round(((totalWorkouts || 0) / totalUsers) * 10) / 10
           : 0;
 
-      // Calculate average sets per workout
       const avgSetsPerWorkout =
         totalWorkouts && totalWorkouts > 0
           ? Math.round(((totalSets || 0) / totalWorkouts) * 10) / 10
