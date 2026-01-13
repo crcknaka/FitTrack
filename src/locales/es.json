@@ -142,6 +142,24 @@
       "music": "Música",
       "magic": "Magia",
       "misc": "Varios"
+    },
+    "deleteAccount": {
+      "title": "Eliminar cuenta",
+      "description": "Eliminar permanentemente tu cuenta y todos los datos",
+      "button": "Eliminar",
+      "dialogTitle": "Eliminar cuenta",
+      "warning": "¡Esta acción es irreversible! Se eliminará:",
+      "warningList": {
+        "profile": "Tu perfil y configuración",
+        "workouts": "Todos los entrenamientos y series",
+        "exercises": "Ejercicios que creaste",
+        "friends": "Lista de amigos y solicitudes",
+        "photos": "Todas las fotos de progreso"
+      },
+      "confirmLabel": "Escribe {{word}} para confirmar:",
+      "confirmButton": "Eliminar para siempre",
+      "success": "Cuenta eliminada exitosamente",
+      "error": "Error al eliminar la cuenta"
     }
   },
   "workouts": {

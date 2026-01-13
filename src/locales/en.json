@@ -142,6 +142,24 @@
       "music": "Music",
       "magic": "Magic",
       "misc": "Misc"
+    },
+    "deleteAccount": {
+      "title": "Delete Account",
+      "description": "Permanently delete your account and all data",
+      "button": "Delete",
+      "dialogTitle": "Delete Account",
+      "warning": "This action is irreversible! The following will be deleted:",
+      "warningList": {
+        "profile": "Your profile and settings",
+        "workouts": "All workouts and sets",
+        "exercises": "Exercises you created",
+        "friends": "Friends list and requests",
+        "photos": "All progress photos"
+      },
+      "confirmLabel": "Type {{word}} to confirm:",
+      "confirmButton": "Delete Forever",
+      "success": "Account deleted successfully",
+      "error": "Error deleting account"
     }
   },
   "workouts": {

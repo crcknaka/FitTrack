@@ -142,6 +142,24 @@
       "music": "Musique",
       "magic": "Magie",
       "misc": "Divers"
+    },
+    "deleteAccount": {
+      "title": "Supprimer le compte",
+      "description": "Supprimer définitivement votre compte et toutes les données",
+      "button": "Supprimer",
+      "dialogTitle": "Supprimer le compte",
+      "warning": "Cette action est irréversible ! Les éléments suivants seront supprimés :",
+      "warningList": {
+        "profile": "Votre profil et paramètres",
+        "workouts": "Tous les entraînements et séries",
+        "exercises": "Exercices que vous avez créés",
+        "friends": "Liste d'amis et demandes",
+        "photos": "Toutes les photos de progression"
+      },
+      "confirmLabel": "Tapez {{word}} pour confirmer :",
+      "confirmButton": "Supprimer définitivement",
+      "success": "Compte supprimé avec succès",
+      "error": "Erreur lors de la suppression du compte"
     }
   },
   "workouts": {

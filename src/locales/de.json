@@ -142,6 +142,24 @@
       "music": "Musik",
       "magic": "Magie",
       "misc": "Sonstige"
+    },
+    "deleteAccount": {
+      "title": "Konto löschen",
+      "description": "Konto und alle Daten dauerhaft löschen",
+      "button": "Löschen",
+      "dialogTitle": "Konto löschen",
+      "warning": "Diese Aktion ist unwiderruflich! Folgendes wird gelöscht:",
+      "warningList": {
+        "profile": "Dein Profil und Einstellungen",
+        "workouts": "Alle Trainings und Sätze",
+        "exercises": "Von dir erstellte Übungen",
+        "friends": "Freundesliste und Anfragen",
+        "photos": "Alle Fortschrittsfotos"
+      },
+      "confirmLabel": "Gib {{word}} zur Bestätigung ein:",
+      "confirmButton": "Endgültig löschen",
+      "success": "Konto erfolgreich gelöscht",
+      "error": "Fehler beim Löschen des Kontos"
     }
   },
   "workouts": {

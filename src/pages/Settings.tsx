@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
-import { User, LogOut, Lock, Eye, EyeOff, ChevronDown, Sun, Moon, Monitor, Download, FileJson, FileSpreadsheet, Check, Loader2, CloudOff, Palette, Globe, Ruler, Sparkles, Settings as SettingsIcon, UserCircle, Calendar, Scale, RulerIcon, Database, KeyRound, ShieldCheck, Crown, AtSign } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { User, LogOut, Lock, Eye, EyeOff, ChevronDown, Sun, Moon, Monitor, Download, FileJson, FileSpreadsheet, Check, Loader2, CloudOff, Palette, Globe, Ruler, Sparkles, Settings as SettingsIcon, UserCircle, Calendar, Scale, RulerIcon, Database, KeyRound, ShieldCheck, Crown, AtSign, Trash2, AlertTriangle } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useOfflineProfile, useOfflineUpdateProfile, useOfflineWorkouts } from "@/offline";
 import { format } from "date-fns";
@@ -21,6 +22,7 @@ import { useAccentColor, ACCENT_COLORS } from "@/hooks/useAccentColor";
 import { useUnits, UNIT_SYSTEMS } from "@/hooks/useUnits";
 import { useAutoFillLastSet } from "@/hooks/useAutoFillLastSet";
 import { useShowAdminNav } from "@/hooks/useShowAdminNav";
+import { useDeleteAccount } from "@/hooks/useDeleteAccount";
 import { LANGUAGES } from "@/lib/i18n";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -74,10 +76,12 @@ const AVATAR_CATEGORIES = [
 
 export default function Settings() {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const { data: profile, isLoading } = useOfflineProfile();
   const { data: workouts } = useOfflineWorkouts();
   const updateProfile = useOfflineUpdateProfile();
   const { signOut, updatePassword } = useAuth();
+  const deleteAccount = useDeleteAccount();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { accentColor, setAccentColor } = useAccentColor();
   const { unitSystem, setUnitSystem, units, convertWeight, convertHeight, toMetricWeight, toMetricHeight } = useUnits();
@@ -100,6 +104,11 @@ export default function Settings() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+
+  // Delete account state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const deleteConfirmWord = i18n.language === "ru" ? "УДАЛИТЬ" : "DELETE";
 
   // Section states - default open based on screen size
   // Desktop (md: 768px+): profile + app open, Mobile: only app open
@@ -337,6 +346,20 @@ export default function Settings() {
       toast.error(errorMessage);
     } finally {
       setPasswordLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== deleteConfirmWord) {
+      return;
+    }
+    try {
+      await deleteAccount.mutateAsync();
+      toast.success(t("settings.deleteAccount.success"));
+      navigate("/auth");
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : t("settings.deleteAccount.error");
+      toast.error(errorMessage);
     }
   };
 
@@ -1283,6 +1306,100 @@ export default function Settings() {
                     <FileJson className="h-4 w-4" />
                     JSON
                   </button>
+                </div>
+              </div>
+
+              {/* Delete Account */}
+              <div className="border-t border-border/50 pt-4 mt-4">
+                <div className="flex items-center gap-3 py-3">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-red-500/10">
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-destructive">{t("settings.deleteAccount.title")}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("settings.deleteAccount.description")}
+                    </p>
+                  </div>
+                  <Dialog open={deleteDialogOpen} onOpenChange={(open) => {
+                    setDeleteDialogOpen(open);
+                    if (!open) setDeleteConfirmText("");
+                  }}>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        {t("settings.deleteAccount.button")}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-destructive">
+                          <AlertTriangle className="h-5 w-5" />
+                          {t("settings.deleteAccount.dialogTitle")}
+                        </DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                          <p className="text-sm text-destructive font-medium mb-2">
+                            {t("settings.deleteAccount.warning")}
+                          </p>
+                          <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                            <li>{t("settings.deleteAccount.warningList.profile")}</li>
+                            <li>{t("settings.deleteAccount.warningList.workouts")}</li>
+                            <li>{t("settings.deleteAccount.warningList.exercises")}</li>
+                            <li>{t("settings.deleteAccount.warningList.friends")}</li>
+                            <li>{t("settings.deleteAccount.warningList.photos")}</li>
+                          </ul>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="deleteConfirm" className="text-sm">
+                            {t("settings.deleteAccount.confirmLabel", { word: deleteConfirmWord })}
+                          </Label>
+                          <Input
+                            id="deleteConfirm"
+                            value={deleteConfirmText}
+                            onChange={(e) => setDeleteConfirmText(e.target.value)}
+                            placeholder={deleteConfirmWord}
+                            className="text-center font-mono"
+                          />
+                        </div>
+                        <div className="flex gap-3">
+                          <Button
+                            variant="outline"
+                            className="flex-1"
+                            onClick={() => {
+                              setDeleteDialogOpen(false);
+                              setDeleteConfirmText("");
+                            }}
+                          >
+                            {t("common.cancel")}
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            className="flex-1 gap-1.5"
+                            disabled={deleteConfirmText !== deleteConfirmWord || deleteAccount.isPending}
+                            onClick={handleDeleteAccount}
+                          >
+                            {deleteAccount.isPending ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                {t("common.loading")}
+                              </>
+                            ) : (
+                              <>
+                                <Trash2 className="h-4 w-4" />
+                                {t("settings.deleteAccount.confirmButton")}
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
             </div>
