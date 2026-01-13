@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 export type AccentColor = "coral" | "blue" | "green" | "purple" | "pink" | "teal" | "amber" | "indigo" | "cyan" | "lime" | "orange" | "slate";
 
-const ACCENT_STORAGE_KEY = "fittrack-accent-color";
+const ACCENT_STORAGE_KEY = "reppy-accent-color";
 
 export function useAccentColor() {
   // Read initial value from DOM attribute (already set in main.tsx)

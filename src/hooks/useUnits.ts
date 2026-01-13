@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 export type UnitSystem = "metric" | "imperial";
 
-const UNITS_STORAGE_KEY = "fittrack-unit-system";
+const UNITS_STORAGE_KEY = "reppy-unit-system";
 
 // Conversion constants
 const KG_TO_LB = 2.20462;

@@ -17,7 +17,7 @@
 ## Как применить миграцию
 
 1. Открой [Supabase Dashboard](https://supabase.com/dashboard)
-2. Выбери свой проект FitTrack
+2. Выбери свой проект Reppy
 3. Перейди в раздел **SQL Editor**
 4. Создай новый запрос
 5. Скопируй содержимое файла `APPLY_FAVORITE_EXERCISES_MIGRATION.sql`

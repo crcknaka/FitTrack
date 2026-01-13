@@ -1,7 +1,7 @@
 {
-  "name": "FitTrack",
-  "short_name": "FitTrack",
-  "description": "Отслеживай свои тренировки и прогресс",
+  "name": "Reppy",
+  "short_name": "Reppy",
+  "description": "Your Training Mate",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

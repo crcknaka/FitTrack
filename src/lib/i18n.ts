@@ -36,7 +36,7 @@ i18n
     supportedLngs: ['en', 'es', 'pt-BR', 'de', 'fr', 'ru'],
     detection: {
       order: ['localStorage', 'navigator'],
-      lookupLocalStorage: 'fittrack-language',
+      lookupLocalStorage: 'reppy-language',
       caches: ['localStorage'],
     },
     interpolation: {

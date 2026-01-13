@@ -231,11 +231,11 @@ export function PdfExportButton() {
       link.href = url;
       let filename: string;
       if (periodType === "allTime") {
-        filename = "fittrack-all-time.pdf";
+        filename = "reppy-all-time.pdf";
       } else if (periodType === "week") {
-        filename = `fittrack-week-${format(selectedWeekStart, "yyyy-MM-dd")}.pdf`;
+        filename = `reppy-week-${format(selectedWeekStart, "yyyy-MM-dd")}.pdf`;
       } else {
-        filename = `fittrack-${selectedYear}-${String(selectedMonth + 1).padStart(2, "0")}.pdf`;
+        filename = `reppy-${selectedYear}-${String(selectedMonth + 1).padStart(2, "0")}.pdf`;
       }
       link.download = filename;
       document.body.appendChild(link);

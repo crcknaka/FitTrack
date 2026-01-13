@@ -107,7 +107,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           >
             <img
               src={logoSrc}
-              alt="FitTrack Logo"
+              alt="Reppy Logo"
               className="max-h-16 rounded-lg object-contain transition-all duration-300 group-hover:scale-105 group-hover:opacity-90"
             />
           </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const STORAGE_KEY = "fittrack-autofill-last-set";
+const STORAGE_KEY = "reppy-autofill-last-set";
 
 export function useAutoFillLastSet() {
   const [autoFillEnabled, setAutoFillEnabledState] = useState<boolean>(() => {

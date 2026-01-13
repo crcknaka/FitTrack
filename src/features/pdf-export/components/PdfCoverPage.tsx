@@ -67,7 +67,7 @@ export function PdfCoverPage({
       {/* Header with Logo */}
       <View style={styles.header}>
         <PdfLogo size={56} color={primaryColor} />
-        <Text style={[styles.logo, { color: primaryColor }]}>FITTRACK</Text>
+        <Text style={[styles.logo, { color: primaryColor }]}>REPPY</Text>
         <Text style={styles.title}>{labels.title}</Text>
         <Text style={styles.userName}>{userName}</Text>
         <Text style={[styles.monthYear, { color: primaryColor }]}>{monthYear}</Text>

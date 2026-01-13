@@ -95,7 +95,7 @@ export default function Auth() {
           <div className="flex items-center justify-center mb-8">
             <img
               src={logoSrc}
-              alt="FitTrack Logo"
+              alt="Reppy Logo"
               className="max-h-24 rounded-xl object-contain"
             />
           </div>
@@ -146,7 +146,7 @@ export default function Auth() {
         <div className="flex items-center justify-center mb-8">
           <img
             src={logoSrc}
-            alt="FitTrack Logo"
+            alt="Reppy Logo"
             className="max-h-24 rounded-xl object-contain"
           />
         </div>

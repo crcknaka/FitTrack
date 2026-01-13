@@ -30,7 +30,7 @@ const updateSW = registerSW({
 });
 
 // Initialize accent color from localStorage before React renders
-const ACCENT_STORAGE_KEY = "fittrack-accent-color";
+const ACCENT_STORAGE_KEY = "reppy-accent-color";
 const VALID_ACCENTS = ["coral", "blue", "green", "purple", "pink", "teal", "amber", "indigo", "cyan", "lime", "orange", "slate"];
 const storedAccent = localStorage.getItem(ACCENT_STORAGE_KEY);
 

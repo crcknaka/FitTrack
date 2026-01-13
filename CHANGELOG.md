@@ -1,10 +1,10 @@
-# Changelog - FitTrack
+# Changelog - Reppy
 
 ## Последние изменения
 
 ### Удаление упоминаний Lovable
 - Удалены все упоминания "lovable" из проекта
-- Обновлен README.md с описанием проекта FitTrack
+- Обновлен README.md с описанием проекта Reppy
 - Удалена зависимость `lovable-tagger` из package.json
 - Обновлены meta-теги в index.html
 

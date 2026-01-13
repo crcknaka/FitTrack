@@ -1,6 +1,6 @@
 import { useSyncExternalStore, useCallback } from "react";
 
-const STORAGE_KEY = "fittrack-show-admin-nav";
+const STORAGE_KEY = "reppy-show-admin-nav";
 
 // Get current value from localStorage
 function getSnapshot(): boolean {

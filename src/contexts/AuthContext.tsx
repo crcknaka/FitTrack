@@ -17,8 +17,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Initialize user from cache for immediate offline access
 function getCachedUser(): User | null {
-  const cachedUserId = localStorage.getItem("fittrack_user_id");
-  const cachedEmail = localStorage.getItem("fittrack_user_email");
+  const cachedUserId = localStorage.getItem("reppy_user_id");
+  const cachedEmail = localStorage.getItem("reppy_user_email");
   if (cachedUserId) {
     return { id: cachedUserId, email: cachedEmail } as User;
   }
@@ -40,15 +40,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Cache user ID for offline access
       if (currentUser) {
-        localStorage.setItem("fittrack_user_id", currentUser.id);
-        localStorage.setItem("fittrack_user_email", currentUser.email || "");
+        localStorage.setItem("reppy_user_id", currentUser.id);
+        localStorage.setItem("reppy_user_email", currentUser.email || "");
       }
 
       setLoading(false);
     }).catch(() => {
       // If offline, try to restore from cache
-      const cachedUserId = localStorage.getItem("fittrack_user_id");
-      const cachedEmail = localStorage.getItem("fittrack_user_email");
+      const cachedUserId = localStorage.getItem("reppy_user_id");
+      const cachedEmail = localStorage.getItem("reppy_user_email");
       if (cachedUserId) {
         // Create minimal user object for offline use
         setUser({ id: cachedUserId, email: cachedEmail } as User);
@@ -65,8 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Cache user ID for offline access
         if (currentUser) {
-          localStorage.setItem("fittrack_user_id", currentUser.id);
-          localStorage.setItem("fittrack_user_email", currentUser.email || "");
+          localStorage.setItem("reppy_user_id", currentUser.id);
+          localStorage.setItem("reppy_user_email", currentUser.email || "");
         }
 
         setLoading(false);
@@ -109,8 +109,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw error;
     }
     // Clear cached user data
-    localStorage.removeItem("fittrack_user_id");
-    localStorage.removeItem("fittrack_user_email");
+    localStorage.removeItem("reppy_user_id");
+    localStorage.removeItem("reppy_user_email");
     // Принудительно очищаем состояние на клиенте
     setSession(null);
     setUser(null);

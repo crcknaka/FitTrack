@@ -1,4 +1,4 @@
-# FitTrack
+# Reppy
 
 ## Project info
 

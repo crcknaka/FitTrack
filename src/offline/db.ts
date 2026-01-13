@@ -10,7 +10,7 @@ import type {
   IdMapping,
 } from "./types";
 
-class FitTrackOfflineDB extends Dexie {
+class ReppyOfflineDB extends Dexie {
   workouts!: Table<OfflineWorkout>;
   workoutSets!: Table<OfflineWorkoutSet>;
   exercises!: Table<OfflineExercise>;
@@ -21,7 +21,7 @@ class FitTrackOfflineDB extends Dexie {
   idMappings!: Table<IdMapping>;
 
   constructor() {
-    super("FitTrackOfflineDB");
+    super("ReppyOfflineDB");
 
     this.version(1).stores({
       workouts: "id, user_id, date, _synced, _lastModified",
@@ -47,7 +47,7 @@ class FitTrackOfflineDB extends Dexie {
   }
 }
 
-export const offlineDb = new FitTrackOfflineDB();
+export const offlineDb = new ReppyOfflineDB();
 
 // Helper to generate offline IDs
 export function generateOfflineId(): string {

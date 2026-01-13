@@ -195,7 +195,7 @@ export default function SharedWorkout() {
             {/* Logo */}
             <img
               src={logoSrc}
-              alt="FitTrack"
+              alt="Reppy"
               className="h-8 sm:h-10 w-auto cursor-pointer flex-shrink-0"
               onClick={() => navigate("/auth")}
             />

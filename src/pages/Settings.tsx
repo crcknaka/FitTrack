@@ -399,7 +399,7 @@ export default function Settings() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `fittrack-export-${format(new Date(), "yyyy-MM-dd")}.json`;
+      a.download = `reppy-export-${format(new Date(), "yyyy-MM-dd")}.json`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success(t("settings.exportedToJson"));
@@ -448,7 +448,7 @@ export default function Settings() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `fittrack-export-${format(new Date(), "yyyy-MM-dd")}.csv`;
+      a.download = `reppy-export-${format(new Date(), "yyyy-MM-dd")}.csv`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success(t("settings.exportedToCsv"));
@@ -537,7 +537,7 @@ export default function Settings() {
         }
       }
 
-      XLSX.writeFile(workbook, `fittrack-export-${format(new Date(), "yyyy-MM-dd")}.xlsx`);
+      XLSX.writeFile(workbook, `reppy-export-${format(new Date(), "yyyy-MM-dd")}.xlsx`);
       toast.success(t("settings.exportedToExcel"));
     } catch {
       toast.error(t("settings.exportError"));
@@ -573,7 +573,7 @@ export default function Settings() {
         <div className="md:hidden">
           <img
             src={logoSrc}
-            alt="FitTrack Logo"
+            alt="Reppy Logo"
             className="rounded-lg object-contain"
             style={{ height: '4rem', width: '10.5rem' }}
           />
