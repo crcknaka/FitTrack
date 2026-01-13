@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { format, isWithinInterval, startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, subMonths, parseISO, isToday, eachDayOfInterval, isSameDay, addMonths } from "date-fns";
 import { ru, enUS, es, ptBR, de, fr, Locale } from "date-fns/locale";
-import { Plus, Calendar as CalendarIcon, Trash2, Filter, X, Dumbbell, MessageSquare, List, ChevronLeft, ChevronRight, Activity, Timer, User } from "lucide-react";
+import { Plus, Calendar as CalendarIcon, CalendarPlus, Trash2, Filter, X, Dumbbell, MessageSquare, List, ChevronLeft, ChevronRight, Activity, Timer, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getExerciseName } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useUserWorkouts } from "@/hooks/useWorkouts";
 import { useOfflineWorkouts, useOfflineCreateWorkout, useOfflineDeleteWorkout } from "@/offline";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -69,7 +75,7 @@ export default function Workouts() {
   const createWorkout = useOfflineCreateWorkout();
   const deleteWorkout = useOfflineDeleteWorkout();
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [open, setOpen] = useState(false);
+  const [calendarDialogOpen, setCalendarDialogOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [workoutToDelete, setWorkoutToDelete] = useState<string | null>(null);
@@ -93,7 +99,19 @@ export default function Workouts() {
     setSearchParams(searchParams);
   };
 
-  const handleCreateWorkout = async () => {
+  const handleCreateWorkoutToday = async () => {
+    try {
+      const workout = await createWorkout.mutateAsync(
+        format(new Date(), "yyyy-MM-dd")
+      );
+      toast.success(t("workouts.workoutCreated"));
+      navigate(`/workout/${workout.id}`);
+    } catch (error) {
+      toast.error(t("workouts.createError"));
+    }
+  };
+
+  const handleCreateWorkoutForDate = async () => {
     if (!date) return;
 
     try {
@@ -101,7 +119,7 @@ export default function Workouts() {
         format(date, "yyyy-MM-dd")
       );
       toast.success(t("workouts.workoutCreated"));
-      setOpen(false);
+      setCalendarDialogOpen(false);
       navigate(`/workout/${workout.id}`);
     } catch (error) {
       toast.error(t("workouts.createError"));
@@ -273,32 +291,26 @@ export default function Workouts() {
               </Button>
             </div>
             {!isViewingOther && (
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button className="gap-2 shadow-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold transition-all hover:shadow-xl hover:scale-105 active:scale-95">
-                    <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
-                    <span className="hidden sm:inline">{t("workouts.new")}</span>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    locale={dateLocale}
-                    className="rounded-md border-0"
-                  />
-                  <div className="p-3 border-t border-border">
-                    <Button
-                      className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-semibold"
-                      onClick={handleCreateWorkout}
-                      disabled={createWorkout.isPending}
-                    >
-                      {t("workouts.createFor")} {date && format(date, "d MMM", { locale: dateLocale })}
-                    </Button>
-                  </div>
-                </PopoverContent>
-              </Popover>
+              <div className="flex shadow-lg rounded-md overflow-hidden">
+                {/* Main button - creates workout for today */}
+                <Button
+                  onClick={handleCreateWorkoutToday}
+                  disabled={createWorkout.isPending}
+                  className="gap-2 rounded-r-none bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold transition-all hover:shadow-xl active:scale-95"
+                >
+                  <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
+                  <span>{t("workouts.today")}</span>
+                </Button>
+                {/* Dropdown button - opens date picker */}
+                <Button
+                  variant="default"
+                  size="icon"
+                  onClick={() => setCalendarDialogOpen(true)}
+                  className="rounded-l-none border-l border-primary-foreground/20 bg-primary/90 hover:bg-primary/80 text-primary-foreground px-2"
+                >
+                  <CalendarPlus className="h-4 w-4" />
+                </Button>
+              </div>
             )}
           </div>
         </div>
@@ -857,6 +869,31 @@ export default function Workouts() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Calendar Dialog for creating workout on other date */}
+      <Dialog open={calendarDialogOpen} onOpenChange={setCalendarDialogOpen}>
+        <DialogContent className="sm:max-w-[350px] p-0">
+          <DialogHeader className="p-4 pb-0">
+            <DialogTitle>{t("workouts.otherDate")}</DialogTitle>
+          </DialogHeader>
+          <div className="p-4 pt-2">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              locale={dateLocale}
+              className="rounded-md border-0 mx-auto"
+            />
+            <Button
+              className="w-full mt-4 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-semibold"
+              onClick={handleCreateWorkoutForDate}
+              disabled={createWorkout.isPending}
+            >
+              {t("workouts.createFor")} {date && format(date, "d MMM", { locale: dateLocale })}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

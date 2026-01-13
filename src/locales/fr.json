@@ -157,6 +157,8 @@
   "workouts": {
     "title": "Entraînements",
     "new": "Nouveau",
+    "today": "Aujourd'hui",
+    "otherDate": "Autre date...",
     "createFor": "Créer pour",
     "workoutCreated": "Entraînement créé !",
     "createError": "Erreur de création",

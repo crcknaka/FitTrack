@@ -157,6 +157,8 @@
   "workouts": {
     "title": "Workouts",
     "new": "New",
+    "today": "Today",
+    "otherDate": "Other date...",
     "createFor": "Create for",
     "workoutCreated": "Workout created!",
     "createError": "Error creating workout",
