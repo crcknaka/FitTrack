@@ -7,9 +7,16 @@ export interface AdminStats {
   activeUsers30d: number;
   totalWorkouts: number;
   workoutsToday: number;
+  workoutsThisWeek: number;
+  workoutsThisMonth: number;
   totalExercises: number;
+  totalSets: number;
   avgWorkoutsPerUser: number;
+  avgSetsPerWorkout: number;
+  newUsersThisWeek: number;
+  newUsersThisMonth: number;
   topExercises: Array<{ name: string; count: number }>;
+  topUsers: Array<{ name: string; avatar: string | null; workoutCount: number }>;
 }
 
 export function useAdminStats() {
@@ -41,6 +48,18 @@ export function useAdminStats() {
         .select("*", { count: "exact", head: true })
         .gte("date", today);
 
+      // Get workouts this week
+      const { count: workoutsThisWeek } = await supabase
+        .from("workouts")
+        .select("*", { count: "exact", head: true })
+        .gte("date", sevenDaysAgo);
+
+      // Get workouts this month
+      const { count: workoutsThisMonth } = await supabase
+        .from("workouts")
+        .select("*", { count: "exact", head: true })
+        .gte("date", thirtyDaysAgo);
+
       // Get active users in last 7 days (users with workouts)
       const { data: activeUsers7dData } = await supabase
         .from("workouts")
@@ -60,6 +79,23 @@ export function useAdminStats() {
         .from("workout_sets")
         .select("exercise_id");
       const totalExercises = new Set(exerciseData?.map((e) => e.exercise_id)).size;
+
+      // Get total sets count
+      const { count: totalSets } = await supabase
+        .from("workout_sets")
+        .select("*", { count: "exact", head: true });
+
+      // Get new users this week
+      const { count: newUsersThisWeek } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", sevenDaysAgo);
+
+      // Get new users this month
+      const { count: newUsersThisMonth } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", thirtyDaysAgo);
 
       // Get top exercises by usage (count sets per exercise)
       const { data: topExercisesData } = await supabase
@@ -87,10 +123,47 @@ export function useAdminStats() {
         .sort((a, b) => b.count - a.count)
         .slice(0, 10);
 
+      // Get top users by workout count
+      const { data: userWorkoutsData } = await supabase
+        .from("workouts")
+        .select("user_id");
+
+      const userWorkoutCounts = new Map<string, number>();
+      userWorkoutsData?.forEach((w) => {
+        const existing = userWorkoutCounts.get(w.user_id) || 0;
+        userWorkoutCounts.set(w.user_id, existing + 1);
+      });
+
+      const topUserIds = Array.from(userWorkoutCounts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([userId]) => userId);
+
+      const { data: topUserProfiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, avatar")
+        .in("user_id", topUserIds);
+
+      const profileMap = new Map(
+        topUserProfiles?.map((p) => [p.user_id, p]) || []
+      );
+
+      const topUsers = topUserIds.map((userId) => ({
+        name: profileMap.get(userId)?.display_name || "Unknown",
+        avatar: profileMap.get(userId)?.avatar || null,
+        workoutCount: userWorkoutCounts.get(userId) || 0,
+      }));
+
       // Calculate average workouts per user
       const avgWorkoutsPerUser =
         totalUsers && totalUsers > 0
           ? Math.round(((totalWorkouts || 0) / totalUsers) * 10) / 10
+          : 0;
+
+      // Calculate average sets per workout
+      const avgSetsPerWorkout =
+        totalWorkouts && totalWorkouts > 0
+          ? Math.round(((totalSets || 0) / totalWorkouts) * 10) / 10
           : 0;
 
       return {
@@ -99,9 +172,16 @@ export function useAdminStats() {
         activeUsers30d,
         totalWorkouts: totalWorkouts || 0,
         workoutsToday: workoutsToday || 0,
+        workoutsThisWeek: workoutsThisWeek || 0,
+        workoutsThisMonth: workoutsThisMonth || 0,
         totalExercises,
+        totalSets: totalSets || 0,
         avgWorkoutsPerUser,
+        avgSetsPerWorkout,
+        newUsersThisWeek: newUsersThisWeek || 0,
+        newUsersThisMonth: newUsersThisMonth || 0,
         topExercises,
+        topUsers,
       };
     },
     staleTime: 1000 * 60 * 5, // 5 minutes

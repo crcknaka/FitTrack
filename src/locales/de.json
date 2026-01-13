@@ -527,13 +527,24 @@
       "exercises": "Übungen"
     },
     "stats": {
+      "usersSection": "Benutzer",
+      "workoutsSection": "Trainings",
+      "activitySection": "Aktivität",
       "totalUsers": "Gesamte Benutzer",
       "activeUsers7d": "Aktiv (7 Tage)",
       "activeUsers30d": "Aktiv (30 Tage)",
+      "newUsersThisWeek": "Neu diese Woche",
+      "newUsersThisMonth": "Neu diesen Monat",
       "totalWorkouts": "Gesamte Trainings",
       "workoutsToday": "Heute",
+      "workoutsThisWeek": "Diese Woche",
+      "workoutsThisMonth": "Diesen Monat",
+      "totalSets": "Gesamte Sätze",
+      "totalExercises": "Einzigartige Übungen",
       "avgWorkoutsPerUser": "Durchschnitt pro Benutzer",
+      "avgSetsPerWorkout": "Sätze pro Training",
       "topExercises": "Top Übungen",
+      "topUsers": "Top Benutzer",
       "uses": "Verwendungen",
       "last7days": "letzte 7 Tage",
       "last30days": "letzte 30 Tage"
@@ -544,6 +555,9 @@
       "emptyWorkoutsCount": "leere Trainings",
       "orphanedExercises": "Verwaiste Einträge",
       "orphanedExercisesDesc": "Übungen ohne Training",
+      "unusedExercises": "Ungenutzte Übungen",
+      "unusedExercisesDesc": "Benutzer-Übungen, die über 30 Tage nicht verwendet wurden",
+      "unusedExercisesCount": "ungenutzte Übungen",
       "found": "Gefunden",
       "deleteAll": "Alle löschen",
       "deleteSelected": "Ausgewählte löschen",
@@ -551,7 +565,11 @@
       "confirmTitle": "Löschen bestätigen",
       "confirmEmptyWorkouts": "{{count}} leere Trainings löschen? Dies kann nicht rückgängig gemacht werden.",
       "confirmOrphanedExercises": "{{count}} verwaiste Einträge löschen? Dies kann nicht rückgängig gemacht werden.",
-      "deleted": "{{count}} Einträge gelöscht"
+      "confirmUnusedExercises": "{{count}} ungenutzte Übungen löschen? Dies kann nicht rückgängig gemacht werden.",
+      "deleted": "{{count}} Einträge gelöscht",
+      "idCopied": "ID in die Zwischenablage kopiert",
+      "lastUsed": "zuletzt verwendet {{date}}",
+      "neverUsed": "nie verwendet"
     },
     "users": {
       "list": "Benutzerliste",

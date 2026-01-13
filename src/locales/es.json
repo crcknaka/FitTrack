@@ -526,13 +526,24 @@
       "exercises": "Ejercicios"
     },
     "stats": {
+      "usersSection": "Usuarios",
+      "workoutsSection": "Entrenamientos",
+      "activitySection": "Actividad",
       "totalUsers": "Total de usuarios",
       "activeUsers7d": "Activos (7 días)",
       "activeUsers30d": "Activos (30 días)",
+      "newUsersThisWeek": "Nuevos esta semana",
+      "newUsersThisMonth": "Nuevos este mes",
       "totalWorkouts": "Total entrenamientos",
       "workoutsToday": "Hoy",
+      "workoutsThisWeek": "Esta semana",
+      "workoutsThisMonth": "Este mes",
+      "totalSets": "Total de series",
+      "totalExercises": "Ejercicios únicos",
       "avgWorkoutsPerUser": "Promedio por usuario",
+      "avgSetsPerWorkout": "Series por entrenamiento",
       "topExercises": "Top ejercicios",
+      "topUsers": "Top usuarios",
       "uses": "usos",
       "last7days": "últimos 7 días",
       "last30days": "últimos 30 días"
@@ -543,6 +554,9 @@
       "emptyWorkoutsCount": "entrenamientos vacíos",
       "orphanedExercises": "Registros huérfanos",
       "orphanedExercisesDesc": "Ejercicios sin entrenamiento",
+      "unusedExercises": "Ejercicios no usados",
+      "unusedExercisesDesc": "Ejercicios de usuario sin usar por más de 30 días",
+      "unusedExercisesCount": "ejercicios no usados",
       "found": "Encontrados",
       "deleteAll": "Eliminar todo",
       "deleteSelected": "Eliminar seleccionados",
@@ -550,7 +564,11 @@
       "confirmTitle": "Confirmar eliminación",
       "confirmEmptyWorkouts": "¿Eliminar {{count}} entrenamientos vacíos? Esto no se puede deshacer.",
       "confirmOrphanedExercises": "¿Eliminar {{count}} registros huérfanos? Esto no se puede deshacer.",
-      "deleted": "Eliminados {{count}} registros"
+      "confirmUnusedExercises": "¿Eliminar {{count}} ejercicios no usados? Esto no se puede deshacer.",
+      "deleted": "Eliminados {{count}} registros",
+      "idCopied": "ID copiado al portapapeles",
+      "lastUsed": "último uso {{date}}",
+      "neverUsed": "nunca usado"
     },
     "users": {
       "list": "Lista de usuarios",

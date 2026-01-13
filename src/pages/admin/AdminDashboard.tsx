@@ -9,7 +9,11 @@ import {
   Dumbbell,
   TrendingUp,
   Trophy,
+  UserPlus,
+  Hash,
+  BarChart3,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function StatCard({
@@ -66,53 +70,123 @@ export default function AdminDashboard() {
           <p className="text-muted-foreground">{t("admin.dashboardDesc")}</p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {isLoading ? (
-            <>
-              <StatCardSkeleton />
-              <StatCardSkeleton />
-              <StatCardSkeleton />
-              <StatCardSkeleton />
-              <StatCardSkeleton />
-              <StatCardSkeleton />
-            </>
-          ) : (
-            <>
-              <StatCard
-                title={t("admin.stats.totalUsers")}
-                value={stats?.totalUsers || 0}
-                icon={Users}
-              />
-              <StatCard
-                title={t("admin.stats.activeUsers7d")}
-                value={stats?.activeUsers7d || 0}
-                icon={Users}
-                description={t("admin.stats.last7days")}
-              />
-              <StatCard
-                title={t("admin.stats.activeUsers30d")}
-                value={stats?.activeUsers30d || 0}
-                icon={Users}
-                description={t("admin.stats.last30days")}
-              />
-              <StatCard
-                title={t("admin.stats.totalWorkouts")}
-                value={stats?.totalWorkouts || 0}
-                icon={Activity}
-              />
-              <StatCard
-                title={t("admin.stats.workoutsToday")}
-                value={stats?.workoutsToday || 0}
-                icon={Calendar}
-              />
-              <StatCard
-                title={t("admin.stats.avgWorkoutsPerUser")}
-                value={stats?.avgWorkoutsPerUser || 0}
-                icon={TrendingUp}
-              />
-            </>
-          )}
+        {/* Users Stats */}
+        <div>
+          <h2 className="text-lg font-semibold mb-3">{t("admin.stats.usersSection")}</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {isLoading ? (
+              <>
+                <StatCardSkeleton />
+                <StatCardSkeleton />
+                <StatCardSkeleton />
+                <StatCardSkeleton />
+              </>
+            ) : (
+              <>
+                <StatCard
+                  title={t("admin.stats.totalUsers")}
+                  value={stats?.totalUsers || 0}
+                  icon={Users}
+                />
+                <StatCard
+                  title={t("admin.stats.activeUsers7d")}
+                  value={stats?.activeUsers7d || 0}
+                  icon={Users}
+                  description={t("admin.stats.last7days")}
+                />
+                <StatCard
+                  title={t("admin.stats.newUsersThisWeek")}
+                  value={stats?.newUsersThisWeek || 0}
+                  icon={UserPlus}
+                  description={t("admin.stats.last7days")}
+                />
+                <StatCard
+                  title={t("admin.stats.newUsersThisMonth")}
+                  value={stats?.newUsersThisMonth || 0}
+                  icon={UserPlus}
+                  description={t("admin.stats.last30days")}
+                />
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Workouts Stats */}
+        <div>
+          <h2 className="text-lg font-semibold mb-3">{t("admin.stats.workoutsSection")}</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {isLoading ? (
+              <>
+                <StatCardSkeleton />
+                <StatCardSkeleton />
+                <StatCardSkeleton />
+                <StatCardSkeleton />
+              </>
+            ) : (
+              <>
+                <StatCard
+                  title={t("admin.stats.totalWorkouts")}
+                  value={stats?.totalWorkouts || 0}
+                  icon={Activity}
+                />
+                <StatCard
+                  title={t("admin.stats.workoutsToday")}
+                  value={stats?.workoutsToday || 0}
+                  icon={Calendar}
+                />
+                <StatCard
+                  title={t("admin.stats.workoutsThisWeek")}
+                  value={stats?.workoutsThisWeek || 0}
+                  icon={Calendar}
+                  description={t("admin.stats.last7days")}
+                />
+                <StatCard
+                  title={t("admin.stats.workoutsThisMonth")}
+                  value={stats?.workoutsThisMonth || 0}
+                  icon={Calendar}
+                  description={t("admin.stats.last30days")}
+                />
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Activity Stats */}
+        <div>
+          <h2 className="text-lg font-semibold mb-3">{t("admin.stats.activitySection")}</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {isLoading ? (
+              <>
+                <StatCardSkeleton />
+                <StatCardSkeleton />
+                <StatCardSkeleton />
+                <StatCardSkeleton />
+              </>
+            ) : (
+              <>
+                <StatCard
+                  title={t("admin.stats.totalSets")}
+                  value={stats?.totalSets || 0}
+                  icon={Hash}
+                />
+                <StatCard
+                  title={t("admin.stats.totalExercises")}
+                  value={stats?.totalExercises || 0}
+                  icon={Dumbbell}
+                />
+                <StatCard
+                  title={t("admin.stats.avgWorkoutsPerUser")}
+                  value={stats?.avgWorkoutsPerUser || 0}
+                  icon={TrendingUp}
+                />
+                <StatCard
+                  title={t("admin.stats.avgSetsPerWorkout")}
+                  value={stats?.avgSetsPerWorkout || 0}
+                  icon={BarChart3}
+                />
+              </>
+            )}
+          </div>
         </div>
 
         {/* Top Exercises */}
@@ -149,6 +223,60 @@ export default function AdminDashboard() {
                     </div>
                     <span className="text-sm text-muted-foreground">
                       {exercise.count} {t("admin.stats.uses")}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-center py-4">
+                {t("common.noData")}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Top Users */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              {t("admin.stats.topUsers")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                ))}
+              </div>
+            ) : stats?.topUsers && stats.topUsers.length > 0 ? (
+              <div className="space-y-3">
+                {stats.topUsers.map((user, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-muted-foreground w-6">
+                        #{index + 1}
+                      </span>
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.avatar || undefined} />
+                        <AvatarFallback>
+                          {user.name?.charAt(0)?.toUpperCase() || "?"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium">{user.name}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {user.workoutCount} {t("admin.users.workouts")}
                     </span>
                   </div>
                 ))}

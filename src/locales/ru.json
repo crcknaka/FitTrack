@@ -529,13 +529,24 @@
       "exercises": "Упражнения"
     },
     "stats": {
+      "usersSection": "Пользователи",
+      "workoutsSection": "Тренировки",
+      "activitySection": "Активность",
       "totalUsers": "Всего пользователей",
       "activeUsers7d": "Активные (7 дней)",
       "activeUsers30d": "Активные (30 дней)",
+      "newUsersThisWeek": "Новые за неделю",
+      "newUsersThisMonth": "Новые за месяц",
       "totalWorkouts": "Всего тренировок",
       "workoutsToday": "Сегодня",
+      "workoutsThisWeek": "За неделю",
+      "workoutsThisMonth": "За месяц",
+      "totalSets": "Всего подходов",
+      "totalExercises": "Уникальных упражнений",
       "avgWorkoutsPerUser": "Средняя на пользователя",
+      "avgSetsPerWorkout": "Подходов на тренировку",
       "topExercises": "Топ упражнений",
+      "topUsers": "Топ пользователей",
       "uses": "использований",
       "last7days": "за последние 7 дней",
       "last30days": "за последние 30 дней"
@@ -546,6 +557,9 @@
       "emptyWorkoutsCount": "пустых тренировок",
       "orphanedExercises": "Осиротевшие записи",
       "orphanedExercisesDesc": "Упражнения без привязки к тренировке",
+      "unusedExercises": "Неиспользуемые упражнения",
+      "unusedExercisesDesc": "Упражнения пользователей, не использованные более 30 дней",
+      "unusedExercisesCount": "неиспользуемых упражнений",
       "found": "Найдено",
       "deleteAll": "Удалить все",
       "deleteSelected": "Удалить выбранные",
@@ -553,7 +567,11 @@
       "confirmTitle": "Подтверждение удаления",
       "confirmEmptyWorkouts": "Удалить {{count}} пустых тренировок? Это действие нельзя отменить.",
       "confirmOrphanedExercises": "Удалить {{count}} осиротевших записей? Это действие нельзя отменить.",
-      "deleted": "Удалено {{count}} записей"
+      "confirmUnusedExercises": "Удалить {{count}} неиспользуемых упражнений? Это действие нельзя отменить.",
+      "deleted": "Удалено {{count}} записей",
+      "idCopied": "ID скопирован в буфер обмена",
+      "lastUsed": "последнее использование {{date}}",
+      "neverUsed": "никогда не использовалось"
     },
     "users": {
       "list": "Список пользователей",

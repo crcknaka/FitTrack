@@ -5,7 +5,6 @@ import {
   LayoutDashboard,
   Trash2,
   Users,
-  Dumbbell,
   ArrowLeft,
 } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -19,7 +18,6 @@ const adminNavItems = [
   { to: "/admin", icon: LayoutDashboard, labelKey: "admin.nav.dashboard", exact: true },
   { to: "/admin/cleanup", icon: Trash2, labelKey: "admin.nav.cleanup" },
   { to: "/admin/users", icon: Users, labelKey: "admin.nav.users" },
-  { to: "/admin/exercises", icon: Dumbbell, labelKey: "admin.nav.exercises" },
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {

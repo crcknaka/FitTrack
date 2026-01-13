@@ -527,13 +527,24 @@
       "exercises": "Exercises"
     },
     "stats": {
+      "usersSection": "Users",
+      "workoutsSection": "Workouts",
+      "activitySection": "Activity",
       "totalUsers": "Total Users",
       "activeUsers7d": "Active (7 days)",
       "activeUsers30d": "Active (30 days)",
+      "newUsersThisWeek": "New This Week",
+      "newUsersThisMonth": "New This Month",
       "totalWorkouts": "Total Workouts",
       "workoutsToday": "Today",
+      "workoutsThisWeek": "This Week",
+      "workoutsThisMonth": "This Month",
+      "totalSets": "Total Sets",
+      "totalExercises": "Unique Exercises",
       "avgWorkoutsPerUser": "Avg per User",
+      "avgSetsPerWorkout": "Avg Sets per Workout",
       "topExercises": "Top Exercises",
+      "topUsers": "Top Users",
       "uses": "uses",
       "last7days": "last 7 days",
       "last30days": "last 30 days"
@@ -544,6 +555,9 @@
       "emptyWorkoutsCount": "empty workouts",
       "orphanedExercises": "Orphaned Records",
       "orphanedExercisesDesc": "Exercises without a workout",
+      "unusedExercises": "Unused Exercises",
+      "unusedExercisesDesc": "User-created exercises not used for 30+ days",
+      "unusedExercisesCount": "unused exercises",
       "found": "Found",
       "deleteAll": "Delete All",
       "deleteSelected": "Delete Selected",
@@ -551,7 +565,11 @@
       "confirmTitle": "Confirm Deletion",
       "confirmEmptyWorkouts": "Delete {{count}} empty workouts? This cannot be undone.",
       "confirmOrphanedExercises": "Delete {{count}} orphaned records? This cannot be undone.",
-      "deleted": "Deleted {{count}} records"
+      "confirmUnusedExercises": "Delete {{count}} unused exercises? This cannot be undone.",
+      "deleted": "Deleted {{count}} records",
+      "idCopied": "ID copied to clipboard",
+      "lastUsed": "last used {{date}}",
+      "neverUsed": "never used"
     },
     "users": {
       "list": "User List",
