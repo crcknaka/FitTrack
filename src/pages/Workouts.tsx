@@ -879,13 +879,13 @@ export default function Workouts() {
           <DialogHeader className="p-4 pb-0">
             <DialogTitle>{t("workouts.otherDate")}</DialogTitle>
           </DialogHeader>
-          <div className="p-4 pt-2">
+          <div className="p-4 pt-2 flex flex-col items-center">
             <Calendar
               mode="single"
               selected={date}
               onSelect={setDate}
               locale={dateLocale}
-              className="rounded-md border-0 mx-auto"
+              className="rounded-md border-0"
             />
             <Button
               className="w-full mt-4 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-semibold"
