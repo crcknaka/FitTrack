@@ -115,7 +115,6 @@ export type Database = {
           date_of_birth: string | null
           height: number | null
           avatar: string | null
-          is_skuf: number | null
         }
         Insert: {
           created_at?: string
@@ -127,7 +126,6 @@ export type Database = {
           date_of_birth?: string | null
           height?: number | null
           avatar?: string | null
-          is_skuf?: number | null
         }
         Update: {
           created_at?: string
@@ -139,7 +137,6 @@ export type Database = {
           date_of_birth?: string | null
           height?: number | null
           avatar?: string | null
-          is_skuf?: number | null
         }
         Relationships: []
       }

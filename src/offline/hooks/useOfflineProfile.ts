@@ -80,7 +80,6 @@ export function useOfflineUpdateProfile() {
         date_of_birth: currentProfile?.date_of_birth || null,
         height: currentProfile?.height || null,
         avatar: currentProfile?.avatar || null,
-        is_skuf: currentProfile?.is_skuf ?? null,
         is_admin: currentProfile?.is_admin || false,
         created_at: currentProfile?.created_at || new Date().toISOString(),
         ...profileData,

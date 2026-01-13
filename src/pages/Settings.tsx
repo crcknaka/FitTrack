@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
-import { User, LogOut, Lock, Eye, EyeOff, ChevronDown, Sun, Moon, Monitor, Download, FileJson, FileSpreadsheet, Check, Loader2, CloudOff, Palette, Globe, Ruler, Sparkles, Settings as SettingsIcon, UserCircle, Calendar, Scale, RulerIcon, Smile, Database, KeyRound, ShieldCheck } from "lucide-react";
+import { User, LogOut, Lock, Eye, EyeOff, ChevronDown, Sun, Moon, Monitor, Download, FileJson, FileSpreadsheet, Check, Loader2, CloudOff, Palette, Globe, Ruler, Sparkles, Settings as SettingsIcon, UserCircle, Calendar, Scale, RulerIcon, Database, KeyRound, ShieldCheck } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useOfflineProfile, useOfflineUpdateProfile, useOfflineWorkouts } from "@/offline";
 import { format } from "date-fns";
@@ -91,7 +91,6 @@ export default function Settings() {
   const [height, setHeight] = useState("");
   const [currentWeight, setCurrentWeight] = useState("");
   const [avatar, setAvatar] = useState("");
-  const [skufLevel, setSkufLevel] = useState(0); // 0-4: Нормис -> Альфа-Скуф
 
   // Password change state
   const [newPassword, setNewPassword] = useState("");
@@ -112,7 +111,6 @@ export default function Settings() {
   const [colorPopoverOpen, setColorPopoverOpen] = useState(false);
   const [langPopoverOpen, setLangPopoverOpen] = useState(false);
   const [unitsPopoverOpen, setUnitsPopoverOpen] = useState(false);
-  const [skufPopoverOpen, setSkufPopoverOpen] = useState(false);
 
   // Auto-save status: 'idle' | 'saving' | 'saved' | 'offline'
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'offline'>('idle');
@@ -149,8 +147,6 @@ export default function Settings() {
       }
       setCurrentWeight(profile.current_weight ? convertWeight(profile.current_weight).toString() : "");
       setAvatar(profile.avatar || "");
-      // Загружаем уровень скуфа напрямую (0-4), если null - устанавливаем 0 (Нормис)
-      setSkufLevel(profile.is_skuf !== null && profile.is_skuf !== undefined ? profile.is_skuf : 0);
     }
   }, [profile, convertHeight, convertWeight]);
 
@@ -207,8 +203,8 @@ export default function Settings() {
 
   // Create a stable string representation of profile data for debouncing
   const profileDataString = useMemo(() =>
-    JSON.stringify({ displayName, gender, dateOfBirth, height, currentWeight, avatar, skufLevel }),
-    [displayName, gender, dateOfBirth, height, currentWeight, avatar, skufLevel]
+    JSON.stringify({ displayName, gender, dateOfBirth, height, currentWeight, avatar }),
+    [displayName, gender, dateOfBirth, height, currentWeight, avatar]
   );
 
   // Debounce the string with 1.5 second delay
@@ -262,7 +258,6 @@ export default function Settings() {
           height: heightInCm,
           current_weight: weightInKg,
           avatar: data.avatar || null,
-          is_skuf: data.skufLevel,
         });
 
         // Check if we're online or offline
@@ -817,88 +812,6 @@ export default function Settings() {
                 />
               </div>
 
-              {/* Skuf Level */}
-              <div className="flex items-center gap-3 py-3">
-                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-orange-500/10">
-                  <Smile className="h-4 w-4 text-orange-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{t("settings.skufLevels.skuf")}</p>
-                  <p className={cn(
-                    "text-xs transition-colors",
-                    skufLevel === 0 && "text-blue-500",
-                    skufLevel === 1 && "text-green-500",
-                    skufLevel === 2 && "text-yellow-600 dark:text-yellow-400",
-                    skufLevel === 3 && "text-orange-500",
-                    skufLevel === 4 && "text-red-500"
-                  )}>
-                    {t(`settings.skufStatus.${skufLevel}`)}
-                  </p>
-                </div>
-                {/* Desktop: inline skuf picker */}
-                <div className="hidden sm:flex items-center gap-1 bg-muted rounded-lg p-1">
-                  {[
-                    { level: 0, emoji: "😊", color: "text-blue-500" },
-                    { level: 1, emoji: "😏", color: "text-green-500" },
-                    { level: 2, emoji: "😤", color: "text-yellow-500" },
-                    { level: 3, emoji: "🔥", color: "text-orange-500" },
-                    { level: 4, emoji: "🗿", color: "text-red-500" },
-                  ].map((item) => (
-                    <button
-                      key={item.level}
-                      onClick={() => { setSkufLevel(item.level); markChanged(); }}
-                      className={cn(
-                        "p-1.5 rounded-md transition-all text-base",
-                        skufLevel === item.level
-                          ? "bg-background shadow-sm scale-110"
-                          : "hover:bg-background/50 opacity-50 hover:opacity-100"
-                      )}
-                      title={t(`settings.skufLevels.${['normie', 'bold', 'jock', 'skuf', 'alpha'][item.level]}`)}
-                    >
-                      {item.emoji}
-                    </button>
-                  ))}
-                </div>
-                {/* Mobile: popover skuf picker */}
-                <Popover open={skufPopoverOpen} onOpenChange={setSkufPopoverOpen}>
-                  <PopoverTrigger asChild>
-                    <button className="sm:hidden flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-muted hover:bg-muted/70 transition-colors">
-                      <span className="text-base">
-                        {["😊", "😏", "😤", "🔥", "🗿"][skufLevel]}
-                      </span>
-                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-56 p-2" align="end">
-                    <p className="text-xs font-medium text-muted-foreground mb-2 px-2">{t("settings.skufLevels.skuf")}</p>
-                    <div className="space-y-1">
-                      {[
-                        { level: 0, emoji: "😊", key: "normie", color: "text-blue-500" },
-                        { level: 1, emoji: "😏", key: "bold", color: "text-green-500" },
-                        { level: 2, emoji: "😤", key: "jock", color: "text-yellow-500" },
-                        { level: 3, emoji: "🔥", key: "skuf", color: "text-orange-500" },
-                        { level: 4, emoji: "🗿", key: "alpha", color: "text-red-500" },
-                      ].map((item) => (
-                        <button
-                          key={item.level}
-                          onClick={() => { setSkufLevel(item.level); markChanged(); setSkufPopoverOpen(false); }}
-                          className={cn(
-                            "w-full flex items-center gap-2 px-2 py-2 rounded-md transition-all text-sm",
-                            skufLevel === item.level
-                              ? "bg-primary/10 text-primary font-medium"
-                              : "hover:bg-muted"
-                          )}
-                        >
-                          <span className="text-base">{item.emoji}</span>
-                          <span className={skufLevel === item.level ? "" : item.color}>
-                            {t(`settings.skufLevels.${item.key}`)}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
             </div>
           </CollapsibleContent>
         </Collapsible>

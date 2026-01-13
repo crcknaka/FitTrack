@@ -11,7 +11,6 @@ export interface Profile {
   date_of_birth: string | null;
   height: number | null;
   avatar: string | null;
-  is_skuf: number | null; // 0-4: 0 = Нормис, 1 = Дерзкий, 2 = Качок, 3 = Скуф, 4 = Альфа-Скуф
   is_admin: boolean;
   created_at: string;
 }

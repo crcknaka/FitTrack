@@ -138,20 +138,6 @@
       "music": "Música",
       "magic": "Magia",
       "misc": "Varios"
-    },
-    "skufLevels": {
-      "normie": "Normal",
-      "bold": "Audaz",
-      "jock": "Atleta",
-      "skuf": "Skuf",
-      "alpha": "Alfa"
-    },
-    "skufStatus": {
-      "0": "Usuario normal",
-      "1": "Atleta principiante",
-      "2": "Atleta experimentado",
-      "3": "¡Modo skuf activado!",
-      "4": "ALFA-SKUF DETECTADO"
     }
   },
   "workouts": {
