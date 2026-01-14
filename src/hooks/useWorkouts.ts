@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { offlineDb } from "@/offline/db";
+import { offlineDb, isOfflineId } from "@/offline/db";
 import { syncQueue } from "@/offline/syncQueue";
 import type { ExerciseTranslations } from "./useExercises";
 
@@ -450,9 +450,13 @@ export function useLockWorkout() {
         _lastModified: Date.now()
       });
 
-      // If offline, queue for sync later
-      if (!navigator.onLine) {
-        await syncQueue.enqueue("workouts", "update", workoutId, { is_locked: true });
+      // For guest data (offline IDs) or when offline, just update locally
+      // Guest IDs start with "offline_" and can't be synced to Supabase
+      if (!navigator.onLine || isOfflineId(workoutId)) {
+        // Only queue for sync if not a guest (offline IDs will be synced after migration)
+        if (!isOfflineId(workoutId)) {
+          await syncQueue.enqueue("workouts", "update", workoutId, { is_locked: true });
+        }
         return { id: workoutId, is_locked: true };
       }
 
@@ -495,9 +499,13 @@ export function useUnlockWorkout() {
         _lastModified: Date.now()
       });
 
-      // If offline, queue for sync later
-      if (!navigator.onLine) {
-        await syncQueue.enqueue("workouts", "update", workoutId, { is_locked: false });
+      // For guest data (offline IDs) or when offline, just update locally
+      // Guest IDs start with "offline_" and can't be synced to Supabase
+      if (!navigator.onLine || isOfflineId(workoutId)) {
+        // Only queue for sync if not a guest (offline IDs will be synced after migration)
+        if (!isOfflineId(workoutId)) {
+          await syncQueue.enqueue("workouts", "update", workoutId, { is_locked: false });
+        }
         return { id: workoutId, is_locked: false };
       }
 
