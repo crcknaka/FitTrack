@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { format, isToday, parseISO } from "date-fns";
@@ -24,6 +24,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { useUserAllTimeBests, useLockWorkout, useUnlockWorkout } from "@/hooks/useWorkouts";
 import { Exercise } from "@/hooks/useExercises";
 import { useWorkoutShare, useCreateWorkoutShare, useDeactivateWorkoutShare } from "@/hooks/useWorkoutShare";
@@ -105,6 +112,9 @@ export default function WorkoutDetail() {
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [photoToDelete, setPhotoToDelete] = useState(false);
   const [isPhotoFullscreen, setIsPhotoFullscreen] = useState(false);
+  const [isPhotoSourceOpen, setIsPhotoSourceOpen] = useState(false);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const [showTimer, setShowTimer] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -538,6 +548,9 @@ export default function WorkoutDetail() {
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !workout || !effectiveUserId) return;
+
+    // Close the drawer immediately after file selection
+    setIsPhotoSourceOpen(false);
 
     // Validate file
     const validation = validateImageFile(file);
@@ -1522,27 +1535,65 @@ export default function WorkoutDetail() {
               </div>
             </div>
           ) : isOwner && !workout?.is_locked ? (
-            <label className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
-              {isUploadingPhoto ? (
-                <>
-                  <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                  <span className="text-sm text-muted-foreground">{t("common.loading")}</span>
-                </>
-              ) : (
-                <>
-                  <Camera className="h-8 w-8 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">{t("workout.clickToAddPhoto")}</span>
-                  <span className="text-xs text-muted-foreground/70">{t("workout.photoFormat")}</span>
-                </>
-              )}
+            <>
+              <Drawer open={isPhotoSourceOpen} onOpenChange={setIsPhotoSourceOpen}>
+                <DrawerTrigger asChild>
+                  <div className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
+                    {isUploadingPhoto ? (
+                      <>
+                        <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                        <span className="text-sm text-muted-foreground">{t("common.loading")}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="h-8 w-8 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">{t("workout.clickToAddPhoto")}</span>
+                        <span className="text-xs text-muted-foreground/70">{t("workout.photoFormat")}</span>
+                      </>
+                    )}
+                  </div>
+                </DrawerTrigger>
+                <DrawerContent>
+                  <DrawerHeader>
+                    <DrawerTitle>{t("workout.addPhoto")}</DrawerTitle>
+                  </DrawerHeader>
+                  <div className="p-4 pb-8 space-y-3">
+                    <Button
+                      variant="outline"
+                      className="w-full h-14 justify-start gap-3 text-base"
+                      onClick={() => cameraInputRef.current?.click()}
+                    >
+                      <Camera className="h-5 w-5" />
+                      {t("workout.takePhoto")}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full h-14 justify-start gap-3 text-base"
+                      onClick={() => galleryInputRef.current?.click()}
+                    >
+                      <ImageIcon className="h-5 w-5" />
+                      {t("workout.chooseFromGallery")}
+                    </Button>
+                  </div>
+                </DrawerContent>
+              </Drawer>
+              {/* Hidden inputs for camera and gallery */}
               <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handlePhotoUpload}
+                className="hidden"
+              />
+              <input
+                ref={galleryInputRef}
                 type="file"
                 accept="image/jpeg,image/jpg,image/png,image/webp"
                 onChange={handlePhotoUpload}
-                disabled={isUploadingPhoto}
                 className="hidden"
               />
-            </label>
+            </>
           ) : (
             <div className="text-center py-6 text-sm text-muted-foreground">
               {t("workout.noPhotos")}

@@ -190,15 +190,18 @@ export default function Layout({ children }: LayoutProps) {
           })}
         </nav>
 
-        <div className="p-4 border-t border-border/50">
-          <button
-            onClick={() => signOut()}
-            className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 active:scale-[0.98] group"
-          >
-            <LogOut className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-            <span className="font-medium">{t("nav.logout")}</span>
-          </button>
-        </div>
+        {/* Hide logout button for guests */}
+        {!isGuest && (
+          <div className="p-4 border-t border-border/50">
+            <button
+              onClick={() => signOut()}
+              className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 active:scale-[0.98] group"
+            >
+              <LogOut className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
+              <span className="font-medium">{t("nav.logout")}</span>
+            </button>
+          </div>
+        )}
       </aside>
     </div>
   );
