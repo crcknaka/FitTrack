@@ -94,33 +94,31 @@ export function useDeleteUser() {
 
   return useMutation({
     mutationFn: async (userId: string) => {
-      // Delete user's workout sets first (due to foreign key constraints)
-      const { data: workouts } = await supabase
-        .from("workouts")
-        .select("id")
-        .eq("user_id", userId);
+      // Get the current session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("No active session");
 
-      if (workouts && workouts.length > 0) {
-        const workoutIds = workouts.map((w) => w.id);
-        await supabase.from("workout_sets").delete().in("workout_id", workoutIds);
+      // Call the admin-delete-user edge function to properly delete the user
+      // This ensures the auth user is also deleted, not just the profile data
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-delete-user`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ userId }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to delete user");
       }
 
-      // Delete user's workouts
-      await supabase.from("workouts").delete().eq("user_id", userId);
-
-      // Delete user's friendships
-      await supabase
-        .from("friendships")
-        .delete()
-        .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`);
-
-      // Delete user's profile
-      const { error } = await supabase
-        .from("profiles")
-        .delete()
-        .eq("user_id", userId);
-
-      if (error) throw error;
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
