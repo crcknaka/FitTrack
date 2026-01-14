@@ -666,7 +666,7 @@ export default function Workouts() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive flex-shrink-0"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground flex-shrink-0"
                     onClick={(e) => handleDeleteWorkout(workout.id, e)}
                   >
                     <Trash2 className="h-4 w-4" />
