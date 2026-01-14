@@ -749,7 +749,14 @@ export default function WorkoutDetail() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+        <Button variant="ghost" size="icon" onClick={() => {
+          // If viewing someone else's workout, go back to their workouts list
+          if (!isOwner && workout?.user_id) {
+            navigate(`/?user=${workout.user_id}`);
+          } else {
+            navigate("/");
+          }
+        }}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1 space-y-1">
@@ -894,7 +901,7 @@ export default function WorkoutDetail() {
         <ViewingUserBanner
           avatar={workoutOwnerProfile.avatar}
           displayName={workoutOwnerProfile.display_name}
-          onClose={() => navigate("/")}
+          onClose={() => navigate(`/?user=${workout.user_id}`)}
         />
       )}
 
