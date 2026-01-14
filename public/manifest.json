@@ -47,6 +47,29 @@
   "launch_handler": {
     "client_mode": "focus-existing"
   },
+  "shortcuts": [
+    {
+      "name": "New Workout",
+      "short_name": "Workout",
+      "description": "Start a new workout",
+      "url": "/",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Progress",
+      "short_name": "Progress",
+      "description": "View your progress",
+      "url": "/progress",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Friends",
+      "short_name": "Friends",
+      "description": "View friends' workouts",
+      "url": "/friends",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "screenshots": [
     {
       "src": "/screenshots/workout-list.png",
