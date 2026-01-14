@@ -64,7 +64,14 @@
     "orContinueWith": "или продолжить через",
     "continueWithGoogle": "Войти через Google",
     "continueAsGuest": "Продолжить как гость",
-    "googleError": "Ошибка входа через Google"
+    "googleError": "Ошибка входа через Google",
+    "verification": {
+      "banner": "Подтвердите email для полного доступа к аккаунту",
+      "resend": "Отправить",
+      "sent": "Письмо отправлено! Проверьте почту.",
+      "sentShort": "Отправлено",
+      "sendError": "Ошибка отправки письма"
+    }
   },
   "settings": {
     "title": "Настройки",

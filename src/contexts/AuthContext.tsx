@@ -16,12 +16,14 @@ interface AuthContextType {
   isGuest: boolean;
   guestUserId: string | null;
   effectiveUserId: string | null;
+  isEmailVerified: boolean;
   signUp: (email: string, password: string, displayName?: string, username?: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (newPassword: string) => Promise<void>;
+  resendVerificationEmail: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -297,6 +299,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   };
 
+  const resendVerificationEmail = async () => {
+    if (!user?.email) throw new Error("No email address");
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: user.email,
+    });
+    if (error) throw error;
+  };
+
+  // Check if email is verified (Google users are always verified)
+  // Use session.user for accurate data (cached user from localStorage doesn't have full metadata)
+  const sessionUser = session?.user;
+  const isEmailVerified = Boolean(
+    isGuest ||
+    !sessionUser || // If no session (offline/cached), don't show banner
+    sessionUser.email_confirmed_at ||
+    sessionUser.app_metadata?.provider === "google"
+  );
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -305,12 +326,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isGuest,
       guestUserId,
       effectiveUserId,
+      isEmailVerified,
       signUp,
       signIn,
       signInWithGoogle,
       signOut,
       resetPassword,
-      updatePassword
+      updatePassword,
+      resendVerificationEmail
     }}>
       {children}
     </AuthContext.Provider>

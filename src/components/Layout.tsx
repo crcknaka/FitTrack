@@ -9,6 +9,7 @@ import { usePendingRequestsCount } from "@/hooks/useFriends";
 import { useProfile } from "@/hooks/useProfile";
 import { useShowAdminNav } from "@/hooks/useShowAdminNav";
 import { GuestRegistrationReminder } from "@/components/GuestRegistrationReminder";
+import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 
 interface LayoutProps {
   children: ReactNode;
@@ -58,6 +59,11 @@ export default function Layout({ children }: LayoutProps) {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Guest Registration Reminder Dialog */}
       <GuestRegistrationReminder />
+
+      {/* Email Verification Banner */}
+      <div className="md:ml-64">
+        <EmailVerificationBanner />
+      </div>
 
       {/* Main Content */}
       <main className="flex-1 pb-24 md:pb-8 md:ml-64">

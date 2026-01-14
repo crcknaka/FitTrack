@@ -64,7 +64,14 @@
     "orContinueWith": "or continue with",
     "continueWithGoogle": "Continue with Google",
     "continueAsGuest": "Continue as Guest",
-    "googleError": "Google sign-in error"
+    "googleError": "Google sign-in error",
+    "verification": {
+      "banner": "Please verify your email for full account access",
+      "resend": "Resend",
+      "sent": "Verification email sent! Check your inbox.",
+      "sentShort": "Sent",
+      "sendError": "Failed to send verification email"
+    }
   },
   "settings": {
     "title": "Settings",
