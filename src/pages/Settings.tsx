@@ -27,6 +27,7 @@ import { LANGUAGES } from "@/lib/i18n";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { AuthModal } from "@/components/AuthModal";
+import { SettingsRow } from "@/components/SettingsRow";
 
 const AVATAR_CATEGORIES = [
   {
@@ -819,13 +820,7 @@ export default function Settings() {
               </div>
 
               {/* Gender */}
-              <div className="flex items-center gap-3 py-3 border-b border-border/50">
-                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-pink-500/10">
-                  <User className="h-4 w-4 text-pink-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{t("settings.gender")}</p>
-                </div>
+              <SettingsRow icon={User} color="pink" label={t("settings.gender")}>
                 <Select value={gender} onValueChange={(v) => { setGender(v as "male" | "female" | "other" | "none"); markChanged(); }}>
                   <SelectTrigger className="h-8 w-32 text-xs">
                     <SelectValue placeholder={t("settings.selectGender")} />
@@ -837,7 +832,7 @@ export default function Settings() {
                     <SelectItem value="other">{t("settings.genderOther")}</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </SettingsRow>
 
               {/* Date of Birth */}
               <div className="flex items-center gap-3 py-3 border-b border-border/50">
@@ -897,14 +892,7 @@ export default function Settings() {
               </div>
 
               {/* Height */}
-              <div className="flex items-center gap-3 py-3 border-b border-border/50">
-                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-cyan-500/10">
-                  <RulerIcon className="h-4 w-4 text-cyan-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{t("settings.height")}</p>
-                  <p className="text-xs text-muted-foreground">{units.height}</p>
-                </div>
+              <SettingsRow icon={RulerIcon} color="cyan" label={t("settings.height")} description={units.height}>
                 <Input
                   type="number"
                   step="0.1"
@@ -921,17 +909,10 @@ export default function Settings() {
                   placeholder="—"
                   className="h-8 w-20 text-xs text-right"
                 />
-              </div>
+              </SettingsRow>
 
               {/* Weight */}
-              <div className="flex items-center gap-3 py-3 border-b border-border/50">
-                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-green-500/10">
-                  <Scale className="h-4 w-4 text-green-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{t("settings.weight")}</p>
-                  <p className="text-xs text-muted-foreground">{units.weight}</p>
-                </div>
+              <SettingsRow icon={Scale} color="green" label={t("settings.weight")} description={units.weight}>
                 <Input
                   type="number"
                   step="0.1"
@@ -948,7 +929,7 @@ export default function Settings() {
                   placeholder="—"
                   className="h-8 w-20 text-xs text-right"
                 />
-              </div>
+              </SettingsRow>
 
             </div>
           </CollapsibleContent>
@@ -984,13 +965,7 @@ export default function Settings() {
           <CollapsibleContent>
             <div className="px-4 pb-4 space-y-1">
               {/* Тема / Theme */}
-              <div className="flex items-center gap-3 py-3 border-b border-border/50">
-                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-amber-500/10">
-                  <Sun className="h-4 w-4 text-amber-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{t("settings.theme")}</p>
-                </div>
+              <SettingsRow icon={Sun} color="amber" label={t("settings.theme")}>
                 <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
                   <button
                     onClick={() => { setTheme("light"); showAppSaved(); }}
@@ -1029,7 +1004,7 @@ export default function Settings() {
                     <Monitor className={cn("h-4 w-4", theme === "system" ? "text-primary" : "text-muted-foreground")} />
                   </button>
                 </div>
-              </div>
+              </SettingsRow>
 
               {/* Цвет акцента / Accent Color */}
               <div className="flex items-center gap-3 py-3 border-b border-border/50">
@@ -1544,14 +1519,7 @@ export default function Settings() {
               </div>
 
               {/* Confirm Password Row */}
-              <div className="flex items-center gap-3 py-3 border-b border-border/50">
-                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-purple-500/10">
-                  <Lock className="h-4 w-4 text-purple-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{t("settings.confirmPassword")}</p>
-                  <p className="text-xs text-muted-foreground">{t("settings.repeatPassword")}</p>
-                </div>
+              <SettingsRow icon={Lock} color="purple" label={t("settings.confirmPassword")} description={t("settings.repeatPassword")}>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -1560,16 +1528,10 @@ export default function Settings() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="h-8 w-36 text-xs"
                 />
-              </div>
+              </SettingsRow>
 
               {/* Change Password Button Row */}
-              <div className="flex items-center gap-3 py-3">
-                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-green-500/10">
-                  <ShieldCheck className="h-4 w-4 text-green-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{t("settings.changePassword")}</p>
-                </div>
+              <SettingsRow icon={ShieldCheck} color="green" label={t("settings.changePassword")} noBorder>
                 <button
                   onClick={handleChangePassword}
                   disabled={passwordLoading || !newPassword || !confirmPassword}
@@ -1592,7 +1554,7 @@ export default function Settings() {
                     </>
                   )}
                 </button>
-              </div>
+              </SettingsRow>
             </div>
           </CollapsibleContent>
         </Collapsible>
