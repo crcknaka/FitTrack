@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   getOrCreateGuestUserId,
@@ -39,6 +40,8 @@ function getCachedUser(): User | null {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
+
   // Start with cached user for immediate offline access
   const [user, setUser] = useState<User | null>(getCachedUser);
   const [session, setSession] = useState<Session | null>(null);
@@ -136,11 +139,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // 5. Clear guest data from localStorage
       clearGuestData();
 
+      // 6. Invalidate React Query cache to refetch with new user_id
+      await queryClient.invalidateQueries({ queryKey: ["workouts"] });
+      await queryClient.invalidateQueries({ queryKey: ["exercises"] });
+      await queryClient.invalidateQueries({ queryKey: ["favoriteExercises"] });
+
       console.log("[Auth] Guest data migration complete. Workouts:", workouts.length, "Sets:", setsCount, "Exercises:", exercises.length, "Favorites:", favorites.length);
     } catch (error) {
       console.error("[Auth] Failed to migrate guest data:", error);
     }
-  }, []);
+  }, [queryClient]);
 
   useEffect(() => {
     // Get initial session
@@ -216,12 +224,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("[Auth] onAuthStateChange event:", event, "user:", session?.user?.id);
+
         const currentUser = session?.user ?? null;
 
         // Check for guest data in localStorage BEFORE any state changes
         // This is more reliable than refs which can be stale
         const storedGuestId = getGuestUserId();
         const hasGuestData = storedGuestId && isGuestUserId(storedGuestId);
+
+        console.log("[Auth] Guest data check - storedGuestId:", storedGuestId, "hasGuestData:", hasGuestData);
 
         setSession(session);
         setUser(currentUser);
@@ -232,8 +244,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           localStorage.setItem("reppy_user_email", currentUser.email || "");
 
           // If there's guest data in localStorage and user just signed in, migrate it
-          if (hasGuestData && (event === "SIGNED_IN" || event === "USER_UPDATED")) {
-            console.log("[Auth] Detected guest data during sign in, migrating from", storedGuestId, "to", currentUser.id);
+          // Include INITIAL_SESSION for cases when page reloads after OAuth
+          if (hasGuestData && (event === "SIGNED_IN" || event === "USER_UPDATED" || event === "INITIAL_SESSION")) {
+            console.log("[Auth] Triggering migration from", storedGuestId, "to", currentUser.id, "on event:", event);
             await migrateGuestData(currentUser.id, storedGuestId);
           }
 
@@ -300,6 +313,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Принудительно очищаем состояние на клиенте
     setSession(null);
     setUser(null);
+    // Инициализируем гостевой режим сразу после выхода
+    initGuestMode();
   };
 
   const resetPassword = async (email: string) => {
