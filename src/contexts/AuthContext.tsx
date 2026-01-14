@@ -52,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Refs to keep track of guest state for migration (avoids stale closure issues)
   const guestUserIdRef = useRef<string | null>(null);
   const isGuestRef = useRef<boolean>(false);
+  const migrationInProgressRef = useRef<boolean>(false);
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -76,6 +77,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Migrate guest data to authenticated user
   const migrateGuestData = useCallback(async (newUserId: string, oldGuestId: string) => {
+    // Prevent double migration
+    if (migrationInProgressRef.current) {
+      console.log("[Auth] Migration already in progress, skipping");
+      return;
+    }
+    migrationInProgressRef.current = true;
+
     try {
       console.log("[Auth] Migrating guest data from", oldGuestId, "to", newUserId);
 
@@ -147,12 +155,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log("[Auth] Guest data migration complete. Workouts:", workouts.length, "Sets:", setsCount, "Exercises:", exercises.length, "Favorites:", favorites.length);
     } catch (error) {
       console.error("[Auth] Failed to migrate guest data:", error);
+    } finally {
+      migrationInProgressRef.current = false;
     }
   }, [queryClient]);
 
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log("[Auth] getSession result:", session?.user?.id);
+
       setSession(session);
       const currentUser = session?.user ?? null;
       setUser(currentUser);
@@ -160,6 +172,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Check for guest data that needs migration
       const storedGuestId = getGuestUserId();
       const hasGuestData = storedGuestId && isGuestUserId(storedGuestId);
+
+      console.log("[Auth] Initial load - storedGuestId:", storedGuestId, "hasGuestData:", hasGuestData);
+
+      // Also check IndexedDB directly
+      if (storedGuestId) {
+        const guestWorkouts = await offlineDb.workouts
+          .where("user_id")
+          .equals(storedGuestId)
+          .count();
+        console.log("[Auth] Guest workouts in IndexedDB:", guestWorkouts);
+      }
 
       // Cache user ID for offline access
       if (currentUser) {
@@ -170,6 +193,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (hasGuestData) {
           console.log("[Auth] Found guest data on initial load, migrating from", storedGuestId, "to", currentUser.id);
           await migrateGuestData(currentUser.id, storedGuestId);
+
+          // Verify migration
+          const migratedWorkouts = await offlineDb.workouts
+            .where("user_id")
+            .equals(currentUser.id)
+            .count();
+          console.log("[Auth] After migration - workouts with new user_id:", migratedWorkouts);
         }
 
         // Clear guest mode if user is authenticated
