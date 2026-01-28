@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { useUserWorkouts } from "@/hooks/useWorkouts";
 import { useOfflineWorkouts, useOfflineCreateWorkout, useOfflineDeleteWorkout } from "@/offline";
+import { useUnits } from "@/hooks/useUnits";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -47,6 +48,7 @@ export default function Workouts() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, isGuest } = useAuth();
   const { isOnline } = useOffline();
+  const { convertDistance, units } = useUnits();
 
   const viewingUserId = searchParams.get("user");
   const isViewingOther = viewingUserId && viewingUserId !== user?.id;
@@ -641,7 +643,7 @@ export default function Workouts() {
                     {getTotalDistance(workout) > 0 && (
                       <span className="flex items-center gap-1">
                         <Route className="h-3.5 w-3.5" />
-                        {getTotalDistance(workout)} {t("units.km")}
+                        {convertDistance(getTotalDistance(workout))} {units.distance}
                       </span>
                     )}
                   </div>
@@ -882,7 +884,7 @@ export default function Workouts() {
                             </div>
                             <div className="text-xs text-muted-foreground mt-1 ml-6">
                               {exercise.type === "cardio" ? (
-                                <>{exercise.sets} {t("workouts.sets")} · {exercise.totalDistance.toFixed(1)} {t("units.km")} · {exercise.totalDuration} {t("units.min")}</>
+                                <>{exercise.sets} {t("workouts.sets")} · {convertDistance(exercise.totalDistance).toFixed(1)} {units.distance} · {exercise.totalDuration} {t("units.min")}</>
                               ) : exercise.type === "timed" ? (
                                 <>{exercise.sets} {t("workouts.sets")} · {exercise.totalPlankSeconds} {t("units.sec")}</>
                               ) : exercise.type === "bodyweight" ? (
