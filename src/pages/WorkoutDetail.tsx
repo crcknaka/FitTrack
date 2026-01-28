@@ -12,7 +12,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   AlertDialog,
@@ -182,9 +181,8 @@ export default function WorkoutDetail() {
   const [copied, setCopied] = useState(false);
   const [recentSets, setRecentSets] = useState<RecentSetData[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
-  const [historyLimit, setHistoryLimit] = useState(3);
   const [hasMoreHistory, setHasMoreHistory] = useState(false);
-  const [isLoadingMoreHistory, setIsLoadingMoreHistory] = useState(false);
+  const [historyLimit, setHistoryLimit] = useState(5);
 
   // Share hooks
   const { data: workoutShare } = useWorkoutShare(workout?.id);
@@ -398,17 +396,17 @@ export default function WorkoutDetail() {
   const handleSelectExercise = async (exercise: Exercise) => {
     setSelectedExercise(exercise);
     setRecentSets([]);
-    setHistoryLimit(3);
+    setHistoryLimit(5);
     setHasMoreHistory(false);
 
     if (!effectiveUserId) return;
 
-    // Load recent sets history (load 4 to check if there are more)
+    // Load first 5 sets (load 6 to check if there are more)
     setIsLoadingHistory(true);
     try {
-      const history = await getRecentSetsForExercise(exercise.id, effectiveUserId, 4);
-      if (history.length > 3) {
-        setRecentSets(history.slice(0, 3));
+      const history = await getRecentSetsForExercise(exercise.id, effectiveUserId, 6);
+      if (history.length > 5) {
+        setRecentSets(history.slice(0, 5));
         setHasMoreHistory(true);
       } else {
         setRecentSets(history);
@@ -465,12 +463,10 @@ export default function WorkoutDetail() {
   };
 
   const loadMoreHistory = async () => {
-    if (!selectedExercise || !effectiveUserId || isLoadingMoreHistory) return;
+    if (!selectedExercise || !effectiveUserId) return;
 
-    setIsLoadingMoreHistory(true);
-    const newLimit = historyLimit + 3;
+    const newLimit = historyLimit + 5;
     try {
-      // Load one extra to check if there are more
       const history = await getRecentSetsForExercise(selectedExercise.id, effectiveUserId, newLimit + 1);
       if (history.length > newLimit) {
         setRecentSets(history.slice(0, newLimit));
@@ -482,8 +478,6 @@ export default function WorkoutDetail() {
       setHistoryLimit(newLimit);
     } catch (error) {
       console.error("Failed to load more history:", error);
-    } finally {
-      setIsLoadingMoreHistory(false);
     }
   };
 
@@ -612,7 +606,7 @@ export default function WorkoutDetail() {
       setShowTimer(false);
       setExerciseSearchQuery("");
       setRecentSets([]);
-      setHistoryLimit(3);
+      setHistoryLimit(5);
       setHasMoreHistory(false);
     }
   };
@@ -1126,9 +1120,9 @@ export default function WorkoutDetail() {
                     {t("common.back")}
                   </Button>
 
-                  {/* History button */}
-                  <Popover>
-                    <PopoverTrigger asChild>
+                  {/* History button - Drawer for mobile */}
+                  <Drawer>
+                    <DrawerTrigger asChild>
                       <Button
                         type="button"
                         variant="ghost"
@@ -1139,56 +1133,61 @@ export default function WorkoutDetail() {
                         <History className="h-4 w-4" />
                         <span className="hidden sm:inline">{t("workout.history")}</span>
                       </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-72 p-3" align="end">
-                      <div className="space-y-2">
-                        <p className="text-sm font-medium">{t("workout.recentSets")}</p>
+                    </DrawerTrigger>
+                    <DrawerContent>
+                      <DrawerHeader>
+                        <DrawerTitle>{t("workout.recentSets")}</DrawerTitle>
+                      </DrawerHeader>
+                      <div className="px-4 pb-6 max-h-[60vh] overflow-y-auto">
                         {isLoadingHistory ? (
-                          <div className="flex items-center justify-center py-4">
-                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          <div className="flex items-center justify-center py-8">
+                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                           </div>
                         ) : recentSets.length === 0 ? (
-                          <p className="text-sm text-muted-foreground py-2">{t("workout.noHistory")}</p>
+                          <p className="text-sm text-muted-foreground text-center py-8">{t("workout.noHistory")}</p>
                         ) : (
-                          <div className="space-y-2 max-h-64 overflow-y-auto">
-                            {recentSets.map((set, i) => (
-                              <div key={i} className="text-sm p-2 bg-muted/50 rounded-md">
-                                <div className="text-xs text-muted-foreground mb-1">
-                                  {format(parseISO(set.date), "d MMM yyyy", { locale: dateLocale })}
-                                </div>
-                                <div className="font-medium">
-                                  {selectedExercise?.type === "cardio" ? (
-                                    <>{convertDistance(set.distance_km || 0)} {units.distance} · {set.duration_minutes} {t("units.min")}</>
-                                  ) : selectedExercise?.type === "timed" ? (
-                                    <>{set.plank_seconds} {t("units.sec")}</>
-                                  ) : selectedExercise?.type === "bodyweight" ? (
-                                    <>{set.reps} {t("units.reps")}</>
-                                  ) : (
-                                    <>{set.reps} {t("units.reps")} × {convertWeight(set.weight || 0)} {units.weight}</>
+                          <div className="space-y-2">
+                            {recentSets.map((set, i) => {
+                              const showDate = i === 0 || set.date !== recentSets[i - 1].date;
+                              return (
+                                <div key={i}>
+                                  {showDate && (
+                                    <div className="text-xs text-muted-foreground mb-1 mt-2 first:mt-0">
+                                      {format(parseISO(set.date), "d MMM yyyy", { locale: dateLocale })}
+                                    </div>
                                   )}
+                                  <div className="text-sm p-3 bg-muted/50 rounded-md">
+                                    <div className="font-medium">
+                                      {selectedExercise?.type === "cardio" ? (
+                                        <>{convertDistance(set.distance_km || 0)} {units.distance} · {set.duration_minutes} {t("units.min")}</>
+                                      ) : selectedExercise?.type === "timed" ? (
+                                        <>{set.plank_seconds} {t("units.sec")}</>
+                                      ) : selectedExercise?.type === "bodyweight" ? (
+                                        <>{set.reps} {t("units.reps")}</>
+                                      ) : (
+                                        <>{set.reps} {t("units.reps")} × {convertWeight(set.weight || 0)} {units.weight}</>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                             {hasMoreHistory && (
                               <Button
                                 type="button"
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
-                                className="w-full text-xs"
+                                className="w-full mt-3"
                                 onClick={loadMoreHistory}
-                                disabled={isLoadingMoreHistory}
                               >
-                                {isLoadingMoreHistory ? (
-                                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                                ) : null}
                                 {t("workout.loadMoreHistory")}
                               </Button>
                             )}
                           </div>
                         )}
                       </div>
-                    </PopoverContent>
-                  </Popover>
+                    </DrawerContent>
+                  </Drawer>
                 </div>
               )}
 
