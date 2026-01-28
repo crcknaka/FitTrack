@@ -1150,7 +1150,7 @@ export default function WorkoutDetail() {
                         ) : recentSets.length === 0 ? (
                           <p className="text-sm text-muted-foreground py-2">{t("workout.noHistory")}</p>
                         ) : (
-                          <div className="space-y-2">
+                          <div className="space-y-2 max-h-64 overflow-y-auto">
                             {recentSets.map((set, i) => (
                               <div key={i} className="text-sm p-2 bg-muted/50 rounded-md">
                                 <div className="text-xs text-muted-foreground mb-1">
