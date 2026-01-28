@@ -1178,7 +1178,10 @@ export default function WorkoutDetail() {
                                 variant="outline"
                                 size="sm"
                                 className="w-full mt-3"
-                                onClick={loadMoreHistory}
+                                onClick={(e) => {
+                                  e.currentTarget.blur();
+                                  loadMoreHistory();
+                                }}
                               >
                                 {t("workout.loadMoreHistory")}
                               </Button>
