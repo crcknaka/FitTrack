@@ -183,6 +183,8 @@ export default function WorkoutDetail() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [hasMoreHistory, setHasMoreHistory] = useState(false);
   const [historyLimit, setHistoryLimit] = useState(5);
+  const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false);
+  const [historyExercise, setHistoryExercise] = useState<{ id: string; name: string; type: string } | null>(null);
 
   // Share hooks
   const { data: workoutShare } = useWorkoutShare(workout?.id);
@@ -463,11 +465,12 @@ export default function WorkoutDetail() {
   };
 
   const loadMoreHistory = async () => {
-    if (!selectedExercise || !effectiveUserId) return;
+    const exerciseId = selectedExercise?.id || historyExercise?.id;
+    if (!exerciseId || !effectiveUserId) return;
 
     const newLimit = historyLimit + 5;
     try {
-      const history = await getRecentSetsForExercise(selectedExercise.id, effectiveUserId, newLimit + 1);
+      const history = await getRecentSetsForExercise(exerciseId, effectiveUserId, newLimit + 1);
       if (history.length > newLimit) {
         setRecentSets(history.slice(0, newLimit));
         setHasMoreHistory(true);
@@ -478,6 +481,32 @@ export default function WorkoutDetail() {
       setHistoryLimit(newLimit);
     } catch (error) {
       console.error("Failed to load more history:", error);
+    }
+  };
+
+  const openExerciseHistory = async (exerciseId: string, exerciseName: string, exerciseType: string) => {
+    if (!effectiveUserId) return;
+
+    setHistoryExercise({ id: exerciseId, name: exerciseName, type: exerciseType });
+    setRecentSets([]);
+    setHistoryLimit(5);
+    setHasMoreHistory(false);
+    setHistoryDrawerOpen(true);
+    setIsLoadingHistory(true);
+
+    try {
+      const history = await getRecentSetsForExercise(exerciseId, effectiveUserId, 6);
+      if (history.length > 5) {
+        setRecentSets(history.slice(0, 5));
+        setHasMoreHistory(true);
+      } else {
+        setRecentSets(history);
+        setHasMoreHistory(false);
+      }
+    } catch (error) {
+      console.error("Failed to load exercise history:", error);
+    } finally {
+      setIsLoadingHistory(false);
     }
   };
 
@@ -1336,18 +1365,32 @@ export default function WorkoutDetail() {
             >
               <CardHeader className="pb-2 pt-4 px-4">
                 <div className="flex items-center justify-between gap-2">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    {exercise?.type === "weighted" ? (
-                      <Dumbbell className="h-4 w-4 text-primary" />
-                    ) : exercise?.type === "cardio" ? (
-                      <Activity className="h-4 w-4 text-primary" />
-                    ) : exercise?.type === "timed" ? (
-                      <Timer className="h-4 w-4 text-primary" />
-                    ) : (
-                      <User className="h-4 w-4 text-primary" />
-                    )}
-                    {exercise?.name ? getExerciseName(exercise.name, exercise.name_translations) : ""}
-                  </CardTitle>
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <CardTitle className="flex items-center gap-2 text-base truncate">
+                      {exercise?.type === "weighted" ? (
+                        <Dumbbell className="h-4 w-4 text-primary flex-shrink-0" />
+                      ) : exercise?.type === "cardio" ? (
+                        <Activity className="h-4 w-4 text-primary flex-shrink-0" />
+                      ) : exercise?.type === "timed" ? (
+                        <Timer className="h-4 w-4 text-primary flex-shrink-0" />
+                      ) : (
+                        <User className="h-4 w-4 text-primary flex-shrink-0" />
+                      )}
+                      <span className="truncate">{exercise?.name ? getExerciseName(exercise.name, exercise.name_translations) : ""}</span>
+                    </CardTitle>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 flex-shrink-0"
+                      onClick={() => exercise && openExerciseHistory(
+                        exerciseId,
+                        getExerciseName(exercise.name, exercise.name_translations),
+                        exercise.type
+                      )}
+                    >
+                      <History className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </div>
                   {exercise?.image_url ? (
                     <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                       <img
@@ -1894,6 +1937,66 @@ export default function WorkoutDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Exercise History Drawer */}
+      <Drawer open={historyDrawerOpen} onOpenChange={setHistoryDrawerOpen}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>{historyExercise?.name} - {t("workout.recentSets")}</DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4 pb-6 max-h-[60vh] overflow-y-auto">
+            {isLoadingHistory ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : recentSets.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">{t("workout.noHistory")}</p>
+            ) : (
+              <div className="space-y-2">
+                {recentSets.map((set, i) => {
+                  const showDate = i === 0 || set.date !== recentSets[i - 1].date;
+                  return (
+                    <div key={i}>
+                      {showDate && (
+                        <div className="text-xs text-muted-foreground mb-1 mt-2 first:mt-0">
+                          {format(parseISO(set.date), "d MMM yyyy", { locale: dateLocale })}
+                        </div>
+                      )}
+                      <div className="text-sm p-3 bg-muted/50 rounded-md">
+                        <div className="font-medium">
+                          {historyExercise?.type === "cardio" ? (
+                            <>{convertDistance(set.distance_km || 0)} {units.distance} · {set.duration_minutes} {t("units.min")}</>
+                          ) : historyExercise?.type === "timed" ? (
+                            <>{set.plank_seconds} {t("units.sec")}</>
+                          ) : historyExercise?.type === "bodyweight" ? (
+                            <>{set.reps} {t("units.reps")}</>
+                          ) : (
+                            <>{set.reps} {t("units.reps")} × {convertWeight(set.weight || 0)} {units.weight}</>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                {hasMoreHistory && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full mt-3"
+                    onClick={(e) => {
+                      e.currentTarget.blur();
+                      loadMoreHistory();
+                    }}
+                  >
+                    {t("workout.loadMoreHistory")}
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
